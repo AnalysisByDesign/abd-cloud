@@ -18,11 +18,10 @@ scriptDesc="Validate all build locations"
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
-tfAssets="${basePath}/tf-assets"
-tmpPath=/tmp
-envFiles="${tfAssets}/*.csv"
 
-. ${funcPath}/bash_funcs.sh
+tmpPath=/tmp
+
+source ${funcPath}/bash_funcs.sh
 
 # Set some defaults
 [[ "${verbose}" = "" ]] && verbose="N"
@@ -120,7 +119,7 @@ fi
 log_message "Validating all build locations"
 
 cd ${basePath}
-pathlist=`find tf-params -name "*_config.*" -print |
+pathlist=`find ${configPath} -name "*_config.*" -print |
             rev | cut -d"/" -f2- | rev | sort -u`
 
 for env in ${pathlist}; do
@@ -163,7 +162,7 @@ done
 log_message "Validating all build folders are required"
 
 cd ${basePath}
-pathlist=`find tf-params -type d | grep -v .terraform`
+pathlist=`find ${configPath} -type d | grep -v .terraform`
 
 for env in ${pathlist}; do
 

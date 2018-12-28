@@ -6,6 +6,10 @@
 scriptName=`basename $0 2>/dev/null`
 [ "" = "${verbose}" ] && verbose="N"
 
+configPath="${basePath}/tf-params"
+assetsPath="${configPath}/assets"
+  envFiles="${assetsPath}/*.csv"
+
    userIP=`echo ${SSH_CLIENT} | awk '{print $1}'`
   theDate=`date +"%Y%m%d"`
   theTime=`date +"%H%M%S"`
@@ -45,7 +49,7 @@ COLOUR_NONE='\033[0m'       # No colour
 # include the AWS functions that are being bulit up
 [ "" = "${basePath}" ] && basePath=`git rev-parse --show-toplevel`
 [ "" = "${funcPath}" ] && funcPath="${basePath}/funcs"
-[ "" = "${tfAssets}" ] && tfAssets="${basePath}/tf-assets"
+[ "" = "${assetsPath}" ] && assetsPath="${basePath}/tf-assets"
 . "${funcPath}"/bash_aws_funcs.sh
 
 ################################################################################
@@ -277,7 +281,7 @@ function wait_for_slot() {
 ################################################################################
 
 # Where is our environment descriptor file - this could eventually be in a DB
-envFiles=${tfAssets}/*.csv
+envFiles=${assetsPath}/*.csv
 
 # Check protect status of a build location
 function is_protected() {

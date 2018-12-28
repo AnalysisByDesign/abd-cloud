@@ -19,9 +19,10 @@ scriptDesc="Clone Terraform configuration structure"
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
+
 tmpPath=/tmp
 
-. ${funcPath}/bash_funcs.sh
+source ${funcPath}/bash_funcs.sh
 
 # --------------------------------------------------------------------------------
 

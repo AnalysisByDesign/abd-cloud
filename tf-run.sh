@@ -17,8 +17,8 @@ scriptDesc="Terraform execution wrapper script"
 # Include bash function library first
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
-codePath="${basePath}"
 funcPath="${basePath}/funcs"
+
 tmpPath=/tmp
 statefileBucket="ringgo-terraform-state"
 
@@ -53,9 +53,9 @@ Options:
         -vv               Very verbose output
 
 Example:
-        $0       plan    tf-params/px-automation/
-        $0 -v -d apply   tf-params/px-automation/
-        $0 -vvd  destroy tf-params/px-automation/
+        $0       plan    ${configPath}/account
+        $0 -v -d apply   ${configPath}/account/product
+        $0 -vvd  destroy ${configPath}/account/product/vpc
 
 EOF
 
@@ -128,7 +128,7 @@ shift $((OPTIND - 1))
 action=$1
 target=$2
 
-logpath=`echo ${target} | sed "s/tf-params/log/g"`
+logpath=`echo ${target} | sed "s/${configPath}/log/g"`
 logfile=${basePath}/${logpath}/build.log
 mkdir -p ${basePath}/${logpath}
 
@@ -189,7 +189,7 @@ build_resources=""
 # -----------------------------------------------------------------------------
 cd "${basePath}"/
 tfvars=""
-source ./tf-params/global_config.sh
+source ./${configPath}/global_config.sh
 
 for cf_path in `echo ${target} | sed "s/\// /g"`; do
     # Move one path deeper
@@ -248,7 +248,7 @@ for resource in ${build_resources}; do
     if [ "here" = "${resource}" ]; then
         cd "${basePath}/${target}"
     else
-        cd "${codePath}/tf-templates/${resource}"
+        cd "${basePath}/tf-templates/${resource}"
     fi
 
     # Update all required modules

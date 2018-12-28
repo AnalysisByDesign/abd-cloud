@@ -6,10 +6,6 @@
 # Description  : This script will run ALL the TF builds in the sequence defined in the config path
 # History      :
 #  2016-04-26  : DAR - Initial script
-#
-# TODO
-# - allow selection of start of config tree to build
-#   - build all ancestors, then all decendents, in the correct order
 # --------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------
@@ -22,13 +18,13 @@ scriptDesc="Terraform bulk execution wrapper script"
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
+
 tmpPath=/tmp
-
-source ${funcPath}/bash_funcs.sh
-
 logPath=/tmp/logs
 logfile=${logPath}/$0.$$.log
 mkdir -p ${logPath}
+
+source ${funcPath}/bash_funcs.sh
 
 # Set some defaults
 [[ "${verbose}" = "" ]] && verbose="N"
@@ -179,8 +175,8 @@ fi
 
 if [ "${buildFile}" != "Y" ]; then
 
-    # Default the build to the base tf-params location
-    [ "${target}" = "" ] && target="tf-params"
+    # Default the build to the base ${configPath} location
+    [ "${target}" = "" ] && target="${configPath}"
 
     # Now find a sorted list of all ancestors and decendents of our build target
     ancList=`get_ancestors ${target}`
@@ -208,7 +204,7 @@ for buildLine in ${build_list}; do
     # Extract the info we required"
     seq=`echo ${buildLine} | cut -d"," -f1`
     build=`echo ${buildLine} | cut -d"," -f2-`
-    buildlogpath=`echo ${build} | sed "s/tf-params/log/g"`
+    buildlogpath=`echo ${build} | sed "s/${configPath}/log/g"`
     mkdir -p ${buildlogpath}
 
     # We need to check if this is a new sequence, or a repeated one

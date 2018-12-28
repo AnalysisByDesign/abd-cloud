@@ -18,9 +18,10 @@ scriptDesc="Decode Terraform generated user passwords"
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
+
 tmpPath=/tmp
 
-. ${funcPath}/bash_funcs.sh
+source ${funcPath}/bash_funcs.sh
 
 # Set some defaults
 [[ "${verbose}" = "" ]] && verbose="N"

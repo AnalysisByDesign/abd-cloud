@@ -18,9 +18,10 @@ scriptDesc="Monitor all Terraform runs"
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
+
 tmpPath=/tmp
 
-. ${funcPath}/bash_funcs.sh
+source ${funcPath}/bash_funcs.sh
 
 # Set some defaults
 scriptSleep=2   # How long are we sleeping for during the script
