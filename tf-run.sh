@@ -248,7 +248,7 @@ for resource in ${build_resources}; do
     if [ "here" = "${resource}" ]; then
         cd "${basePath}/${target}"
     else
-        cd "${basePath}/tf-templates/${resource}"
+        cd "${basePath}/${templatePath}/${resource}"
     fi
 
     # Update all required modules

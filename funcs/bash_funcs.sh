@@ -6,9 +6,10 @@
 scriptName=`basename $0 2>/dev/null`
 [ "" = "${verbose}" ] && verbose="N"
 
-configPath="${basePath}/tf-params"
-assetsPath="${configPath}/assets"
-  envFiles="${assetsPath}/*.csv"
+templatePath="${basePath}/tf-templates"
+  configPath="${basePath}/tf-params"
+  assetsPath="${configPath}/assets"
+    envFiles="${assetsPath}/*.csv"
 
    userIP=`echo ${SSH_CLIENT} | awk '{print $1}'`
   theDate=`date +"%Y%m%d"`
@@ -49,8 +50,7 @@ COLOUR_NONE='\033[0m'       # No colour
 # include the AWS functions that are being bulit up
 [ "" = "${basePath}" ] && basePath=`git rev-parse --show-toplevel`
 [ "" = "${funcPath}" ] && funcPath="${basePath}/funcs"
-[ "" = "${assetsPath}" ] && assetsPath="${basePath}/tf-assets"
-. "${funcPath}"/bash_aws_funcs.sh
+source "${funcPath}"/bash_aws_funcs.sh
 
 ################################################################################
 # obtain_lock - Obtains a lock file based on the calling program name...
