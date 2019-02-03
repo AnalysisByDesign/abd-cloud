@@ -40,7 +40,7 @@ Options:
         -h                Show this message
 
 Example:
-        $0  config/ringgo-dev/permitproof config/ringgo-dev/oauth
+        $0  config/account/permitproof config/account/oauth
 
 EOF
 

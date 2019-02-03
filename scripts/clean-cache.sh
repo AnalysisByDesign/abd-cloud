@@ -42,7 +42,7 @@ Options:
         -r                Recursively delete all folders
 
 Example:
-        $0  -r  config/ringgo-dev
+        $0  -r  config/account
 
 EOF
 

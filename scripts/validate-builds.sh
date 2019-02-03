@@ -101,7 +101,7 @@ shift $((OPTIND - 1))
 # --------------------------------------------------------------------------------
 log_message "Checking for duplicates"
 dupFile=${tmpPath}/dupCheck.$$
-sort ${envFiles} | 
+sort ${sequenceFiles} | 
       grep -vE "^#" | 
       grep -vE "^ *$" | 
       uniq -c | 
@@ -126,7 +126,7 @@ for env in ${pathlist}; do
 
   log_verbose "  - checking ${env}"
 
-  line=`grep ${env} ${envFiles}`
+  line=`grep ${env} ${sequenceFiles}`
 
   if [ "${line}" = "" ]; then
 
@@ -141,7 +141,7 @@ done
 # --------------------------------------------------------------------------------
 log_message "Validating all build files"
 
-pathlist=`sort -u ${envFiles} |
+pathlist=`sort -u ${sequenceFiles} |
             grep -vE "^#" | 
             grep -vE "^ *$" | 
             cut -d"," -f4 | sort -u`
@@ -152,7 +152,7 @@ for env in ${pathlist}; do
   if [ ! -d ${env} ]; then
 
     log_message "EXTRA - ${env}"
-    grep -H ${env} ${envFiles}
+    grep -H ${env} ${sequenceFiles}
 
   fi
 

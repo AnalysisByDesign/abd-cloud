@@ -14,14 +14,19 @@
 
 scriptDesc="Terraform execution wrapper script"
 
-# Include bash function library first
 workPath=`dirname $0`
 basePath=`git rev-parse --show-toplevel`
+
+logPath="${basePath}/logs"
+tmpPath=/tmp/terraform.$$
+mkdir -p ${logPath} ${tmpPath}
+
+logfile=${logPath}/build.log
+
+statefileBucket="abd-tf-state"
+
+# Include bash function library first
 funcPath="${basePath}/funcs"
-
-tmpPath=/tmp
-statefileBucket="ringgo-terraform-state"
-
 source "${funcPath}"/bash_funcs.sh
 
 # Set some defaults
@@ -53,9 +58,9 @@ Options:
         -vv               Very verbose output
 
 Example:
-        $0       plan    ${configPath}/account
-        $0 -v -d apply   ${configPath}/account/product
-        $0 -vvd  destroy ${configPath}/account/product/vpc
+        $0       plan    tf-params
+        $0 -v -d apply   tf-params/account
+        $0 -vvd  destroy tf-params/account/vpc
 
 EOF
 
@@ -128,10 +133,6 @@ shift $((OPTIND - 1))
 action=$1
 target=$2
 
-logpath=`echo ${target} | sed "s/${configPath}/log/g"`
-logfile=${basePath}/${logpath}/build.log
-mkdir -p ${basePath}/${logpath}
-
 # Validate the passed in action
 options="init|fmt|graph|refresh|show|taint|plan|apply|destroy|upload-state"
 chk=`echo ${action} | egrep ${options}`
@@ -189,7 +190,7 @@ build_resources=""
 # -----------------------------------------------------------------------------
 cd "${basePath}"/
 tfvars=""
-source ./${configPath}/global_config.sh
+source ${configPath}/global_config.sh
 
 for cf_path in `echo ${target} | sed "s/\// /g"`; do
     # Move one path deeper
@@ -217,8 +218,8 @@ export TF_DATA_DIR="${basePath}/${target}/.terraform"
 # Pass some of the variables through to Terraform
 export TF_VAR_acct_target="${acct_target}"
 export TF_VAR_acct_billing="${acct_billing}"
-export TF_VAR_acct_production="${acct_production}"
-export TF_VAR_acct_authentication="${acct_authentication}"
+export TF_VAR_acct_apex="${acct_apex}"
+export TF_VAR_acct_auth="${acct_auth}"
 
 export TF_VAR_account_name=`get_account_name ${acct_target}`
 if [ "${TF_VAR_account_name}" = "" ]; then
@@ -248,7 +249,7 @@ for resource in ${build_resources}; do
     if [ "here" = "${resource}" ]; then
         cd "${basePath}/${target}"
     else
-        cd "${basePath}/${templatePath}/${resource}"
+        cd "${templatePath}/${resource}"
     fi
 
     # Update all required modules

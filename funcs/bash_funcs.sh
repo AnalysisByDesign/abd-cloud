@@ -6,10 +6,9 @@
 scriptName=`basename $0 2>/dev/null`
 [ "" = "${verbose}" ] && verbose="N"
 
-templatePath="${basePath}/tf-templates"
-  configPath="${basePath}/tf-params"
-  assetsPath="${configPath}/assets"
-    envFiles="${assetsPath}/*.csv"
+ templatePath="${basePath}/tf-templates"
+   configPath="${basePath}/tf-params"
+sequenceFiles="${basePath}/tf-params/sequence/*.csv"
 
    userIP=`echo ${SSH_CLIENT} | awk '{print $1}'`
   theDate=`date +"%Y%m%d"`
@@ -280,13 +279,10 @@ function wait_for_slot() {
 # 1 - seq , 2 - protect , 3 - prevent , 4 - environment
 ################################################################################
 
-# Where is our environment descriptor file - this could eventually be in a DB
-envFiles=${assetsPath}/*.csv
-
 # Check protect status of a build location
 function is_protected() {
   # Check the target plus descendents for the protect flag
-  protect=`grep -hE ",${1}" ${envFiles} | cut -d"," -f2 | sort -u`
+  protect=`grep -hE ",${1}" ${sequenceFiles} | cut -d"," -f2 | sort -u`
   [ "${protect}" != "" ] && echo "Y"
   echo ""
 }
@@ -294,7 +290,7 @@ function is_protected() {
 # Check prevent status of a build location
 function is_prevented() {
   # Check the target for the protect flag
-  prevent=`grep -hE ",${1}$" ${envFiles} | cut -d"," -f3`
+  prevent=`grep -hE ",${1}$" ${sequenceFiles} | cut -d"," -f3`
   [ "${prevent}" != "" ] && echo "Y"
   echo ""
 }
@@ -304,12 +300,12 @@ function get_ancestors() {
   bPath="."
   for chkBuild in `echo ${1} | sed "s/\// /g"`; do
     bPath="${bPath}/${chkBuild}"
-    grep -hE ",${bPath:2}$" ${envFiles} | cut -d"," -f1,4
+    grep -hE ",${bPath:2}$" ${sequenceFiles} | cut -d"," -f1,4
   done
 }
 
 # Return a list of all decendents of the selected target build location
 function get_descendents() {
-  grep -hE ",${1}" ${envFiles} | cut -d"," -f1,4
+  grep -hE ",${1}" ${sequenceFiles} | cut -d"," -f1,4
 }
 ################################################################################
