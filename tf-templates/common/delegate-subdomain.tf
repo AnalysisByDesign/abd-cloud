@@ -24,7 +24,7 @@ data "aws_route53_zone" "apex" {
 # Should we create an NS record in our apex to delegate this subdomain?
 # Using a dedicated resource here due to requiring an alternate provider
 # -----------------------------------------------------------------------------
-resource "aws_route53_record" "this" {
+resource "aws_route53_record" "apex" {
   provider = "aws.apex"
 
   count = "${var.delegation_enabled 
@@ -36,7 +36,7 @@ resource "aws_route53_record" "this" {
   type    = "NS"
 
   ttl     = "86400"
-  records = ["${module.r53-public.name_servers[count.index]}"]
+  records = ["${module.r53_public.name_servers[count.index]}"]
 
   lifecycle {
     create_before_destroy = true
