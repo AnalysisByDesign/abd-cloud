@@ -4,7 +4,7 @@
 provider "aws" {
   alias = "apex"
 
-  version = "~> 1.31"
+  version = "~> 1.60"
 
   region = "${var.target_region}"
 

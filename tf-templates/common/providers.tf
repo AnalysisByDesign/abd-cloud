@@ -26,19 +26,19 @@ variable "target_region" {
 # -------------------------------------------------------------------------------------------
 
 terraform {
-  required_version = ">= 0.11.7"
+  required_version = ">= 0.11.13"
 
   backend "s3" {
     encrypt        = true
     acl            = "bucket-owner-full-control"
-    dynamodb_table = "tf-state-lock"
+    dynamodb_table = "terraform-state-lock"
     region         = "eu-west-1"
     role_arn       = "arn:aws:iam::813984516777:role/terraform"
   }
 }
 
 provider "aws" {
-  version = "~> 1.48"
+  version = "~> 1.60"
 
   region = "${var.target_region}"
 
