@@ -16,7 +16,7 @@ scriptDesc="Terraform bulk execution wrapper script"
 
 # Include bash function library first
 workPath=`dirname $0`
-basePath=`git rev-parse --show-toplevel`
+basePath=`pwd`
 funcPath="${basePath}/funcs"
 
 tmpPath=/tmp
@@ -204,7 +204,7 @@ for buildLine in ${build_list}; do
     # Extract the info we required"
     seq=`echo ${buildLine} | cut -d"," -f1`
     build=`echo ${buildLine} | cut -d"," -f2-`
-    buildlogpath=`echo ${build} | sed "s/${configPath}/log/g"`
+    buildlogpath=`echo ${build} | sed "s/tf-params/logs/g"`
     mkdir -p ${buildlogpath}
 
     # We need to check if this is a new sequence, or a repeated one

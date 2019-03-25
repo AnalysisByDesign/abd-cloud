@@ -262,31 +262,31 @@ for resource in ${build_resources}; do
         fi
     fi
 
-    # Update all required modules
-    log_verbose "    - updating modules"
-    if [ "Y" = ${dryRun} ]; then
-        log_message "terraform get -update=true"
-    else
-        if [ "Y" = ${verbose} ]; then
-            terraform get -update=true
-        else
-            terraform get -update=true > /dev/null
-        fi
-    fi
+#    # Update all required modules
+#    log_verbose "    - updating modules"
+#    if [ "Y" = ${dryRun} ]; then
+#        log_message "terraform get -update=true"
+#    else
+#        if [ "Y" = ${verbose} ]; then
+#            terraform get -update=true
+#        else
+#            terraform get -update=true > /dev/null
+#        fi
+#    fi
 
     # We always run an init command
     log_verbose "    - preparing backend store"
     if [ "Y" = ${dryRun} ]; then
-        log_message "terraform terraform init 
+        log_message "terraform terraform init -lock=${lock} 
             -backend-config=\"bucket=${statefileBucket}\" 
             -backend-config=\"key=${statefile}\""
     else
         if [ "Y" = ${verbose} ]; then
-            terraform init \
+            terraform init -lock=${lock} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}"
         else
-            terraform init \
+            terraform init -lock=${lock} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}" > /dev/null
         fi
