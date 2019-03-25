@@ -6,7 +6,7 @@ terraform.tfvars
 
 # abd-cloud excluded configuration files
 /tf-params/
-/log/
+/logs/
 build.log
 
 # OS X files
