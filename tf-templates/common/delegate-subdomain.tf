@@ -9,7 +9,7 @@ provider "aws" {
   region = "${var.target_region}"
 
   assume_role {
-    role_arn = "arn:aws:iam::${var.acct_apex}:role/${var.acct_target_role == "" ? "aws_admin" : var.acct_target_role}"
+    role_arn = "arn:aws:iam::${var.acct_apex}:role/${var.acct_target_role == "" ? "terraform" : var.acct_target_role}"
   }
 }
 

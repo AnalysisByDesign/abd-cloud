@@ -44,3 +44,17 @@ data "aws_iam_policy_document" "repository_policy" {
     actions = ["ecr:*"]
   }
 }
+
+data "aws_iam_policy_document" "remote_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "arn:aws:iam::${var.acct_auth}:root",
+      ]
+    }
+  }
+}

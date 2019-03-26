@@ -10,8 +10,6 @@ resource "aws_iam_service_linked_role" "es" {
 module "rds_monitoring_role" "rds_enhanced" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-role"
 
-  required = "${var.newrelic_required}"
-
   roles = [{
     name               = "rds-enhanced-monitoring"
     description        = "Allows RDS enhanced monitoring"
