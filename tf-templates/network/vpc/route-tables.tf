@@ -48,10 +48,12 @@ resource "aws_route_table" "private" {
 # --------------------------------------------------------------------------------------------
 
 resource "aws_route" "private_nat_gateway" {
-  count = "${max(length(var.private_web_subnets), 
-                  length(var.private_app_subnets), 
-                  length(var.private_cache_subnets), 
-                  length(var.private_db_subnets))}"
+  count = "${var.enable_nat_gateway ? 
+                  (max(length(var.private_web_subnets), 
+                    length(var.private_app_subnets), 
+                    length(var.private_cache_subnets), 
+                    length(var.private_db_subnets)))
+                  : 0}"
 
   route_table_id         = "${element(aws_route_table.private.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
