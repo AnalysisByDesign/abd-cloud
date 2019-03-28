@@ -5,7 +5,7 @@ terraform.tfvars
 *.tfstate*
 
 # abd-cloud excluded configuration files
-/tf-params/
+/tf-params*
 /logs/
 build.log
 
