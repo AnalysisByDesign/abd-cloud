@@ -51,7 +51,7 @@ variable "public_apex_domain" {
 #                                   Private CIDR Locations
 # ============================================================================================
 
-variable "global_ingress_locations" {
+variable "management_ingress_locations" {
   description = "List of CIDR ranges for private ingress to resources"
   type        = "list"
   default     = []

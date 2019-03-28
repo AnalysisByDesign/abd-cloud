@@ -29,7 +29,7 @@ resource "aws_default_security_group" "egress" {
 # Management ingress SSH security group
 # --------------------------------------------------------------------------------------------
 module "management-ssh-sg" {
-  source = "../../../tf-modules/security/security-group"
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
 
   # Required variables
   name        = "${format("%s-management-ssh", var.vpc_name)}"
@@ -40,7 +40,9 @@ module "management-ssh-sg" {
 
 # --------------------------------------------------------------------------------------------
 module "management-ssh-sgr-in" "this" {
-  source = "../../../tf-modules/security/security-group-rule-cidr"
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+
+  required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
 
   # Required variables
   security_group_id = "${module.management-ssh-sg.id}"
@@ -48,7 +50,7 @@ module "management-ssh-sgr-in" "this" {
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "22"
-  cidr_blocks       = ["${local.management_locations}"]
+  cidr_blocks       = ["${var.management_ingress_locations}"]
 }
 
 # --------------------------------------------------------------------------------------------
