@@ -22,14 +22,26 @@ variable "accepter_vpc_id" {
 # Routing overrides if required
 # --------------------------------------------------------------------------------------------
 
-variable "requester_cidr_override" {
-  description = "Optional CIDR range to forward through peering to the requester"
+variable "public_requester_cidr_override" {
+  description = "Optional CIDR range to forward through peering to the requester from public subnets"
   type        = "string"
   default     = ""
 }
 
-variable "accepter_cidr_override" {
-  description = "Optional CIDR range to forward through peering to the accepter"
+variable "public_accepter_cidr_override" {
+  description = "Optional CIDR range to forward through peering to the accepter from public subnets"
+  type        = "string"
+  default     = ""
+}
+
+variable "private_requester_cidr_override" {
+  description = "Optional CIDR range to forward through peering to the requester from private subnets"
+  type        = "string"
+  default     = ""
+}
+
+variable "private_accepter_cidr_override" {
+  description = "Optional CIDR range to forward through peering to the accepter from private subnets"
   type        = "string"
   default     = ""
 }
