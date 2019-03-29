@@ -15,16 +15,15 @@
 scriptDesc="Terraform bulk execution wrapper script"
 
 # Include bash function library first
-workPath=`dirname $0`
-basePath=`pwd`
-funcPath="${basePath}/funcs"
-
 tmpPath=/tmp
 logPath=/tmp/logs
+basePath=`git rev-parse --show-toplevel`
+funcPath="${basePath}/funcs"
 logfile=${logPath}/$0.$$.log
-mkdir -p ${logPath}
 
 source ${funcPath}/bash_funcs.sh
+
+mkdir -p ${logPath}
 
 # Set some defaults
 [[ "${verbose}" = "" ]] && verbose="N"

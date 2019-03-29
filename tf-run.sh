@@ -14,20 +14,16 @@
 
 scriptDesc="Terraform execution wrapper script"
 
-workPath=`dirname $0`
-basePath=`git rev-parse --show-toplevel`
-
-logPath="${basePath}/logs"
+# Include bash function library first
 tmpPath=/tmp/terraform.$$
-mkdir -p ${logPath} ${tmpPath}
-
+basePath=`git rev-parse --show-toplevel`
+funcPath="${basePath}/funcs"
+logPath="${basePath}/logs"
 logfile=${logPath}/build.log
 
-statefileBucket="abd-tf-state"
+source ${funcPath}/bash_funcs.sh
 
-# Include bash function library first
-funcPath="${basePath}/funcs"
-source "${funcPath}"/bash_funcs.sh
+mkdir -p ${logPath} ${tmpPath}
 
 # Set some defaults
 [[ "${verbose}" = "" ]] && verbose="N"
@@ -36,6 +32,7 @@ dryRun="N"      # Do we want to perform the actions
 parallelism=10  # How many parallel terraform threads to run
 override="N"
 cleanCache="N"
+statefileBucket="abd-tf-state"
 # --------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------

@@ -15,12 +15,9 @@
 scriptDesc="Monitor all Terraform runs"
 
 # Include bash function library first
-workPath=`dirname $0`
+tmpPath=/tmp
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
-
-tmpPath=/tmp
-
 source ${funcPath}/bash_funcs.sh
 
 # Set some defaults
@@ -112,7 +109,7 @@ while [ 1 -eq 1 ]; do
 
   rm ${tmpOutput} 2>/dev/null
 
-  for file in `find ${basePath}/log/ -name build.log -print`; do
+  for file in `find ${basePath}/logs/ -name build.log -print`; do
 
     grep "    -" ${file} | \
       tail -2 | head -1 | \

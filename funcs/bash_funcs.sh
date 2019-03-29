@@ -10,6 +10,8 @@ scriptName=`basename $0 2>/dev/null`
    configPath="${basePath}/tf-params"
 sequenceFiles="${basePath}/tf-params/sequence/*.csv"
 
+################################################################################
+# Other useful definitions
    userIP=`echo ${SSH_CLIENT} | awk '{print $1}'`
   theDate=`date +"%Y%m%d"`
   theTime=`date +"%H%M%S"`

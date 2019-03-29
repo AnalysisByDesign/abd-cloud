@@ -15,12 +15,9 @@
 scriptDesc="Validate all build locations"
 
 # Include bash function library first
-workPath=`dirname $0`
+tmpPath=/tmp
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
-
-tmpPath=/tmp
-
 source ${funcPath}/bash_funcs.sh
 
 # Set some defaults
@@ -101,6 +98,8 @@ shift $((OPTIND - 1))
 # --------------------------------------------------------------------------------
 log_message "Checking for duplicates"
 dupFile=${tmpPath}/dupCheck.$$
+
+cd ${basePath}
 sort ${sequenceFiles} | 
       grep -vE "^#" | 
       grep -vE "^ *$" | 
@@ -118,8 +117,8 @@ fi
 # --------------------------------------------------------------------------------
 log_message "Validating all build locations"
 
-cd ${basePath}
-pathlist=`find ${configPath} -name "*_config.*" -print |
+cd ${configPath}
+pathlist=`find . -name "*_config.*" -print |
             rev | cut -d"/" -f2- | rev | sort -u`
 
 for env in ${pathlist}; do
@@ -141,6 +140,7 @@ done
 # --------------------------------------------------------------------------------
 log_message "Validating all build files"
 
+cd ${basePath}
 pathlist=`sort -u ${sequenceFiles} |
             grep -vE "^#" | 
             grep -vE "^ *$" | 
@@ -152,7 +152,7 @@ for env in ${pathlist}; do
   if [ ! -d ${env} ]; then
 
     log_message "EXTRA - ${env}"
-    grep -H ${env} ${sequenceFiles}
+    grep -H "${env}$" ${sequenceFiles}
 
   fi
 

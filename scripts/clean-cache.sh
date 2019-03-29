@@ -16,12 +16,9 @@
 scriptDesc="Clean all Terraform cache folders"
 
 # Include bash function library first
-workPath=`dirname $0`
+tmpPath=/tmp
 basePath=`git rev-parse --show-toplevel`
 funcPath="${basePath}/funcs"
-
-tmpPath=/tmp
-
 source ${funcPath}/bash_funcs.sh
 
 recurse="N"
