@@ -199,18 +199,18 @@ variable "db_subnet_tags" {
 # None
 
 # Optional -----------------------------------------------------------------------------------
-variable "elasticache_subnet_group_name" {
+variable "cache_subnet_group_name" {
   description = "Name of Elasticache subnet group table"
   type        = "string"
-  default     = "elasticache"
+  default     = "cache"
 }
 
-variable "elasticache_subnet_tags" {
+variable "cache_subnet_tags" {
   description = "A map of subnet tags to add to subnet group"
   type        = "map"
 
   default = {
-    "Component" = "elasticache cluster"
+    "Component" = "Cache cluster"
   }
 }
 
