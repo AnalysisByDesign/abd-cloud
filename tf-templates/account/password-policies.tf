@@ -3,7 +3,7 @@
 # - we do not configure these through variables, as they are corporate policy
 # --------------------------------------------------------------------------------------------
 
-# Configure password policy based on ParkNow defaults
+# Configure password policy based on sensible defaults
 resource "aws_iam_account_password_policy" "strict" {
   minimum_password_length        = "${var.minimum_password_length}"
   password_reuse_prevention      = "${var.password_reuse_prevention}"

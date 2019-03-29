@@ -277,7 +277,7 @@ variable "delegate_set_name" {
 }
 
 variable "delegation_enabled" {
-  description = "Do we need this sub-domain delegated from parknowportal.cloud apex domain"
+  description = "Do we need this sub-domain delegated from main apex domain"
   default     = false
 }
 
