@@ -187,7 +187,7 @@ variable "read_replica_count" {
 variable "instance_class" {
   description = "The instance class for the instances"
   type        = "string"
-  default     = "db.t2.medium"
+  default     = "db.t2.small"
 }
 
 variable "monitoring_interval" {
