@@ -179,33 +179,33 @@ variable "s3_name" {
 }
 
 # ============================================================================================
-#                                  SQS Queues
+#                                  Queues
 # ============================================================================================
 
 # Optional -----------------------------------------------------------------------------------
 
-variable "sqs_name" {
-  description = "SQS Queue name"
+variable "queue_name" {
+  description = "Queue name"
   type        = "string"
   default     = ""
 }
 
-variable "sqs_message_retention_seconds" {
+variable "queue_message_retention_seconds" {
   description = "Message retention period (seconds)"
   default     = 345600
 }
 
-variable "sqs_max_message_size" {
+variable "queue_max_message_size" {
   description = "Max message size (bytes)"
   default     = 262144
 }
 
-variable "sqs_delay_seconds" {
+variable "queue_delay_seconds" {
   description = "Delivery delay in (seconds)"
   default     = 0
 }
 
-variable "sqs_receive_wait_time_seconds" {
+variable "queue_receive_wait_time_seconds" {
   description = "Receive wait time (seconds)"
   default     = 0
 }
