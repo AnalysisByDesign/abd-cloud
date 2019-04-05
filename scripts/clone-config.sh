@@ -123,10 +123,12 @@ read ans
 if [ "${ans}" = "Y" -o "${ans}" = "y" ]; then
 
   # Clone the source folder
+  log_message "Cloning the source folder ${source} -> ${target}"
   cp -Rp ${source} ${target}
 
   # Now clean up the Terraform cache folders
-  find ${target} -name .terraform -exec rm -r {} \; 2>/dev/null
+  log_message "Cleaning .terrform folders from ${target}"
+  find ${target} -name .terraform -exec rm -rf {} \; 2>/dev/null
 
 fi
 
