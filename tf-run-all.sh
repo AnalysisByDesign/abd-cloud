@@ -232,7 +232,7 @@ for buildLine in ${build_list}; do
     fi
     # Is this build protected from destruction
     if [ "${chkProtect}" = "Y"  -a "${action}" = "destroy" ]; then
-        log_message "    - skipping ${build} (protected)" err
+        log_message "    - skipping ${build} (protected)" warning
         continue
     fi
 
