@@ -29,7 +29,7 @@ resource "aws_rds_cluster" "this" {
   preferred_backup_window      = "${var.backup_window}"
   preferred_maintenance_window = "${var.maintenance_window}"
 
-  snapshot_identifier       = "${var.snapshot_identifier}"
+  snapshot_identifier       = "${local.snapshot_identifier}"
   skip_final_snapshot       = "${var.skip_final_snapshot}"
   final_snapshot_identifier = "${format("%s-%s", local.vpc_name, var.final_snapshot_identifier)}"
 

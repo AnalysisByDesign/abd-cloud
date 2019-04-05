@@ -119,13 +119,18 @@ variable "iam_authentication_enabled" {
 }
 
 variable "snapshot_identifier" {
-  description = "Name of snapshot to create instance from"
+  description = "Name of snapshot to create cluster from"
   type        = "string"
   default     = ""
 }
 
+variable "build_from_latest_snapshot" {
+  description = "Create the cluster from the latest snapshot"
+  default     = true
+}
+
 variable "skip_final_snapshot" {
-  description = "Create a final snapshot on termination"
+  description = "Do not create a final snapshot on termination"
   default     = true
 }
 
