@@ -87,7 +87,7 @@ variable "s3_files_tags" {
 variable "policy_folder" {
   description = "Folder containing policy templates to apply to the bucket"
   type        = "string"
-  default     = "../../../tf-assets/policies/s3"
+  default     = "./files"
 }
 
 variable "policy_file" {
