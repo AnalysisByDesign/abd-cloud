@@ -160,7 +160,7 @@ variable "docker_repository_lifecycle_policy" {
 variable "docker_repository_policy_folder" {
   description = "Folder containing policy templates to apply to the bucket"
   type        = "string"
-  default     = "../../tf-assets/policies/docker"
+  default     = "./files"
 }
 
 variable "docker_repository_policy_file" {
