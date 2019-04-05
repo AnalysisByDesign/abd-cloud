@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 data "template_file" "s3-policy" {
-  template = "${file("../../../tf-assets/policies/s3/cloudtrail.json.tpl")}"
+  template = "${file("./files/cloudtrail.json.tpl")}"
 
   vars {
     s3_name       = "${var.s3_name}"
