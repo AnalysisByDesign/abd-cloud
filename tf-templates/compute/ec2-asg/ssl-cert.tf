@@ -2,7 +2,7 @@
 # ACM Certificate
 # --------------------------------------------------------------------------------------------
 
-module "ssl-cert" "this" {
+module "ssl_cert" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/ssl-certs"
 
   required = true

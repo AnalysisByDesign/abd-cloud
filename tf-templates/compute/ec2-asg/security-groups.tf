@@ -15,7 +15,7 @@ module "alb-sg" {
   vpc_id      = "${data.aws_vpc.vpc.id}"
 }
 
-module "alb-sgr-http-in" "http" {
+module "alb-sgr-http-in" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
   required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
@@ -28,7 +28,7 @@ module "alb-sgr-http-in" "http" {
   cidr_blocks       = ["${var.management_ingress_locations}"]
 }
 
-module "alb-sgr-https-in" "https" {
+module "alb-sgr-https-in" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
   required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
@@ -54,7 +54,7 @@ module "ec2-sg" {
   vpc_id      = "${data.aws_vpc.vpc.id}"
 }
 
-module "alb-ec2-sgr" "this" {
+module "alb-ec2-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
 
   security_group_id        = "${module.alb-sg.id}"
@@ -65,7 +65,7 @@ module "alb-ec2-sgr" "this" {
   source_security_group_id = "${module.ec2-sg.id}"
 }
 
-module "ec2-alb-sgr" "this" {
+module "ec2-alb-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
 
   security_group_id        = "${module.ec2-sg.id}"
@@ -76,7 +76,7 @@ module "ec2-alb-sgr" "this" {
   source_security_group_id = "${module.alb-sg.id}"
 }
 
-module "ec2-http-out" "http" {
+module "ec2-http-out" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
   security_group_id = "${module.ec2-sg.id}"
@@ -87,7 +87,7 @@ module "ec2-http-out" "http" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-module "ec2-https-out" "http" {
+module "ec2-https-out" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
   security_group_id = "${module.ec2-sg.id}"
@@ -98,7 +98,7 @@ module "ec2-https-out" "http" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-module "ec2-rds-sgr" "this" {
+module "ec2-rds-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
 
   security_group_id        = "${module.ec2-sg.id}"
@@ -109,7 +109,7 @@ module "ec2-rds-sgr" "this" {
   source_security_group_id = "${data.aws_security_group.rds.id}"
 }
 
-module "rds-ec2-sgr" "this" {
+module "rds-ec2-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
 
   security_group_id        = "${data.aws_security_group.rds.id}"

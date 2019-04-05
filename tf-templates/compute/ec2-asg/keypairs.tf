@@ -1,7 +1,7 @@
 # --------------------------------------------------------------------------------------------
 # Key pairs
 # --------------------------------------------------------------------------------------------
-module "ssh-key-pair" "this" {
+module "ssh-key-pair" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/ssh-key"
 
   # Required variables
