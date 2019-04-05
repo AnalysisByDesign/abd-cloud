@@ -4,7 +4,7 @@
 
 resource "aws_cloudtrail" "this" {
   name                          = "${var.cloudtrail_name}"
-  s3_bucket_name                = "${var.s3_name}-${var.target_region}"
+  s3_bucket_name                = "${var.s3_name}"
   s3_key_prefix                 = ""
   include_global_service_events = true
   enable_logging                = true

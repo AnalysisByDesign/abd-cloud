@@ -6,8 +6,7 @@ data "template_file" "s3-policy" {
   template = "${file("./files/cloudtrail.json.tpl")}"
 
   vars {
-    s3_name       = "${var.s3_name}"
-    target_region = "${var.target_region}"
+    s3_name = "${var.s3_name}"
   }
 }
 
@@ -17,7 +16,7 @@ module "cloudtrail-s3" "this" {
   count = "${var.cloudtrail_hub ? 1 : 0}"
 
   # Required variables
-  name        = "${var.s3_name}-${var.target_region}"
+  name        = "${var.s3_name}"
   common_tags = "${local.common_tags}"
 
   # Optional variables
