@@ -93,5 +93,5 @@ variable "policy_folder" {
 variable "policy_file" {
   description = "Policy template file to apply to the bucket"
   type        = "string"
-  default     = "blank.json.tpl"
+  default     = "blank.tpl.json"
 }

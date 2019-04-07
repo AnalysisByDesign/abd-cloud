@@ -166,7 +166,7 @@ variable "docker_repository_policy_folder" {
 variable "docker_repository_policy_file" {
   description = "Policy template file to apply to the bucket"
   type        = "string"
-  default     = "docker-repo-14-day-expire.json.tpl"
+  default     = "docker-repo-14-day-expire.tpl.json"
 }
 
 # ============================================================================================
