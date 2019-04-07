@@ -47,9 +47,9 @@ variable "alb_health_check_status" {
   default     = "200,301,302"
 }
 
-# --------------------------------------------------------------------------------------------
-# launch Configuration
-# --------------------------------------------------------------------------------------------
+# ============================================================================================
+#                                    launch Configuration
+# ============================================================================================
 
 # Required -----------------------------------------------------------------------------------
 
@@ -81,6 +81,18 @@ variable "ec2_policy_template" {
   description = "IAM Policy template file"
   type        = "string"
   default     = ""
+}
+
+variable "user_data_script_folder" {
+  description = "Folder containing user data templates to apply to the instances"
+  type        = "string"
+  default     = "./files"
+}
+
+variable "user_data_script" {
+  description = "User data template file to apply to the instance"
+  type        = "string"
+  default     = "blank-user-data.tpl.sh"
 }
 
 # ============================================================================================

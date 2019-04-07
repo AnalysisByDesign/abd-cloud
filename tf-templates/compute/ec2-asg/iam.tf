@@ -1,7 +1,7 @@
 # --------------------------------------------------------------------------------------------
 # IAM Resources
 # --------------------------------------------------------------------------------------------
-resource "aws_iam_instance_profile" "this" {
+resource "aws_iam_instance_profile" "ec2-asg" {
   name = "${format("%s-%s", local.vpc_name, var.name)}"
   path = "/"
   role = "${module.ec2_asg_role.names}"
