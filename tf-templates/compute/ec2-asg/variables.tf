@@ -47,6 +47,12 @@ variable "alb_health_check_status" {
   default     = "200,301,302"
 }
 
+variable "alb_ingress_cidr" {
+  description = "The ingress CIDR range for access to the load balancer"
+  type        = "string"
+  default     = "0.0.0.0/0"
+}
+
 # ============================================================================================
 #                                    launch Configuration
 # ============================================================================================
@@ -68,7 +74,7 @@ variable "asg_ami_image_owner" {
 variable "asg_ec2_instance_type" {
   description = "The EC2 instance type to build"
   type        = "string"
-  default     = "t3.micro"
+  default     = "t3.nano"
 }
 
 variable "asg_iam_profile_name" {

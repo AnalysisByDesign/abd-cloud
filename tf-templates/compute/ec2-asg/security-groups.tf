@@ -18,27 +18,23 @@ module "alb-sg" {
 module "alb-sgr-http-in" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
-  required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
-
   security_group_id = "${module.alb-sg.id}"
   description       = "HTTP inbound"
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "80"
-  cidr_blocks       = ["${var.management_ingress_locations}"]
+  cidr_blocks       = ["${var.alb_ingress_cidr}"]
 }
 
 module "alb-sgr-https-in" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
-
-  required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
 
   security_group_id = "${module.alb-sg.id}"
   description       = "HTTPS inbound"
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "443"
-  cidr_blocks       = ["${var.management_ingress_locations}"]
+  cidr_blocks       = ["${var.alb_ingress_cidr}"]
 }
 
 # --------------------------------------------------------------------------------------------
@@ -95,6 +91,17 @@ module "ec2-https-out" {
   type              = "egress"
   protocol          = "tcp"
   single_port       = "443"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+module "ec2-ssh-out" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+
+  security_group_id = "${module.ec2-sg.id}"
+  description       = "SSH outbound"
+  type              = "egress"
+  protocol          = "tcp"
+  single_port       = "22"
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
