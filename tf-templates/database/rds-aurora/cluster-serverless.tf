@@ -2,16 +2,18 @@
 # aurora-cluster.tf
 # -----------------------------------------------------------------------------
 
-resource "aws_rds_cluster" "this" {
-  cluster_identifier              = "${format("%s-%s", local.vpc_name, var.name)}"
-  engine                          = "${var.engine}"
-  engine_version                  = "${var.engine_version}"
-  engine_mode                     = "${var.engine_mode}"
-  port                            = "${var.port}"
-  enabled_cloudwatch_logs_exports = "${var.cloudwatch_logging}"
+resource "aws_rds_cluster" "serverless" {
+  count = "${var.engine_mode == "serverless" ? 1 : 0}"
+
+  cluster_identifier = "${format("%s-%s", local.vpc_name, var.name)}"
+  engine             = "aurora"
+  engine_mode        = "serverless"
+  port               = "3306"
+
+  scaling_configuration = ["${var.scaling_configuration}"]
 
   db_subnet_group_name            = "${format("%s-%s", local.vpc_name, var.subnet_group_name)}"
-  db_cluster_parameter_group_name = "${format("%s-%s", local.vpc_name, var.param_group_name)}"
+  db_cluster_parameter_group_name = "${format("%s-%s-serverless", local.vpc_name, var.param_group_name)}"
 
   vpc_security_group_ids = ["${module.rds-aurora.id}"]
 
@@ -34,6 +36,10 @@ resource "aws_rds_cluster" "this" {
   final_snapshot_identifier = "${format("%s-%s", local.vpc_name, var.final_snapshot_identifier)}"
 
   apply_immediately = "${var.apply_immediately}"
+
+  lifecycle {
+    ignore_changes = ["snapshot_identifier"]
+  }
 
   tags = "${merge(local.common_tags, 
                     var.rds_tags, 

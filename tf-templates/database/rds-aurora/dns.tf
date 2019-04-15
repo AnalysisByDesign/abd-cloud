@@ -9,7 +9,7 @@ module "rds-aurora-rw" {
   zone_id = "${data.aws_route53_zone.private.zone_id}"
   name    = "${format("%s-rw", var.name)}"
   type    = "CNAME"
-  records = ["${aws_rds_cluster.this.endpoint}"]
+  records = ["${concat(aws_rds_cluster.provisioned.*.endpoint, aws_rds_cluster.serverless.*.endpoint)}"]
 }
 
 module "rds-aurora-ro" {
@@ -19,5 +19,5 @@ module "rds-aurora-ro" {
   zone_id = "${data.aws_route53_zone.private.zone_id}"
   name    = "${format("%s-ro", var.name)}"
   type    = "CNAME"
-  records = ["${aws_rds_cluster.this.reader_endpoint}"]
+  records = ["${concat(aws_rds_cluster.provisioned.*.reader_endpoint, aws_rds_cluster.serverless.*.endpoint)}"]
 }

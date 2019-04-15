@@ -2,10 +2,10 @@
 # rds-cluster-instance.tf
 # -----------------------------------------------------------------------------
 
-resource "aws_rds_cluster_instance" "this" {
-  count = "${1 + var.read_replica_count}"
+resource "aws_rds_cluster_instance" "provisioned" {
+  count = "${var.engine_mode == "provisioned" ? 1 + var.read_replica_count : 0}"
 
-  cluster_identifier = "${aws_rds_cluster.this.id}"
+  cluster_identifier = "${aws_rds_cluster.provisioned.id}"
   engine             = "${var.engine}"
   engine_version     = "${var.engine_version}"
 

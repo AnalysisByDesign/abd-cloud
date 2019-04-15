@@ -43,7 +43,19 @@ variable "engine_version" {
 variable "engine_mode" {
   description = "The Aurora engine mode (provisioned or serverless)"
   type        = "string"
-  default     = "provisioned"
+  default     = "serverless"
+}
+
+variable "scaling_configuration" {
+  description = "RDS Aurora Serverless scaling configuration"
+  type        = "map"
+
+  default = {
+    auto_pause               = true
+    max_capacity             = 4
+    min_capacity             = 2
+    seconds_until_auto_pause = 300
+  }
 }
 
 variable "port" {
