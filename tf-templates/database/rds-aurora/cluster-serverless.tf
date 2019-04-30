@@ -28,7 +28,6 @@ resource "aws_rds_cluster" "serverless" {
 
   backtrack_window             = "${var.backtrack_window}"
   backup_retention_period      = "${var.backup_retention}"
-  preferred_backup_window      = "${var.backup_window}"
   preferred_maintenance_window = "${var.maintenance_window}"
 
   snapshot_identifier       = "${local.snapshot_identifier}"
