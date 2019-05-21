@@ -2,7 +2,7 @@
 # Route53 Entries
 # --------------------------------------------------------------------------------------------
 
-module "rds-aurora-rw" {
+module "r53-aurora-rw" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/record"
 
   # Required variables
@@ -12,7 +12,7 @@ module "rds-aurora-rw" {
   records = ["${concat(aws_rds_cluster.provisioned.*.endpoint, aws_rds_cluster.serverless.*.endpoint)}"]
 }
 
-module "rds-aurora-ro" {
+module "r53-aurora-ro" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/record"
 
   # Required variables

@@ -15,7 +15,7 @@ resource "aws_rds_cluster" "provisioned" {
   db_subnet_group_name            = "${format("%s-%s", local.vpc_name, var.subnet_group_name)}"
   db_cluster_parameter_group_name = "${format("%s-%s", local.vpc_name, var.param_group_name)}"
 
-  vpc_security_group_ids = ["${module.rds-aurora.id}"]
+  vpc_security_group_ids = ["${module.sg-aurora.id}"]
 
   database_name     = "${var.schema_name}"
   master_username   = "${var.admin_name}"

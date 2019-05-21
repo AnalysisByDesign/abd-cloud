@@ -52,8 +52,8 @@ variable "scaling_configuration" {
 
   default = {
     auto_pause               = true
-    max_capacity             = 4
-    min_capacity             = 2
+    max_capacity             = 2
+    min_capacity             = 1
     seconds_until_auto_pause = 300
   }
 }

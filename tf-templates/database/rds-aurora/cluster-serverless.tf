@@ -15,7 +15,7 @@ resource "aws_rds_cluster" "serverless" {
   db_subnet_group_name            = "${format("%s-%s", local.vpc_name, var.subnet_group_name)}"
   db_cluster_parameter_group_name = "${format("%s-%s-serverless", local.vpc_name, var.param_group_name)}"
 
-  vpc_security_group_ids = ["${module.rds-aurora.id}"]
+  vpc_security_group_ids = ["${module.sg-aurora.id}"]
 
   database_name     = "${var.schema_name}"
   master_username   = "${var.admin_name}"
@@ -26,20 +26,18 @@ resource "aws_rds_cluster" "serverless" {
   iam_roles                           = ["${var.iam_roles}"]
   iam_database_authentication_enabled = "${var.iam_authentication_enabled}"
 
-  backtrack_window             = "${var.backtrack_window}"
-  backup_retention_period      = "${var.backup_retention}"
-  preferred_maintenance_window = "${var.maintenance_window}"
+  backtrack_window        = "${var.backtrack_window}"
+  backup_retention_period = "${var.backup_retention}"
+
+  #  preferred_maintenance_window = "${var.maintenance_window}"
 
   snapshot_identifier       = "${local.snapshot_identifier}"
   skip_final_snapshot       = "${var.skip_final_snapshot}"
   final_snapshot_identifier = "${format("%s-%s", local.vpc_name, var.final_snapshot_identifier)}"
-
-  apply_immediately = "${var.apply_immediately}"
-
+  apply_immediately         = "${var.apply_immediately}"
   lifecycle {
     ignore_changes = ["snapshot_identifier"]
   }
-
   tags = "${merge(local.common_tags, 
                     var.rds_tags, 
                     map("Name", format("%s-%s", local.vpc_name, var.name)))}"

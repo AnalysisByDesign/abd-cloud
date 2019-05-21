@@ -2,7 +2,7 @@
 # Security Groups
 # --------------------------------------------------------------------------------------------
 
-module "rds-aurora" {
+module "sg-aurora" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
 
   # Required variables
@@ -12,13 +12,13 @@ module "rds-aurora" {
   vpc_id      = "${data.aws_vpc.vpc.id}"
 }
 
-module "rds-aurora-in-mysql" {
+module "sg-aurora-ingress-mysql" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
   required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
 
   # Required variables
-  security_group_id = "${module.rds-aurora.id}"
+  security_group_id = "${module.sg-aurora.id}"
   description       = "MySQL from Management locations"
   type              = "ingress"
   protocol          = "tcp"
