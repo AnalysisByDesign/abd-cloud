@@ -78,8 +78,15 @@ locals {
   public_sub_domains = "${coalescelist(var.public_sub_domains, list(var.public_sub_domain))}"
 
   # Route53 search domain for adding R53 records
-  private_search_domain  = "${format("int.%s.%s", var.public_sub_domain, var.public_apex_domain)}"
+  private_search_domain = "${(var.public_sub_domain == "" 
+                                ? format("int.%s", var.public_apex_domain)
+                                : format("int.%s.%s", var.public_sub_domain, var.public_apex_domain))}"
+
   private_search_domains = "${formatlist("int.%s.%s", local.public_sub_domains, var.public_apex_domain)}"
-  public_search_domain   = "${format("%s.%s", var.public_sub_domain, var.public_apex_domain)}"
-  public_search_domains  = "${formatlist("%s.%s", local.public_sub_domains, var.public_apex_domain)}"
+
+  public_search_domain = "${(var.public_sub_domain == "" 
+                                ? var.public_apex_domain 
+                                : format("%s.%s", var.public_sub_domain, var.public_apex_domain))}"
+
+  public_search_domains = "${formatlist("%s.%s", local.public_sub_domains, var.public_apex_domain)}"
 }
