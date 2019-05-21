@@ -284,7 +284,7 @@ function wait_for_slot() {
 # Check protect status of a build location
 function is_protected() {
   # Check the target plus descendents for the protect flag
-  protect=`grep -hE ",${1}" ${sequenceFiles} | cut -d"," -f2 | sort -u`
+  protect=`grep -hE ",${1}$" ${sequenceFiles} | cut -d"," -f2 | sort -u`
   [ "${protect}" != "" ] && echo "Y"
   echo ""
 }
