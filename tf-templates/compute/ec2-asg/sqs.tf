@@ -22,7 +22,7 @@ provider "aws" {
 # Dead-letter-queue
 # --------------------------------------------------------------------------------------------
 
-module "amg-queue-dead-letter" {
+module "queue-dead-letter" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//integrate/queue"
 
   # As we require the queues to be in Ireland for FIFO, we need this
@@ -47,7 +47,7 @@ module "amg-queue-dead-letter" {
 # Queue
 # --------------------------------------------------------------------------------------------
 
-module "amg-queue" {
+module "queue" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//integrate/queue"
 
   # As we require the queues to be in Ireland for FIFO, we need this
@@ -65,7 +65,7 @@ module "amg-queue" {
   message_retention_seconds = "${var.queue_message_retention_seconds}"
   receive_wait_time_seconds = "${var.queue_receive_wait_time_seconds}"
   deadletter_enable         = true
-  deadletter_arn            = "${module.amg-queue-dead-letter.arn}"
+  deadletter_arn            = "${module.queue-dead-letter.arn}"
 
   common_tags = "${local.common_tags}"
 }
