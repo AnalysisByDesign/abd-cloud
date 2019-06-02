@@ -13,6 +13,8 @@ module "load_balancer" {
   security_group_ids = ["${module.alb-sg.id}"]
   acm_arn            = "${join("", module.ssl_cert.cert_validation_arn)}"
 
+  target_type = "ip"
+
   # Health check
   path         = "${var.alb_health_check_path}"
   success_code = "${var.alb_health_check_status}"

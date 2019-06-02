@@ -64,12 +64,59 @@ variable "private_app_subnets" {
   type        = "list"
 }
 
+variable "docker_image" {
+  description = "Docker image to load from the registry"
+  type        = "string"
+}
+
 # Optional -----------------------------------------------------------------------------------
 
-variable "ec2_policy_template" {
-  description = "IAM Policy template file"
+variable "network_mode" {
+  description = "The Docker networking mode - none, bridge, awsvpc or host."
   type        = "string"
-  default     = ""
+  default     = "awsvpc"
+}
+
+variable "task_definition_cpu" {
+  description = "CPU units to allocate to the tasks"
+  type        = "string"
+  default     = "256"
+}
+
+variable "task_definition_memory" {
+  description = "RAM to allocate to the tasks"
+  type        = "string"
+  default     = "512"
+}
+
+variable "container_port" {
+  description = "The port on the container to associate with the load balancer"
+  type        = "string"
+  default     = "80"
+}
+
+variable "desired_count" {
+  description = "The number of instances of the task definition to place and keep running."
+  type        = "string"
+  default     = "1"
+}
+
+variable "tasks_folder" {
+  description = "Folder containing tasks templates to apply to the task definition"
+  type        = "string"
+  default     = "files"
+}
+
+variable "tasks_file" {
+  description = "Task template file to apply to the task definition"
+  type        = "string"
+  default     = "task-defn.json.tpl"
+}
+
+variable "awslogs_group" {
+  description = "CloudWatch group"
+  type        = "string"
+  default     = "infra"
 }
 
 # ============================================================================================

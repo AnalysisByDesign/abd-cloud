@@ -38,44 +38,66 @@ module "alb-sgr-https-in" {
 }
 
 # --------------------------------------------------------------------------------------------
-# EC2 Security Group
+# ECS Security Group
 # --------------------------------------------------------------------------------------------
 
-module "ec2-sg" {
+module "ecs-sg" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
 
-  name        = "${format("%s-%s-ec2", local.vpc_name, var.name)}"
-  description = "${format("%s-%s-ec2", local.vpc_name, var.name)}"
+  name        = "${format("%s-%s-ecs", local.vpc_name, var.name)}"
+  description = "${format("%s-%s-ecs", local.vpc_name, var.name)}"
   common_tags = "${local.common_tags}"
   vpc_id      = "${data.aws_vpc.vpc.id}"
 }
 
-module "alb-ec2-sgr" {
+module "alb-ecs-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
 
   security_group_id        = "${module.alb-sg.id}"
-  description              = "HTTP ALB to EC2"
+  description              = "HTTP ALB to ECS"
   type                     = "egress"
   protocol                 = "tcp"
   single_port              = "80"
-  source_security_group_id = "${module.ec2-sg.id}"
+  source_security_group_id = "${module.ecs-sg.id}"
 }
 
-module "ec2-alb-sgr" {
+module "ecs-alb-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
 
-  security_group_id        = "${module.ec2-sg.id}"
-  description              = "HTTP ALB to EC2"
+  security_group_id        = "${module.ecs-sg.id}"
+  description              = "HTTP ALB to ECS"
   type                     = "ingress"
   protocol                 = "tcp"
   single_port              = "80"
   source_security_group_id = "${module.alb-sg.id}"
 }
 
-module "ec2-http-out" {
+module "ecs-rds-sgr" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+
+  security_group_id        = "${module.ecs-sg.id}"
+  description              = "MySQL ECS to Aurora"
+  type                     = "egress"
+  protocol                 = "tcp"
+  single_port              = "3306"
+  source_security_group_id = "${data.aws_security_group.rds.id}"
+}
+
+module "rds-ecs-sgr" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+
+  security_group_id        = "${data.aws_security_group.rds.id}"
+  description              = "MySQL ECS to Aurora"
+  type                     = "ingress"
+  protocol                 = "tcp"
+  single_port              = "3306"
+  source_security_group_id = "${module.ecs-sg.id}"
+}
+
+module "ecs-http-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
-  security_group_id = "${module.ec2-sg.id}"
+  security_group_id = "${module.ecs-sg.id}"
   description       = "HTTP outbound"
   type              = "egress"
   protocol          = "tcp"
@@ -83,46 +105,13 @@ module "ec2-http-out" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-module "ec2-https-out" {
+module "ecs-https-sgr" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
-  security_group_id = "${module.ec2-sg.id}"
+  security_group_id = "${module.ecs-sg.id}"
   description       = "HTTPS outbound"
   type              = "egress"
   protocol          = "tcp"
   single_port       = "443"
   cidr_blocks       = ["0.0.0.0/0"]
-}
-
-module "ec2-ssh-out" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
-
-  security_group_id = "${module.ec2-sg.id}"
-  description       = "SSH outbound"
-  type              = "egress"
-  protocol          = "tcp"
-  single_port       = "22"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-module "ec2-rds-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
-
-  security_group_id        = "${module.ec2-sg.id}"
-  description              = "MySQL EC2 to Aurora"
-  type                     = "egress"
-  protocol                 = "tcp"
-  single_port              = "3306"
-  source_security_group_id = "${data.aws_security_group.rds.id}"
-}
-
-module "rds-ec2-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
-
-  security_group_id        = "${data.aws_security_group.rds.id}"
-  description              = "MySQL EC2 to Aurora"
-  type                     = "ingress"
-  protocol                 = "tcp"
-  single_port              = "3306"
-  source_security_group_id = "${module.ec2-sg.id}"
 }
