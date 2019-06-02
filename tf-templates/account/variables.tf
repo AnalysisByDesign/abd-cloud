@@ -106,6 +106,12 @@ variable "use_existing_zones" {
   default     = false
 }
 
+variable "mx_records" {
+  description = "Records to use as MX records for this zone"
+  type        = "list"
+  default     = []
+}
+
 variable "r53_tags" {
   description = "Additional tags for the Route53 Entries"
   type        = "map"
