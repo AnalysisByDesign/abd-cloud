@@ -36,6 +36,10 @@ data "aws_security_group" "rds" {
   name = "${format("%s-%s", local.vpc_name, var.rds_security_group)}"
 }
 
+data "aws_security_group" "efs" {
+  name = "${format("%s-%s", local.vpc_name, var.efs_security_group)}"
+}
+
 # -----------------------------------------------------------------------------
 
 data "aws_route53_zone" "public" {

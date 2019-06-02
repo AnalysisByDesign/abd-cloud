@@ -14,6 +14,12 @@ variable "rds_security_group" {
   type        = "string"
 }
 
+variable "efs_security_group" {
+  description = "The name of the EFS security group"
+  type        = "string"
+  default     = ""
+}
+
 # Optional -----------------------------------------------------------------------------------
 
 variable "r53_name" {

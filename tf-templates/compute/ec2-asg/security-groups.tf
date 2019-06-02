@@ -126,3 +126,25 @@ module "rds-ec2-sgr" {
   single_port              = "3306"
   source_security_group_id = "${module.ec2-sg.id}"
 }
+
+module "ec2-efs-sgr" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+
+  security_group_id        = "${module.ec2-sg.id}"
+  description              = "EC2 to EFS"
+  type                     = "egress"
+  protocol                 = "tcp"
+  single_port              = "2049"
+  source_security_group_id = "${data.aws_security_group.efs.id}"
+}
+
+module "efs-ec2-sgr" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+
+  security_group_id        = "${data.aws_security_group.efs.id}"
+  description              = "EC2 to EFS"
+  type                     = "ingress"
+  protocol                 = "tcp"
+  single_port              = "2049"
+  source_security_group_id = "${module.ec2-sg.id}"
+}
