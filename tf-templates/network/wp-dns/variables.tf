@@ -1,23 +1,30 @@
 # ============================================================================================
-#                                      Common
+#                                      Required
 # ============================================================================================
-
-# Required -----------------------------------------------------------------------------------
 
 variable "acct_apex" {
   description = "Account where Apex domain can be found"
   type        = "string"
 }
 
+variable "wp_sub_domain" {
+  description = "The public wordpress subdomain domain prefix"
+  type        = "string"
+}
+
+variable "wp_apex_domain" {
+  description = "The public wordpress apex domain"
+  type        = "string"
+}
+
+variable "wp_lb_name" {
+  description = "The load balancer name for the main WP installation"
+  type        = "string"
+}
+
 # ============================================================================================
 #                                      DNS Zone
 # ============================================================================================
-
-# Required -----------------------------------------------------------------------------------
-
-# None
-
-# Optional -----------------------------------------------------------------------------------
 
 variable "delegate_set_name" {
   description = "A reference name for the delegate set"
@@ -48,29 +55,17 @@ variable "r53_tags" {
 #                                      Website
 # ============================================================================================
 
-# Required -----------------------------------------------------------------------------------
-
-# None
-
-variable "web_ip4" {
-  description = ""
-  type        = "string"
-  default     = ""
-}
-
-variable "web_ip6" {
-  description = ""
-  type        = "string"
-  default     = ""
+variable "ssl_cert_enabled" {
+  description = "Does this site require an SSL cert. (Always false until NameServer change)"
+  default     = true
 }
 
 # ============================================================================================
 #                                      Email
 # ============================================================================================
 
-
-# Required -----------------------------------------------------------------------------------
-
-
-# None
-
+variable "mx_records" {
+  description = "Records to use as MX records for this zone"
+  type        = "list"
+  default     = []
+}

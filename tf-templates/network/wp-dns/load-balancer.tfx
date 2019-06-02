@@ -1,0 +1,19 @@
+# --------------------------------------------------------------------------------------------
+# Load Balancer Connectivity
+# --------------------------------------------------------------------------------------------
+
+resource "aws_alb_listener" "actual" {
+  #  count = "${var.ssl_cert_enabled ? 1 : 0}"
+  count = "0"
+
+  load_balancer_arn = "${data.aws_lb.wordpress.arn}"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2015-05"
+  certificate_arn   = "${join("", module.ssl_cert.cert_validation_arn)}"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "arn:aws:elasticloadbalancing:eu-west-1:800653036500:targetgroup/abd-wordpress-ec2-asg/ca4b44eece90c34a"
+  }
+}
