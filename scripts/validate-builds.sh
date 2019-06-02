@@ -117,8 +117,8 @@ fi
 # --------------------------------------------------------------------------------
 log_message "Validating all build locations"
 
-cd ${configPath}
-pathlist=`find . -name "*_config.*" -print |
+cd ${basePath}
+pathlist=`find tf-params -name "*_config.*" -print |
             rev | cut -d"/" -f2- | rev | sort -u`
 
 for env in ${pathlist}; do
@@ -159,27 +159,27 @@ for env in ${pathlist}; do
 done
 
 # --------------------------------------------------------------------------------
-log_message "Validating all build folders are required"
-
-cd ${basePath}
-pathlist=`find ${configPath} -type d | grep -v .terraform`
-
-for env in ${pathlist}; do
-
-  log_verbose "  - checking ${env}"
-
-  if [ ! -f ${env}/*_config.sh -o ! -f ${env}/*_config.tfvars ]; then
-
-    # Additional check for 'normal' files (not folders)
-    files=`ls -1dp ${env}/* 2>/dev/null | grep -vE "\/$"`
-
-    if [ "${files}" = "" ]; then
-      log_message "NOT REQUIRED? - ${env}"
-    fi
-
-  fi
-
-done
+#log_message "Validating all build folders are required"
+#
+#cd ${basePath}
+#pathlist=`find tf-params -type d | grep -v .terraform`
+#
+#for env in ${pathlist}; do
+#
+#  log_verbose "  - checking ${env}"
+#
+#  if [ ! -f ${env}/*_config.sh -o ! -f ${env}/*_config.tfvars ]; then
+#
+#    # Additional check for 'normal' files (not folders)
+#    files=`ls -1dp ${env}/* 2>/dev/null | grep -vE "\/$"`
+#
+#    if [ "${files}" = "" ]; then
+#      log_message "NOT REQUIRED? - ${env}"
+#    fi
+#
+#  fi
+#
+#done
 
 # --------------------------------------------------------------------------------
 # Logging, analysis, email output, etc.
