@@ -11,7 +11,8 @@ module "ssl_cert" {
   acct_target_role   = "${var.acct_target_role}"
   certificate_region = "${var.target_region}"
 
-  domain_name = "${local.public_search_domain}"
+  domain_name               = "${local.public_search_domain}"
+  subject_alternative_names = ["*.${local.public_search_domain}"]
 
   r53_zone_id = "${data.aws_route53_zone.public.id}"
 
