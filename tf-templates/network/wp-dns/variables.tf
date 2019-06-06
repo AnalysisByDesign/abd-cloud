@@ -69,3 +69,13 @@ variable "mx_records" {
   type        = "list"
   default     = []
 }
+
+# ============================================================================================
+#                                    Extra Records
+# ============================================================================================
+
+variable "dns_extra" {
+  description = "Extra DNS records that might be required"
+  type        = "list"
+  default     = []
+}
