@@ -179,7 +179,7 @@ variable "subnet_tags" {
 variable "db_subnet_group_name" {
   description = "Name of DB subnet group table"
   type        = "string"
-  default     = "rds-aurora"
+  default     = "rds"
 }
 
 variable "db_subnet_tags" {
@@ -187,7 +187,7 @@ variable "db_subnet_tags" {
   type        = "map"
 
   default = {
-    "Component" = "rds aurora"
+    "Component" = "rds"
   }
 }
 
@@ -225,7 +225,7 @@ variable "cache_subnet_tags" {
 variable "db_param_group_name" {
   description = "Name of DB param group table"
   type        = "string"
-  default     = "rds-aurora"
+  default     = "rds"
 }
 
 variable "db_param_group_tags" {
@@ -233,7 +233,7 @@ variable "db_param_group_tags" {
   type        = "map"
 
   default = {
-    "Component" = "rds aurora"
+    "Component" = "rds"
   }
 }
 

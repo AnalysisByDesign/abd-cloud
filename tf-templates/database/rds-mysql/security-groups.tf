@@ -1,0 +1,27 @@
+# --------------------------------------------------------------------------------------------
+# Security Groups
+# --------------------------------------------------------------------------------------------
+
+module "sg-rds-mysql" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
+
+  # Required variables
+  name        = "${format("%s-%s", local.vpc_name, var.name)}"
+  description = "RDS MySQL database"
+  common_tags = "${local.common_tags}"
+  vpc_id      = "${data.aws_vpc.vpc.id}"
+}
+
+module "sg-rds-mysql-ingress-mysql" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+
+  required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
+
+  # Required variables
+  security_group_id = "${module.sg-rds-mysql.id}"
+  description       = "MySQL from Management locations"
+  type              = "ingress"
+  protocol          = "tcp"
+  single_port       = "3306"
+  cidr_blocks       = ["${var.management_ingress_locations}"]
+}
