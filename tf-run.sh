@@ -141,6 +141,10 @@ fi
 # Strip a trailing "/" if supplied
 target=`echo ${target} | sed "s/\/$//"`
 
+# Extract the base param path from that supplied
+paramPath=`getParamPath ${target}`
+sequenceFiles="${paramPath}/sequence/*.csv"
+
 # And validate the target
 chkPrevent=`is_prevented ${target}`
 chkProtect=`is_protected ${target}`
@@ -175,6 +179,8 @@ log_verbose "Verbose logging   = ${verbose}"
 log_verbose "V-verbose logging = ${v_verbose}"
 log_verbose "Dry-run           = ${dryRun}"
 log_verbose "Lock file         = ${lockFile}"
+log_verbose "Param path        = ${paramPath}"
+log_verbose "Sequence file     = ${sequenceFiles}"
 # --------------------------------------------------------------------------------
 
 opts=""
@@ -187,7 +193,7 @@ build_resources=""
 # -----------------------------------------------------------------------------
 cd "${basePath}"/
 tfvars=""
-source ${configPath}/global_config.sh
+source ${paramPath}/global_config.sh
 
 for cf_path in `echo ${target} | sed "s/\// /g"`; do
     # Move one path deeper

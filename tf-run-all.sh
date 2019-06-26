@@ -174,8 +174,8 @@ fi
 
 if [ "${buildFile}" != "Y" ]; then
 
-    # Default the build to the base ${configPath} location
-    [ "${target}" = "" ] && target="${configPath}"
+    # Default the build to the base ${paramPath} location
+    [ "${target}" = "" ] && target="${paramPath}"
 
     # Now find a sorted list of all ancestors and decendents of our build target
     ancList=`get_ancestors ${target}`

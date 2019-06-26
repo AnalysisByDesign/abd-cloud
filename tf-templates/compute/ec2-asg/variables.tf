@@ -89,10 +89,16 @@ variable "asg_iam_profile_name" {
   default     = ""
 }
 
+variable "ec2_policy_template_folder" {
+  description = "Folder containing policy templates to apply to the instance roles"
+  type        = "string"
+  default     = "./files"
+}
+
 variable "ec2_policy_template" {
   description = "IAM Policy template file"
   type        = "string"
-  default     = ""
+  default     = "s3-access-policy.tpl.json"
 }
 
 variable "user_data_script_folder" {

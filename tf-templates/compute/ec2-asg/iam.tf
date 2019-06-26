@@ -23,7 +23,7 @@ module "ec2_asg_policy" {
 
   count       = "${var.ec2_policy_template == "" ? 0 : 1 }"
   name        = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
-  description = "Allow EC2 instance to use S3 proofs bucket"
+  description = "Allow EC2 instance to use selected bucket"
   policy      = "${join("", data.template_file.ec2_asg_policy.*.rendered)}"
 }
 
@@ -38,17 +38,3 @@ resource "aws_iam_role_policy_attachment" "attach_policy" {
 #  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 #}
 
-# --------------------------------------------------------------------------------------------
-# Create the user account required to access the S3 bucket
-# This will eventually be replaced with IAM auth in the PHP app
-resource "aws_iam_user" "s3_user" {
-  name          = "${format("%s-%s", local.vpc_name, var.name)}"
-  path          = "/"
-  force_destroy = false
-}
-
-resource "aws_iam_user_policy_attachment" "attach_policy" {
-  count      = "${var.ec2_policy_template == "" ? 0 : 1 }"
-  user       = "${aws_iam_user.s3_user.name}"
-  policy_arn = "${module.ec2_asg_policy.arn}"
-}

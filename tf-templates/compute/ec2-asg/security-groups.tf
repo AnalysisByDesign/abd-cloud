@@ -72,36 +72,15 @@ module "ec2-alb-sgr" {
   source_security_group_id = "${module.alb-sg.id}"
 }
 
-module "ec2-http-out" {
+module "ec2-all-traffic-out" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
   security_group_id = "${module.ec2-sg.id}"
-  description       = "HTTP outbound"
+  description       = "Outbound"
   type              = "egress"
-  protocol          = "tcp"
-  single_port       = "80"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-module "ec2-https-out" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
-
-  security_group_id = "${module.ec2-sg.id}"
-  description       = "HTTPS outbound"
-  type              = "egress"
-  protocol          = "tcp"
-  single_port       = "443"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-module "ec2-ssh-out" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
-
-  security_group_id = "${module.ec2-sg.id}"
-  description       = "SSH outbound"
-  type              = "egress"
-  protocol          = "tcp"
-  single_port       = "22"
+  protocol          = "all"
+  from_port         = "0"
+  to_port           = "65535"
   cidr_blocks       = ["0.0.0.0/0"]
 }
 

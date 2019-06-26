@@ -7,8 +7,6 @@ scriptName=`basename $0 2>/dev/null`
 [ "" = "${verbose}" ] && verbose="N"
 
  templatePath="${basePath}/tf-templates"
-   configPath="${basePath}/tf-params"
-sequenceFiles="${basePath}/tf-params/sequence/*.csv"
 
 ################################################################################
 # Other useful definitions
@@ -274,6 +272,20 @@ function wait_for_slot() {
     count=$((count + 1))
   done
   echo -en "\r"
+}
+
+################################################################################
+# Extract the base parameter path for the supplied build path
+################################################################################
+
+function getParamPath() {
+  # We are looking for the global_config.sh file as the base for our build
+  testPath=$1
+  while [ ! -f ${testPath}/global_config.sh -a "${testPath}" != "" ]; do
+    testPath=`echo ${testPath} | rev | cut -d"/" -f2- | rev`
+  done
+  # Return the path we have found to the user
+  echo ${testPath}
 }
 
 ################################################################################

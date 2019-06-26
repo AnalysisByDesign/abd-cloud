@@ -1,0 +1,51 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowBucketObjectAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObjectAcl",
+        "s3:GetObject",
+        "s3:PutObjectVersionAcl",
+        "s3:PutObjectVersionTagging",
+        "s3:ListBucket",
+        "s3:PutObjectTagging",
+        "s3:GetBucketLocation",
+        "s3:PutObjectAcl"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${s3_name}",
+        "arn:aws:s3:::${s3_name}/*"
+      ]
+    },
+    {
+      "Sid": "AllowBucketAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:HeadBucket"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowListSSMParameters",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:DescribeParameters"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowReadSSMParameter",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter*"
+      ],
+      "Resource": [
+        "arn:aws:ssm:*:*:parameter/${ssm_key_prefix}/*"
+      ]
+    }
+  ]
+}

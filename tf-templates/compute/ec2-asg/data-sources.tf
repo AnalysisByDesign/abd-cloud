@@ -45,6 +45,3 @@ data "aws_security_group" "efs" {
 data "aws_route53_zone" "public" {
   name = "${local.public_search_domain}."
 }
-
-# -----------------------------------------------------------------------------
-
