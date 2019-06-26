@@ -138,16 +138,22 @@ if [ "" = "${chk}" ]; then
     script_cleanup 1
 fi
 
-# Strip a trailing "/" if supplied
-target=`echo ${target} | sed "s/\/$//"`
+# Get the real path of the supplied target path
+target=`echo $(cd ${target}; pwd)`
 
 # Extract the base param path from that supplied
 paramPath=`getParamPath ${target}`
+target=`awk 'BEGIN{
+                rpl=ARGV[1]; ARGV[1]=""
+                src=ARGV[2]; ARGV[2]=""
+                gsub(rpl,"",src)
+                print src
+            }' "${paramPath}/" "${target}"`
 sequenceFiles="${paramPath}/sequence/*.csv"
 
 # And validate the target
-chkPrevent=`is_prevented ${target}`
-chkProtect=`is_protected ${target}`
+chkPrevent=`is_prevented "${target}"`
+chkProtect=`is_protected "${target}"`
 if [ "${chkPrevent}" = "Y" ]; then
     log_message "    - skipping ${target} (prevented)" err
     script_cleanup 0
@@ -158,7 +164,7 @@ if [ "${chkProtect}" = "Y"  -a "${action}" = "destroy" -a "${override}" != "Y" ]
 fi
 
 # Validate the passed in environment
-config_scripts=`ls -1 ${target}/*_config.sh`
+config_scripts=`ls -1 "${paramPath}/${target}"/*_config.sh`
 if [ "" = "${config_scripts}" ]; then
     log_message "No valid target environment supplied (${target})." err
     script_cleanup 1
@@ -191,13 +197,15 @@ build_resources=""
 # -----------------------------------------------------------------------------
 # Prepare the environment ready for execution
 # -----------------------------------------------------------------------------
-cd "${basePath}"/
-tfvars=""
-source ${paramPath}/global_config.sh
+log_verbose "Preparing params from ${paramPath}"
+cd "${paramPath}"
+source "./global_config.sh"
+tfvars="-var-file=`pwd`/global_config.tfvars"
 
-for cf_path in `echo ${target} | sed "s/\// /g"`; do
+for cf_path in `echo "${target}" | sed "s/\// /g"`; do
     # Move one path deeper
-    cd ${cf_path}
+    log_verbose "    checking ${cf_path}"
+    cd "${cf_path}"
 
     # Locate and run all environment config files
     for cf_file in `ls -1 *_config.sh 2>/dev/null`; do
@@ -208,6 +216,7 @@ for cf_path in `echo ${target} | sed "s/\// /g"`; do
         tfvars="${tfvars} -var-file=`pwd`/${tf_file}"
     done
 done
+log_verbose "Done preparing params"
 
 # -----------------------------------------------------------------------------
 # Finish setting up the TF specific options
@@ -216,7 +225,7 @@ done
 opts="${opts} -lock=${lock} -lock-timeout=${locktimeout} -parallelism=${parallelism}"
 
 # And use a dedicated folder for this script run, which we will clean up at the end.
-export TF_DATA_DIR="${basePath}/${target}/.terraform"
+export TF_DATA_DIR="${paramPath}/${target}/.terraform"
 
 # Pass some of the variables through to Terraform
 export TF_VAR_acct_target="${acct_target}"
@@ -241,7 +250,7 @@ statefile="${TF_VAR_account_name}/${statefile_basename}.tfstate"
 # -----------------------------------------------------------------------------
 # Run terraform init for the required build_resources
 # -----------------------------------------------------------------------------
-log_verbose "Running Terraform for ${build_resources}"
+log_verbose "Running Terraform for '${build_resources}'"
 log_verbose "    - storing state in ${statefileBucket}:${statefile}"
 log_verbose "    - storing workspace in ${TF_DATA_DIR}"
 
@@ -250,7 +259,7 @@ for resource in ${build_resources}; do
 
     # Now prepare the run the required code
     if [ "here" = "${resource}" ]; then
-        cd "${basePath}/${target}"
+        cd "${paramPath}/${target}"
     else
         cd "${templatePath}/${resource}"
     fi
@@ -259,23 +268,11 @@ for resource in ${build_resources}; do
     if [ "Y" = ${cleanCache} ]; then
         log_verbose "    - clear down Terraform cache"
         if [ "Y" = ${dryRun} ]; then
-            log_message "rm -rf ${basePath}/${target}/.terraform"
+            log_message "rm -rf "${paramPath}/${target}"/.terraform"
         else
-            rm -rf ${basePath}/${target}/.terraform 2>/dev/null
+            rm -rf "${paramPath}/${target}"/.terraform 2>/dev/null
         fi
     fi
-
-#    # Update all required modules
-#    log_verbose "    - updating modules"
-#    if [ "Y" = ${dryRun} ]; then
-#        log_message "terraform get -update=true"
-#    else
-#        if [ "Y" = ${verbose} ]; then
-#            terraform get -update=true
-#        else
-#            terraform get -update=true > /dev/null
-#        fi
-#    fi
 
     # We always run an init command
     log_verbose "    - preparing backend store"

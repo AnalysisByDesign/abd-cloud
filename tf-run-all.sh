@@ -151,8 +151,19 @@ if [ "${target}" != "" ]; then
     fi
 fi
 
-# Strip a trailing "/" and leading "./" if supplied
-target=`echo ${target} | sed "s/\/$//" | sed "s/^\.\///"`
+# Get the real path of the supplied target path
+target=`echo $(cd ${target}; pwd)`
+
+# Extract the base param path from that supplied
+paramPath=`getParamPath ${target}`
+target=`awk 'BEGIN{
+                rpl=ARGV[1]; ARGV[1]=""
+                src=ARGV[2]; ARGV[2]=""
+                gsub(rpl,"",src)
+                print src
+            }' "${paramPath}/" "${target}"`
+sequenceFiles="${paramPath}/sequence/*.csv"
+
 # --------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------
@@ -165,6 +176,8 @@ log_verbose "Dry-run             = ${dryRun}"
 log_verbose "Lock file           = ${lockFile}"
 log_verbose "Parralel TF threads = ${tfParallel}"
 log_verbose "Parallel scripts    = ${scParallel}"
+log_verbose "Param path          = ${paramPath}"
+log_verbose "Sequence file       = ${sequenceFiles}"
 log_verbose "Build file          = ${buildFile} - ${target}"
 # --------------------------------------------------------------------------------
 
@@ -238,9 +251,9 @@ for buildLine in ${build_list}; do
 
     ##################################################################
 
-    log_message "    executing resource ${seq} - ${build}" notice
+    log_message "    executing resource ${seq} - ${paramPath}/${build}" notice
     if [ "Y" = ${verbose} ]; then
-        ./tf-run.sh ${opts} ${action} ${build} 
+        ./tf-run.sh ${opts} ${action} "${paramPath}/${build}"
 
         ret=$?
         if [ ${ret} -ne 0 ]; then
@@ -250,7 +263,7 @@ for buildLine in ${build_list}; do
         fi
     else
         # Write regular messages to the log file, allow stderr to fall out of script
-        ./tf-run.sh ${opts} ${action} ${build} > ${buildlogpath}/build.log &
+        ./tf-run.sh ${opts} ${action} "${paramPath}/${build}" > ${buildlogpath}/build.log &
     fi
 
 done

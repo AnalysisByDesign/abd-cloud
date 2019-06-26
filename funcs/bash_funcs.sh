@@ -285,7 +285,7 @@ function getParamPath() {
     testPath=`echo ${testPath} | rev | cut -d"/" -f2- | rev`
   done
   # Return the path we have found to the user
-  echo ${testPath}
+  echo $(cd ${testPath}; pwd)
 }
 
 ################################################################################

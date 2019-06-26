@@ -93,13 +93,18 @@ do
   esac
 done
 shift $((OPTIND - 1))
+
+paramPath=$1
+paramPath=`echo $(cd ${paramPath}; pwd)`
+sequenceFiles="${paramPath}/sequence/*.csv"
+
 # --------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------
 log_message "Checking for duplicates"
 dupFile=${tmpPath}/dupCheck.$$
 
-cd ${basePath}
+cd ${paramPath}
 sort ${sequenceFiles} | 
       grep -vE "^#" | 
       grep -vE "^ *$" | 
@@ -117,9 +122,12 @@ fi
 # --------------------------------------------------------------------------------
 log_message "Validating all build locations"
 
-cd ${basePath}
-pathlist=`find tf-params -name "*_config.*" -print |
-            rev | cut -d"/" -f2- | rev | sort -u`
+cd ${paramPath}
+pathlist=`find . -name "*_config.*" -print | 
+            cut -d"/" -f2- | 
+            grep -v global_config |
+            rev | cut -d"/" -f2- | 
+            rev | sort -u`
 
 for env in ${pathlist}; do
 
@@ -140,7 +148,7 @@ done
 # --------------------------------------------------------------------------------
 log_message "Validating all build files"
 
-cd ${basePath}
+cd ${paramPath}
 pathlist=`sort -u ${sequenceFiles} |
             grep -vE "^#" | 
             grep -vE "^ *$" | 
