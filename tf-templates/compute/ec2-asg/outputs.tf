@@ -3,13 +3,13 @@
 # --------------------------------------------------------------------------------------------
 
 # LB Endpoint
-output "lb-fqdn" {
+output "fqdn_lb_actual" {
   description = "The LB endpoint for the PHP ASG"
   value       = "${module.load_balancer.alb_dns_name}"
 }
 
 # Route53 record
-output "r53-fqdn" {
-  description = "The FQDN of the R53 record fronting the LB for the PHP ASG"
-  value       = "${module.dns_apex.fqdn}"
+output "fqdn_lb" {
+  description = "DNS entry for direct access to the Load Balancer"
+  value       = "${module.dns_load_balancer.fqdn}"
 }

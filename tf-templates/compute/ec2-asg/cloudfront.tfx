@@ -1,0 +1,82 @@
+# --------------------------------------------------------------------------------------------
+# ACM Certificate
+# --------------------------------------------------------------------------------------------
+
+module "ssl_cert_cloudfront" {
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/ssl-certs"
+
+  required = true
+
+  acct_target        = "${var.acct_target}"
+  acct_target_role   = "${var.acct_target_role}"
+  certificate_region = "us-east-1"
+
+  domain_name               = "${local.public_search_domain}"
+  subject_alternative_names = ["*.${local.public_search_domain}"]
+  r53_zone_id               = "${data.aws_route53_zone.public.id}"
+  common_tags               = "${local.common_tags}"
+}
+
+# -----------------------------------------------------------------------------
+# CloudFront distribution
+# -----------------------------------------------------------------------------
+resource "aws_cloudfront_distribution" "cloudfront" {
+  enabled             = true
+  retain_on_delete    = false
+  comment             = "${format("Terraform - %s-%s", local.vpc_name, var.name)}"
+  default_root_object = ""
+  price_class         = "PriceClass_100"
+
+  aliases = [
+    "${var.public_apex_domain}",
+  ]
+
+  origin {
+    domain_name = "origin.${var.public_apex_domain}"
+    origin_id   = "${format("%s-%s", local.vpc_name, var.name)}"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods  = ["GET", "HEAD"]
+    compress        = true
+
+    target_origin_id = "${format("%s-%s", local.vpc_name, var.name)}"
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Host"]
+
+      cookies {
+        forward = "all"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = "${join("", module.ssl_cert_cloudfront.cert_validation_arn)}"
+    minimum_protocol_version = "TLSv1.1_2016"
+    ssl_support_method       = "sni-only"
+  }
+
+  tags = "${merge(local.common_tags, 
+                  map("Name", format("%s", var.name)))}"
+}
