@@ -10,7 +10,7 @@ resource "aws_route53_record" "this" {
   type    = "${lookup(var.dns_extra[count.index], "type")}"
 
   ttl     = "${lookup(var.dns_extra[count.index], "ttl")}"
-  records = ["${lookup(var.dns_extra[count.index], "value")}"]
+  records = ["${split("###", lookup(var.dns_extra[count.index], "value"))}"]
 
   lifecycle {
     create_before_destroy = true
