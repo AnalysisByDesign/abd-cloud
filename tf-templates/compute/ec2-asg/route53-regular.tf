@@ -20,9 +20,11 @@ module "dns_load_balancer" {
 }
 
 module "dns_load_balancer_admin" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/record"
+  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/alias-record"
 
-  zone_id = "${data.aws_route53_zone.public.zone_id}"
-  name    = ""
-  records = ["127.0.0.1"]
+  zone_id                      = "${data.aws_route53_zone.public.zone_id}"
+  name                         = ""
+  alias_name                   = "${module.load_balancer_admin.alb_dns_name}"
+  alias_zone_id                = "${module.load_balancer_admin.alb_zone_id}"
+  alias_evaluate_target_health = false
 }

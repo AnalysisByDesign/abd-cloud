@@ -83,6 +83,12 @@ variable "asg_ec2_instance_type" {
   default     = "t3.small"
 }
 
+variable "asg_admin_ec2_instance_type" {
+  description = "The EC2 admin instance type to build"
+  type        = "string"
+  default     = "t3.medium"
+}
+
 variable "asg_iam_profile_name" {
   description = "IAM instance profile to use for EC2 instances"
   type        = "string"
@@ -158,6 +164,24 @@ variable "asg_desired_capacity" {
 
 variable "asg_max_size" {
   description = "Maximum size of the autoscaling group"
+  type        = "string"
+  default     = "1"
+}
+
+variable "asg_admin_min_size" {
+  description = "Minimum size of the admin autoscaling group"
+  type        = "string"
+  default     = "0"
+}
+
+variable "asg_admin_desired_capacity" {
+  description = "Desired size of the admin autoscaling group"
+  type        = "string"
+  default     = "0"
+}
+
+variable "asg_admin_max_size" {
+  description = "Maximum size of the admin autoscaling group"
   type        = "string"
   default     = "1"
 }
