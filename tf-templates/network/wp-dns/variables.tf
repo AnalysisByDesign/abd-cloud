@@ -60,6 +60,12 @@ variable "ssl_cert_enabled" {
   default     = true
 }
 
+variable "subject_alternative_names" {
+  description = "Subject alternative names for the SSL cert if required"
+  type        = "list"
+  default     = []
+}
+
 # ============================================================================================
 #                                      Email
 # ============================================================================================
