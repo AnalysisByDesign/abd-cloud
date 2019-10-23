@@ -32,14 +32,14 @@ function script_usage() {
   cat << EOF
 
 Usage: 
-        $0 [ OPTIONS ]
+        $0 [ OPTIONS ] param_path
 
 Options:
         -h                Show this message
         -v                Verbose output
 
 Example:
-        $0
+        $0 ../tf-params
 
 EOF
 
@@ -95,7 +95,12 @@ done
 shift $((OPTIND - 1))
 
 paramPath=$1
-paramPath=`echo $(cd ${paramPath}; pwd)`
+
+if [ ! -d "${paramPath}" ]; then
+  script_usage
+fi
+
+paramPath=`echo $(cd "${paramPath}"; pwd)`
 sequenceFiles="${paramPath}/sequence/*.csv"
 
 # --------------------------------------------------------------------------------
@@ -104,7 +109,7 @@ sequenceFiles="${paramPath}/sequence/*.csv"
 log_message "Checking for duplicates"
 dupFile=${tmpPath}/dupCheck.$$
 
-cd ${paramPath}
+cd "${paramPath}"
 sort ${sequenceFiles} | 
       grep -vE "^#" | 
       grep -vE "^ *$" | 
