@@ -168,24 +168,6 @@ variable "asg_max_size" {
   default     = "1"
 }
 
-variable "asg_admin_min_size" {
-  description = "Minimum size of the admin autoscaling group"
-  type        = "string"
-  default     = "0"
-}
-
-variable "asg_admin_desired_capacity" {
-  description = "Desired size of the admin autoscaling group"
-  type        = "string"
-  default     = "0"
-}
-
-variable "asg_admin_max_size" {
-  description = "Maximum size of the admin autoscaling group"
-  type        = "string"
-  default     = "1"
-}
-
 variable "asg_default_cooldown" {
   description = "Cooldown period before allowing another autoscaling action"
   type        = "string"
