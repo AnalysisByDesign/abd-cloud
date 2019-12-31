@@ -68,14 +68,14 @@ variable "port" {
 variable "subnet_group_name" {
   description = "The db subnet group name"
   type        = "string"
-  default     = "rds-aurora"
+  default     = "rds"
 }
 
 # The VPC name is automatically prepended to this input variable
 variable "param_group_name" {
   description = "The cluster parameter group name"
   type        = "string"
-  default     = "rds-aurora"
+  default     = "rds"
 }
 
 variable "cloudwatch_logging" {
