@@ -80,13 +80,7 @@ variable "asg_ami_image_owner" {
 variable "asg_ec2_instance_type" {
   description = "The EC2 instance type to build"
   type        = "string"
-  default     = "t3.small"
-}
-
-variable "asg_admin_ec2_instance_type" {
-  description = "The EC2 admin instance type to build"
-  type        = "string"
-  default     = "t3.medium"
+  default     = "t3.micro"
 }
 
 variable "asg_iam_profile_name" {
