@@ -37,7 +37,7 @@ variable "engine" {
 variable "engine_version" {
   description = "The DB engine version"
   type        = string
-  default     = "5.7.25"
+  default     = "5.7.26"
 }
 
 variable "port" {
