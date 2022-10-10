@@ -9,12 +9,12 @@
 
 variable "name" {
   description = "The name of the Aurora Cluster"
-  type        = "string"
+  type        = string
 }
 
 variable "admin_password" {
   description = "The password of the admin user account"
-  type        = "string"
+  type        = string
 }
 
 # --------------------------------------------------------------------------------------------
@@ -24,31 +24,31 @@ variable "admin_password" {
 
 variable "r53_name" {
   description = "The name for the route53 entry"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "engine" {
   description = "The Aurora engine"
-  type        = "string"
+  type        = string
   default     = "aurora-mysql"
 }
 
 variable "engine_version" {
   description = "The Aurora engine version"
-  type        = "string"
+  type        = string
   default     = "5.7.12"
 }
 
 variable "engine_mode" {
   description = "The Aurora engine mode (provisioned or serverless)"
-  type        = "string"
+  type        = string
   default     = "serverless"
 }
 
 variable "scaling_configuration" {
   description = "RDS Aurora Serverless scaling configuration"
-  type        = "map"
+  type        = map(string)
 
   default = {
     auto_pause               = true
@@ -60,51 +60,51 @@ variable "scaling_configuration" {
 
 variable "port" {
   description = "Connection port"
-  type        = "string"
+  type        = string
   default     = "3306"
 }
 
 # The VPC name is automatically prepended to this input variable
 variable "subnet_group_name" {
   description = "The db subnet group name"
-  type        = "string"
+  type        = string
   default     = "rds"
 }
 
 # The VPC name is automatically prepended to this input variable
 variable "param_group_name" {
   description = "The cluster parameter group name"
-  type        = "string"
+  type        = string
   default     = "rds"
 }
 
 variable "cloudwatch_logging" {
   description = "List of cloudwatch logging options"
-  type        = "list"
+  type        = list(string)
   default     = ["audit", "error", "slowquery"]
 }
 
 variable "azs" {
   description = "Availability zones to launch instances into"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "security_groups" {
   description = "Security groups for instances"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "admin_name" {
   description = "The name of the admin user account"
-  type        = "string"
+  type        = string
   default     = "admin"
 }
 
 variable "schema_name" {
   description = "The name of the initial schema to create if required"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -115,13 +115,13 @@ variable "storage_encrypted" {
 
 variable "kms_key_id" {
   description = "KMS key id to use when encrypting storage"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "iam_roles" {
   description = "List of IAM roles to associate with the cluster"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -132,7 +132,7 @@ variable "iam_authentication_enabled" {
 
 variable "snapshot_identifier" {
   description = "Name of snapshot to create cluster from"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -148,31 +148,31 @@ variable "skip_final_snapshot" {
 
 variable "final_snapshot_identifier" {
   description = "Name of final snapshot identifier to create if required"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "backtrack_window" {
   description = "The backtrack window in seconds"
-  type        = "string"
+  type        = string
   default     = "0"
 }
 
 variable "backup_retention" {
   description = "How many days of automated backups to retain"
-  type        = "string"
+  type        = string
   default     = "1"
 }
 
 variable "backup_window" {
   description = "When to run automated snapshots"
-  type        = "string"
+  type        = string
   default     = "02:00-02:30"
 }
 
 variable "maintenance_window" {
   description = "When to run default maintenance tasks"
-  type        = "string"
+  type        = string
   default     = "sun:03:00-sun:03:30"
 }
 
@@ -183,7 +183,7 @@ variable "apply_immediately" {
 
 variable "rds_tags" {
   description = "A map of RDS tags to add to all resources"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "rds aurora"
@@ -197,19 +197,19 @@ variable "rds_tags" {
 
 variable "read_replica_count" {
   description = "The number of read replica instances to create"
-  type        = "string"
+  type        = string
   default     = "0"
 }
 
 variable "instance_class" {
   description = "The instance class for the instances"
-  type        = "string"
+  type        = string
   default     = "db.t2.small"
 }
 
 variable "monitoring_interval" {
   description = "The enhanced monitoring metric collection interval"
-  type        = "string"
+  type        = string
   default     = "60"
 }
 
@@ -220,6 +220,6 @@ variable "performance_insights_enabled" {
 
 variable "performance_insights_kms_key_id" {
   description = "KMS key to encrypt performance insight data"
-  type        = "string"
+  type        = string
   default     = ""
 }

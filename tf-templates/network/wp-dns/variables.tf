@@ -4,22 +4,22 @@
 
 variable "acct_apex" {
   description = "Account where Apex domain can be found"
-  type        = "string"
+  type        = string
 }
 
 variable "wp_sub_domain" {
   description = "The public wordpress subdomain domain prefix"
-  type        = "string"
+  type        = string
 }
 
 variable "wp_apex_domain" {
   description = "The public wordpress apex domain"
-  type        = "string"
+  type        = string
 }
 
 variable "wp_lb_name" {
   description = "The load balancer name for the main WP installation"
-  type        = "string"
+  type        = string
 }
 
 # ============================================================================================
@@ -28,7 +28,7 @@ variable "wp_lb_name" {
 
 variable "delegate_set_name" {
   description = "A reference name for the delegate set"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -44,7 +44,7 @@ variable "use_existing_zones" {
 
 variable "r53_tags" {
   description = "Additional tags for the Route53 Entries"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "account"
@@ -62,7 +62,7 @@ variable "ssl_cert_enabled" {
 
 variable "subject_alternative_names" {
   description = "Subject alternative names for the SSL cert if required"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -72,7 +72,7 @@ variable "subject_alternative_names" {
 
 variable "mx_records" {
   description = "Records to use as MX records for this zone"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -82,6 +82,6 @@ variable "mx_records" {
 
 variable "dns_extra" {
   description = "Extra DNS records that might be required"
-  type        = "list"
+  type        = list(string)
   default     = []
 }

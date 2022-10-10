@@ -12,7 +12,7 @@ data "aws_iam_role" "rds_monitoring" {
 }
 
 output "monitor_role" {
-  value = "${data.aws_iam_role.rds_monitoring.arn}"
+  value = data.aws_iam_role.rds_monitoring.arn
 }
 
 #data "aws_db_cluster_snapshot" "cluster_snapshot" {

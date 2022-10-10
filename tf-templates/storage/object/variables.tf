@@ -17,25 +17,25 @@ variable "s3_name" {
 
 variable "s3_acl" {
   description = "The canned ACL to apply"
-  type        = "string"
+  type        = string
   default     = "private"
 }
 
 variable "s3_logging" {
   description = "Logging configuration of the bucket"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "s3_lifecycle_rule" {
   description = "A list of lifecycle_rule maps to apply to the bucket"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "s3_policy" {
   description = "An S3 policy to apply to the bucket"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -46,7 +46,7 @@ variable "s3_force_destroy" {
 
 variable "s3_acceleration_status" {
   description = "Acceleration status of the bucket"
-  type        = "string"
+  type        = string
   default     = "Suspended"
 }
 
@@ -62,36 +62,36 @@ variable "s3_enable_mfa_delete" {
 
 variable "s3_tags" {
   description = "Additional tags for the S3 bucket"
-  type        = "map"
+  type        = map(string)
   default     = {}
 }
 
 variable "files_folder" {
   description = "Folder containing sample files to load to the bucket"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "s3_files" {
   description = "List of sample files to load to the bucket"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "s3_files_tags" {
   description = "Additional tags for the sample S3 bucket objects"
-  type        = "map"
+  type        = map(string)
   default     = {}
 }
 
 variable "policy_folder" {
   description = "Folder containing policy templates to apply to the bucket"
-  type        = "string"
+  type        = string
   default     = "./files"
 }
 
 variable "policy_file" {
   description = "Policy template file to apply to the bucket"
-  type        = "string"
+  type        = string
   default     = "blank.tpl.json"
 }

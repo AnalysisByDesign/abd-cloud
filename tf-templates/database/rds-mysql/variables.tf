@@ -9,12 +9,12 @@
 
 variable "name" {
   description = "The name of the RDS instance"
-  type        = "string"
+  type        = string
 }
 
 variable "admin_password" {
   description = "The password of the admin user account"
-  type        = "string"
+  type        = string
 }
 
 # --------------------------------------------------------------------------------------------
@@ -24,69 +24,69 @@ variable "admin_password" {
 
 variable "r53_name" {
   description = "The name for the route53 entry"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "engine" {
   description = "The DB engine"
-  type        = "string"
+  type        = string
   default     = "mysql"
 }
 
 variable "engine_version" {
   description = "The DB engine version"
-  type        = "string"
+  type        = string
   default     = "5.7.25"
 }
 
 variable "port" {
   description = "Connection port"
-  type        = "string"
+  type        = string
   default     = "3306"
 }
 
 # The VPC name is automatically prepended to this input variable
 variable "subnet_group_name" {
   description = "The DB subnet group name"
-  type        = "string"
+  type        = string
   default     = "rds"
 }
 
 # The VPC name is automatically prepended to this input variable
 variable "param_group_name" {
   description = "The DB parameter group name"
-  type        = "string"
+  type        = string
   default     = "rds"
 }
 
 variable "cloudwatch_logging" {
   description = "List of cloudwatch logging options"
-  type        = "list"
+  type        = list(string)
   default     = ["audit", "error", "slowquery"]
 }
 
 variable "azs" {
   description = "Availability zones to launch instances into"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "security_groups" {
   description = "Security groups for instances"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "admin_name" {
   description = "The name of the admin user account"
-  type        = "string"
+  type        = string
   default     = "admin"
 }
 
 variable "schema_name" {
   description = "The name of the initial schema to create if required"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -97,25 +97,25 @@ variable "storage_encrypted" {
 
 variable "storage_type" {
   description = "The type of storage to be used"
-  type        = "string"
+  type        = string
   default     = "gp2"
 }
 
 variable "allocated_storage" {
   description = "The amount of storage allocated to the instance"
-  type        = "string"
+  type        = string
   default     = "20"
 }
 
 variable "kms_key_id" {
   description = "KMS key id to use when encrypting storage"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "iam_roles" {
   description = "List of IAM roles to associate with the cluster"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -126,7 +126,7 @@ variable "iam_authentication_enabled" {
 
 variable "snapshot_identifier" {
   description = "Name of snapshot to create cluster from"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -142,25 +142,25 @@ variable "skip_final_snapshot" {
 
 variable "final_snapshot_identifier" {
   description = "Name of final snapshot identifier to create if required"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "backup_retention" {
   description = "How many days of automated backups to retain"
-  type        = "string"
+  type        = string
   default     = "1"
 }
 
 variable "backup_window" {
   description = "When to run automated snapshots"
-  type        = "string"
+  type        = string
   default     = "02:00-02:30"
 }
 
 variable "maintenance_window" {
   description = "When to run default maintenance tasks"
-  type        = "string"
+  type        = string
   default     = "sun:03:00-sun:03:30"
 }
 
@@ -171,7 +171,7 @@ variable "apply_immediately" {
 
 variable "rds_tags" {
   description = "A map of RDS tags to add to all resources"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "rds aurora"
@@ -180,13 +180,13 @@ variable "rds_tags" {
 
 variable "instance_class" {
   description = "The instance class for the instances"
-  type        = "string"
+  type        = string
   default     = "db.t3.micro"
 }
 
 variable "monitoring_interval" {
   description = "The enhanced monitoring metric collection interval"
-  type        = "string"
+  type        = string
   default     = "60"
 }
 
@@ -197,6 +197,6 @@ variable "performance_insights_enabled" {
 
 variable "performance_insights_kms_key_id" {
   description = "KMS key to encrypt performance insight data"
-  type        = "string"
+  type        = string
   default     = ""
 }

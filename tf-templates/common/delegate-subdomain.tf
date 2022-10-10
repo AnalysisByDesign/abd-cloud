@@ -6,7 +6,7 @@ provider "aws" {
 
   version = "~> 1.60"
 
-  region = "${var.target_region}"
+  region = var.target_region
 
   assume_role {
     role_arn = "arn:aws:iam::${var.acct_apex}:role/${var.acct_target_role == "" ? "terraform" : var.acct_target_role}"
@@ -15,7 +15,7 @@ provider "aws" {
 
 data "aws_route53_zone" "apex" {
   provider     = "aws.apex"
-  count        = "${var.delegation_enabled ? 1 : 0}"
+  count        = var.delegation_enabled ? 1 : 0
   name         = "${var.public_apex_domain}."
   private_zone = false
 }
@@ -27,12 +27,12 @@ data "aws_route53_zone" "apex" {
 resource "aws_route53_record" "apex" {
   provider = "aws.apex"
 
-  count = "${var.delegation_enabled 
-                  ? (var.use_existing_zones ? 0 : length(local.public_sub_domains)) 
-                  : 0}"
+  count = (var.delegation_enabled
+    ? (var.use_existing_zones ? 0 : length(local.public_sub_domains))
+  : 0)
 
-  zone_id = "${data.aws_route53_zone.apex.zone_id}"
-  name    = "${local.public_sub_domains[count.index]}"
+  zone_id = data.aws_route53_zone.apex.zone_id
+  name    = local.public_sub_domains[count.index]
   type    = "NS"
 
   ttl     = "86400"

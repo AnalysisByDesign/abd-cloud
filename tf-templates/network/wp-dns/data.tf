@@ -7,10 +7,10 @@ data "aws_route53_zone" "wordpress" {
 }
 
 data "aws_lb" "wordpress" {
-  name = "${format("%s-%s", local.vpc_name, var.wp_lb_name)}"
+  name = format("%s-%s", local.vpc_name, var.wp_lb_name)
 }
 
 data "aws_lb_listener" "wordpress443" {
-  load_balancer_arn = "${data.aws_lb.wordpress.arn}"
+  load_balancer_arn = data.aws_lb.wordpress.arn
   port              = 443
 }

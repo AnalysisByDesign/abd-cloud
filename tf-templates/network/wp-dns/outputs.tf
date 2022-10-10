@@ -3,5 +3,5 @@
 # --------------------------------------------------------------------------------------------
 
 output "domain_validation_options" {
-  value = "${module.ssl_cert.domain_validation_options}"
+  value = module.ssl_cert.domain_validation_options
 }

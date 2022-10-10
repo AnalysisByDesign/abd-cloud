@@ -5,12 +5,12 @@
 # VPC
 output "vpc_id" {
   description = "The ID of the VPC"
-  value       = "${aws_vpc.this.id}"
+  value       = aws_vpc.this.id
 }
 
 output "vpc_cidr_block" {
   description = "The CIDR block of the VPC"
-  value       = "${aws_vpc.this.cidr_block}"
+  value       = aws_vpc.this.cidr_block
 }
 
 # --------------------------------------------------------------------------------------------
@@ -32,12 +32,12 @@ output "private_route_table_ids" {
 # Route53 Private
 output "private_zone_id" {
   description = "The ID of the private zone"
-  value       = "${module.r53_private.zone_id}"
+  value       = module.r53_private.zone_id
 }
 
 output "private_name_servers" {
   description = "The Name Servers of the private zone"
-  value       = "${module.r53_private.name_servers}"
+  value       = module.r53_private.name_servers
 }
 
 # --------------------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ output "private_name_servers" {
 # Subnet Groups
 output "db_subnet_group_name" {
   description = "The name of the db subnet group"
-  value       = "${module.db-subnet-group.name}"
+  value       = module.db-subnet-group.name
 }
 
 # --------------------------------------------------------------------------------------------
@@ -53,21 +53,21 @@ output "db_subnet_group_name" {
 # Route53 Delegation Set
 output "delegate_set_id" {
   description = "The ID of the delegate set"
-  value       = "${module.r53_delegate.id}"
+  value       = module.r53_delegate.id
 }
 
 output "delegate_set_name_servers" {
   description = "The Name Servers of the delegate set"
-  value       = "${module.r53_delegate.name_servers}"
+  value       = module.r53_delegate.name_servers
 }
 
 # Route53 Public
 output "public_zone_id" {
   description = "The ID of the public zone"
-  value       = "${module.r53_public.zone_id}"
+  value       = module.r53_public.zone_id
 }
 
 output "public_name_servers" {
   description = "The Name Servers of the public zone"
-  value       = "${module.r53_public.name_servers}"
+  value       = module.r53_public.name_servers
 }

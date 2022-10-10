@@ -6,7 +6,7 @@
 
 variable "component_name" {
   description = "Name of component to insert into secrets path /{vpc}/{component_name}/..."
-  type        = "string"
+  type        = string
 }
 
 # Optional ----------------------

@@ -2,9 +2,9 @@
 # IAM Resources
 # --------------------------------------------------------------------------------------------
 resource "aws_iam_instance_profile" "ec2-asg" {
-  name = "${format("%s-%s", local.vpc_name, var.name)}"
+  name = format("%s-%s", local.vpc_name, var.name)
   path = "/"
-  role = "${module.ec2_asg_role.names}"
+  role = module.ec2_asg_role.names
 }
 
 module "ec2_asg_role" {
@@ -21,16 +21,16 @@ module "ec2_asg_role" {
 module "ec2_asg_policy" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-policy"
 
-  count       = "${var.ec2_policy_template == "" ? 0 : 1 }"
-  name        = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
+  count       = var.ec2_policy_template == "" ? 0 : 1
+  name        = format("%s-%s", local.vpc_name, var.asg_iam_profile_name)
   description = "Allow EC2 instance to use selected bucket"
-  policy      = "${join("", data.template_file.ec2_asg_policy.*.rendered)}"
+  policy      = join("", data.template_file.ec2_asg_policy.*.rendered)
 }
 
 resource "aws_iam_role_policy_attachment" "attach_policy" {
-  count      = "${var.ec2_policy_template == "" ? 0 : 1 }"
-  role       = "${module.ec2_asg_role.names}"
-  policy_arn = "${module.ec2_asg_policy.arn}"
+  count      = var.ec2_policy_template == "" ? 0 : 1
+  role       = module.ec2_asg_role.names
+  policy_arn = module.ec2_asg_policy.arn
 }
 
 #resource "aws_iam_role_policy_attachment" "attach_cloudwatch" {

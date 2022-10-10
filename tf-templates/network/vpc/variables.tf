@@ -6,14 +6,14 @@
 
 variable "acct_apex" {
   description = "Account where Apex domain can be found"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "azs" {
   description = "A list of AZs to be used for this deployment"
-  type        = "list"
+  type        = list(string)
   default     = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
 }
 
@@ -25,19 +25,19 @@ variable "azs" {
 
 variable "vpc_name" {
   description = "The name of the VPC"
-  type        = "string"
+  type        = string
 }
 
 variable "vpc_cidr" {
   description = "The VPC CIDR range for the new VPC"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "vpc_tags" {
   description = "Additional tags for the VPC"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "vpc"
@@ -46,7 +46,7 @@ variable "vpc_tags" {
 
 variable "instance_tenancy" {
   description = "A tenancy option for instances launched into the VPC"
-  type        = "string"
+  type        = string
   default     = "default"
 }
 
@@ -72,7 +72,7 @@ variable "enable_dns_support" {
 
 variable "dhcp_options_tags" {
   description = "Additional tags for the DHCP option set"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "vpc"
@@ -86,31 +86,31 @@ variable "enable_dhcp_options" {
 
 variable "dhcp_options_domain_name" {
   description = "Specifies DNS name for DHCP options set"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "dhcp_options_domain_name_servers" {
   description = "Specify a list of DNS server addresses for DHCP options set, default to AWS provided"
-  type        = "list"
+  type        = list(string)
   default     = ["AmazonProvidedDNS"]
 }
 
 variable "dhcp_options_ntp_servers" {
   description = "Specify a list of NTP servers for DHCP options set"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "dhcp_options_netbios_name_servers" {
   description = "Specify a list of netbios servers for DHCP options set"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "dhcp_options_netbios_node_type" {
   description = "Specify netbios node_type for DHCP options set"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -126,7 +126,7 @@ variable "dhcp_options_netbios_node_type" {
 
 variable "public_subnets" {
   description = "A list of public subnets to be used for this deployment"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -137,31 +137,31 @@ variable "map_public_ip" {
 
 variable "private_web_subnets" {
   description = "A list of private subnets to be used for web resource within this deployment"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "private_app_subnets" {
   description = "A list of private subnets to be used for app resource within this deployment"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "private_cache_subnets" {
   description = "A list of private subnets to be used for cache storage within this deployment"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "private_db_subnets" {
   description = "A list of private subnets to be used for db storage within this deployment"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "subnet_tags" {
   description = "Additional tags for the subnets"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "subnet"
@@ -178,13 +178,13 @@ variable "subnet_tags" {
 # Optional -----------------------------------------------------------------------------------
 variable "db_subnet_group_name" {
   description = "Name of DB subnet group table"
-  type        = "string"
+  type        = string
   default     = "rds"
 }
 
 variable "db_subnet_tags" {
   description = "A map of subnet tags to add to subnet group"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "rds"
@@ -201,13 +201,13 @@ variable "db_subnet_tags" {
 # Optional -----------------------------------------------------------------------------------
 variable "cache_subnet_group_name" {
   description = "Name of Elasticache subnet group table"
-  type        = "string"
+  type        = string
   default     = "cache"
 }
 
 variable "cache_subnet_tags" {
   description = "A map of subnet tags to add to subnet group"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "Cache cluster"
@@ -224,13 +224,13 @@ variable "cache_subnet_tags" {
 # Optional -----------------------------------------------------------------------------------
 variable "db_param_group_name" {
   description = "Name of DB param group table"
-  type        = "string"
+  type        = string
   default     = "rds"
 }
 
 variable "db_param_group_tags" {
   description = "A map of tags to add to param group"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "rds"
@@ -247,13 +247,13 @@ variable "db_param_group_tags" {
 # Optional -----------------------------------------------------------------------------------
 variable "cache_cluster_param_group_name" {
   description = "Name of Elasticache param group table"
-  type        = "string"
+  type        = string
   default     = "redis-cluster"
 }
 
 variable "cache_cluster_param_group_tags" {
   description = "A map of tags to add to param group"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "Elasticache Redis"
@@ -272,7 +272,7 @@ variable "cache_cluster_param_group_tags" {
 
 variable "delegate_set_name" {
   description = "A reference name for the delegate set"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -288,7 +288,7 @@ variable "use_existing_zones" {
 
 variable "r53_tags" {
   description = "Additional tags for the Route53 Entries"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "vpc"
@@ -307,13 +307,13 @@ variable "r53_tags" {
 
 variable "public_propagating_vgws" {
   description = "A list of VGWs the public route table should propagate"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "public_route_table_tags" {
   description = "Additional tags for the public route tables"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "route table"
@@ -322,13 +322,13 @@ variable "public_route_table_tags" {
 
 variable "private_propagating_vgws" {
   description = "A list of VGWs the private route table should propagate"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "private_route_table_tags" {
   description = "Additional tags for the private route tables"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "route table"
@@ -362,7 +362,7 @@ variable "reuse_nat_ips" {
 
 variable "external_nat_ip_ids" {
   description = "List of EIP IDs to be assigned to the NAT Gateways (used in combination with reuse_nat_ips)"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -381,7 +381,7 @@ variable "connect_to_mpls" {
 
 variable "dx_connect_gateway_name" {
   description = "The name of the Direct Connect Gateway to attach to"
-  type        = "string"
+  type        = string
   default     = ""
 }
 

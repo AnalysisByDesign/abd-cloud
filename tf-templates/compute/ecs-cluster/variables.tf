@@ -6,5 +6,5 @@
 
 variable "name" {
   description = "The name prefix of the various resources"
-  type        = "string"
+  type        = string
 }

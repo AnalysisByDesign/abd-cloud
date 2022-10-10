@@ -6,7 +6,7 @@
 
 variable "acct_apex" {
   description = "Account where Apex domain can be found"
-  type        = "string"
+  type        = string
 }
 
 # ============================================================================================
@@ -17,7 +17,7 @@ variable "acct_apex" {
 
 variable "acct_auth" {
   description = "Authentication account number"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
@@ -28,13 +28,13 @@ variable "remote_automation_hub" {
 
 variable "remote_access_name" {
   description = "The IAM policy describing cross account role assumption"
-  type        = "string"
+  type        = string
   default     = "automation"
 }
 
 variable "remote_access_description" {
   description = "The IAM policy describing cross account role assumption"
-  type        = "string"
+  type        = string
   default     = "Role used by automation"
 }
 
@@ -92,7 +92,7 @@ variable "hard_expiry" {
 
 variable "delegate_set_name" {
   description = "A reference name for the delegate set"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -108,13 +108,13 @@ variable "use_existing_zones" {
 
 variable "mx_records" {
   description = "Records to use as MX records for this zone"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "r53_tags" {
   description = "Additional tags for the Route53 Entries"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "account"
@@ -153,25 +153,25 @@ variable "docker_repository_required" {
 
 variable "docker_repository_name" {
   description = "Name of ECR repository"
-  type        = "string"
+  type        = string
   default     = "docker-repo"
 }
 
 variable "docker_repository_lifecycle_policy" {
   description = "Lifecycle policies for ECR component"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "docker_repository_policy_folder" {
   description = "Folder containing policy templates to apply to the bucket"
-  type        = "string"
+  type        = string
   default     = "./files"
 }
 
 variable "docker_repository_policy_file" {
   description = "Policy template file to apply to the bucket"
-  type        = "string"
+  type        = string
   default     = "docker-repo-14-day-expire.tpl.json"
 }
 
@@ -181,7 +181,7 @@ variable "docker_repository_policy_file" {
 
 variable "cloudwatch_tags" {
   description = "Additional tags for CloudWatch"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "cloudwatch"
@@ -190,7 +190,7 @@ variable "cloudwatch_tags" {
 
 variable "cloudwatch_loggroup_names" {
   description = "Log group names for cloudwatch"
-  type        = "list"
+  type        = list(string)
   default     = ["infra", "web", "app"]
 }
 

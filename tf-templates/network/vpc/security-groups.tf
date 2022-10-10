@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 resource "aws_default_security_group" "egress" {
-  vpc_id = "${aws_vpc.this.id}"
+  vpc_id = aws_vpc.this.id
 
   egress {
     from_port   = 80
@@ -19,8 +19,8 @@ resource "aws_default_security_group" "egress" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = "${merge(local.common_tags,
-              map("Name", format("%s-public", var.vpc_name)))}"
+  tags = (merge(local.common_tags,
+  map("Name", format("%s-public", var.vpc_name))))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -32,20 +32,20 @@ module "management-ssh-sg" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
 
   # Required variables
-  name        = "${format("%s-management-ssh", var.vpc_name)}"
+  name        = format("%s-management-ssh", var.vpc_name)
   description = "Management ingress for occasional use"
-  common_tags = "${local.common_tags}"
-  vpc_id      = "${aws_vpc.this.id}"
+  common_tags = local.common_tags
+  vpc_id      = aws_vpc.this.id
 }
 
 # --------------------------------------------------------------------------------------------
 module "management-ssh-sgr-in" "this" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
 
-  required = "${length(var.management_ingress_locations) > 0 ? 1 : 0}"
+  required = length(var.management_ingress_locations) > 0 ? 1 : 0
 
   # Required variables
-  security_group_id = "${module.management-ssh-sg.id}"
+  security_group_id = module.management-ssh-sg.id
   description       = "SSH from Management locations"
   type              = "ingress"
   protocol          = "tcp"

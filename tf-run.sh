@@ -282,11 +282,11 @@ for resource in ${build_resources}; do
             -backend-config=\"key=${statefile}\""
     else
         if [ "Y" = ${verbose} ]; then
-            terraform init -lock=${lock} \
+            terraform init -upgrade -lock=${lock} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}"
         else
-            terraform init -lock=${lock} \
+            terraform init -upgrade -lock=${lock} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}" > /dev/null
         fi

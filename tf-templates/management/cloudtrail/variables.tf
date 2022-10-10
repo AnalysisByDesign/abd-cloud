@@ -11,7 +11,7 @@
 
 variable "cloudtrail_name" {
   description = "The name of the CloudTrail configuration"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
@@ -29,19 +29,19 @@ variable "cloudtrail_hub" {
 
 variable "s3_name" {
   description = "The name of the S3 bucket to hold the cloud-trail logs"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "s3_lifecycle_rule" {
   description = "A list of lifecycle_rule maps to apply to the bucket"
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "s3_tags" {
   description = "Additional tags for the S3 bucket"
-  type        = "map"
+  type        = map(string)
   default     = {}
 }

@@ -11,14 +11,14 @@
 
 variable "name" {
   description = "The name of the EFS volume"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "performance_mode" {
   description = "The performance mode of the EFS filesystem"
-  type        = "string"
+  type        = string
   default     = "generalPurpose"
 }
 
@@ -29,13 +29,13 @@ variable "encrypted" {
 
 variable "kms_key_id" {
   description = "Create an encrypted data volume"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
 variable "efs_tags" {
   description = "Additional tags for the EFS volume"
-  type        = "map"
+  type        = map(string)
 
   default = {
     "Component" = "storage"
@@ -50,7 +50,7 @@ variable "efs_tags" {
 
 variable "private_db_subnets" {
   description = "A list of subnet CIDR ranges to be used for this EFS"
-  type        = "list"
+  type        = list(string)
 }
 
 # Optional -----------------------------------------------------------------------------------

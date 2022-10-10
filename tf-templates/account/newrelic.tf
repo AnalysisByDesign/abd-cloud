@@ -7,7 +7,7 @@
 module "newrelic_role" "newrelic" {
   source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-role"
 
-  required = "${var.newrelic_required}"
+  required = var.newrelic_required
 
   roles = [{
     name               = "NewRelicInfrastructure-Integrations"

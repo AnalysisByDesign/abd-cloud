@@ -6,19 +6,19 @@
 
 variable "name" {
   description = "The name prefix of the various resources"
-  type        = "string"
+  type        = string
 }
 
 variable "rds_security_group" {
   description = "The name of the RDS security group"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "r53_name" {
   description = "The name for the route53 entry"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -30,26 +30,26 @@ variable "r53_name" {
 
 variable "public_subnets" {
   description = "A list of public subnets to be used for this deployment"
-  type        = "list"
+  type        = list(string)
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "alb_health_check_path" {
   description = "The path to test for the health-check"
-  type        = "string"
+  type        = string
   default     = "/"
 }
 
 variable "alb_health_check_status" {
   description = "The return code for the health-check"
-  type        = "string"
+  type        = string
   default     = "200,301,302"
 }
 
 variable "alb_ingress_cidr" {
   description = "The ingress CIDR range for access to the load balancer"
-  type        = "string"
+  type        = string
   default     = "0.0.0.0/0"
 }
 
@@ -61,61 +61,61 @@ variable "alb_ingress_cidr" {
 
 variable "private_app_subnets" {
   description = "A list of private subnets to be used for app resource within this deployment"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "docker_image" {
   description = "Docker image to load from the registry"
-  type        = "string"
+  type        = string
 }
 
 # Optional -----------------------------------------------------------------------------------
 
 variable "network_mode" {
   description = "The Docker networking mode - none, bridge, awsvpc or host."
-  type        = "string"
+  type        = string
   default     = "awsvpc"
 }
 
 variable "task_definition_cpu" {
   description = "CPU units to allocate to the tasks"
-  type        = "string"
+  type        = string
   default     = "256"
 }
 
 variable "task_definition_memory" {
   description = "RAM to allocate to the tasks"
-  type        = "string"
+  type        = string
   default     = "512"
 }
 
 variable "container_port" {
   description = "The port on the container to associate with the load balancer"
-  type        = "string"
+  type        = string
   default     = "80"
 }
 
 variable "desired_count" {
   description = "The number of instances of the task definition to place and keep running."
-  type        = "string"
+  type        = string
   default     = "1"
 }
 
 variable "tasks_folder" {
   description = "Folder containing tasks templates to apply to the task definition"
-  type        = "string"
+  type        = string
   default     = "files"
 }
 
 variable "tasks_file" {
   description = "Task template file to apply to the task definition"
-  type        = "string"
+  type        = string
   default     = "task-defn.json.tpl"
 }
 
 variable "awslogs_group" {
   description = "CloudWatch group"
-  type        = "string"
+  type        = string
   default     = "infra"
 }
 
@@ -125,7 +125,7 @@ variable "awslogs_group" {
 
 variable "s3_name" {
   description = "The name of the S3 bucket for storage"
-  type        = "string"
+  type        = string
   default     = ""
 }
 
@@ -137,7 +137,7 @@ variable "s3_name" {
 
 variable "queue_name" {
   description = "Queue name"
-  type        = "string"
+  type        = string
   default     = ""
 }
 

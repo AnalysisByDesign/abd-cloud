@@ -3,8 +3,8 @@
 # -----------------------------------------------------------------------------
 
 data "aws_subnet" "this" {
-  count      = "${length(var.private_db_subnets)}"
-  cidr_block = "${element(var.private_db_subnets, count.index)}"
+  count      = length(var.private_db_subnets)
+  cidr_block = element(var.private_db_subnets, count.index)
 }
 
 # -----------------------------------------------------------------------------

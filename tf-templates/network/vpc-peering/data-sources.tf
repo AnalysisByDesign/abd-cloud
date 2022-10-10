@@ -6,8 +6,8 @@ data "aws_caller_identity" "accepter" {
 
 data "aws_vpc" "accepter_vpc" {
   provider   = "aws.accepter"
-  id         = "${var.accepter_vpc_id}"
-  cidr_block = "${var.accepter_vpc_cidr}"
+  id         = var.accepter_vpc_id
+  cidr_block = var.accepter_vpc_cidr
 }
 
 data "terraform_remote_state" "requester" {

@@ -3,8 +3,8 @@
 # --------------------------------------------------------------------------------------------
 
 resource "aws_cloudtrail" "this" {
-  name                          = "${var.cloudtrail_name}"
-  s3_bucket_name                = "${var.s3_name}"
+  name                          = var.cloudtrail_name
+  s3_bucket_name                = var.s3_name
   s3_key_prefix                 = ""
   include_global_service_events = true
   enable_logging                = true
@@ -28,6 +28,6 @@ resource "aws_cloudtrail" "this" {
       values = ["arn:aws:s3:::"]
     }
   }
-  tags       = "${merge(local.common_tags, map("Name", format("%s", var.cloudtrail_name)))}"
+  tags       = merge(local.common_tags, map("Name", format("%s", var.cloudtrail_name)))
   depends_on = ["module.cloudtrail-s3"]
 }
