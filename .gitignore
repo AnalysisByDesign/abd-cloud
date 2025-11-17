@@ -3,6 +3,7 @@
 terraform.tfstate
 terraform.tfvars
 *.tfstate*
+*tfplan*
 
 # abd-cloud excluded configuration files
 /tf-params*
