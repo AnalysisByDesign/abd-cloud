@@ -1,0 +1,11 @@
+#####################################
+#
+#             WAF
+#
+#####################################
+module "ringgo-waf" "alb" {
+  source               = "../../../tf-modules/security/waf"
+  if_waf_global        = "${var.if_waf_global}"
+  waf_rule_metric_name = "${var.waf_rule_metric_name}"
+  waf_rule_name        = "${var.waf_rule_name}"
+}

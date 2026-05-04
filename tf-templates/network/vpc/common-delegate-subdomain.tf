@@ -1,0 +1,1 @@
+../../common/delegate-subdomain.tf

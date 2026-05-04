@@ -1,9 +1,19 @@
-#  Local .terraform directories
-**/.terraform/*
+# Terraform files
+.terraform
+terraform.tfstate
+terraform.tfvars
+*.tfstate*
+*tfplan*
 
-# .tfstate files
-*.tfstate
-*.tfstate.*
+# abd-cloud excluded configuration files
+/tf-params*
+/logs/
+build.log
 
-# .tfvars files
-*.tfvars
+# OS X files
+.history
+.DS_Store
+
+# IDE helper files for VSCode, Sublime, Atom, etc
+.vscode
+_ide_helper.php
