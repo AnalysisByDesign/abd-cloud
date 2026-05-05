@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------------------------
-module "abd-s3" "object" {
+module "abd-s3" {
   source = "../../../../abd-cloud-modules/storage/aws-s3"
 
   # Required variables
@@ -16,7 +16,7 @@ module "abd-s3" "object" {
 
   bucket_policy = (var.s3_policy != ""
     ? var.s3_policy
-    : templatefile("${var.policy_folder}/${var.policy_file}", { s3_name = var.s3_name, account_id = var.acct_target }))
+  : templatefile("${var.policy_folder}/${var.policy_file}", { s3_name = var.s3_name, account_id = var.acct_target }))
 
   logging             = var.s3_logging
   lifecycle_rule      = var.s3_lifecycle_rule

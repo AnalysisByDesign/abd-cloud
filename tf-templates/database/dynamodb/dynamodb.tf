@@ -2,7 +2,7 @@
 # DynamoDB Table
 # --------------------------------------------------------------------------------------------
 
-module "ec2-sg" "this" {
+module "ec2-sg" {
   source = "../../../../abd-cloud-modules/database/dynamodb"
 
   # Required variables

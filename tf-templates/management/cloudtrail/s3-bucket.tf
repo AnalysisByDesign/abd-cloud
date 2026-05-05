@@ -2,7 +2,7 @@
 # S3
 # --------------------------------------------------------------------------------------------
 
-module "cloudtrail-s3" "this" {
+module "cloudtrail-s3" {
   source = "../../../../abd-cloud-modules/storage/aws-s3"
 
   count = var.cloudtrail_hub ? 1 : 0

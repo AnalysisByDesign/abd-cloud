@@ -2,7 +2,7 @@
 # CloudWatch Log Groups
 # --------------------------------------------------------------------------------------------
 
-module "cloudwatch_groups" "this" {
+module "cloudwatch_groups" {
   source = "../../../abd-cloud-modules/monitoring/cloudwatch/group"
 
   common_tags     = local.common_tags

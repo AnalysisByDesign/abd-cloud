@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 
 # Create cluster
-module "ecs-cluster" "this" {
+module "ecs-cluster" {
   source = "../../../../abd-cloud-modules/compute/ecs/cluster"
 
   name        = format("%s-%s", local.vpc_name, var.name)

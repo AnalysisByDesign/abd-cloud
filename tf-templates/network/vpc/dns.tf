@@ -2,7 +2,7 @@
 # Route53
 # --------------------------------------------------------------------------------------------
 
-module "r53_private" "zone" {
+module "r53_private" {
   source = "../../../../abd-cloud-modules/network/dns/private-zone"
 
   use_existing_zones = var.use_existing_zones
@@ -18,7 +18,7 @@ module "r53_private" "zone" {
 
 # Route53 Public Sub-Domain -----------------------------------------------------------------
 
-module "r53_delegate" "set" {
+module "r53_delegate" {
   source = "../../../../abd-cloud-modules/network/dns/delegation-set"
 
   use_existing_zones = var.use_existing_zones
@@ -26,7 +26,7 @@ module "r53_delegate" "set" {
   delegate_set_name = var.delegate_set_name
 }
 
-module "r53_public" "zone" {
+module "r53_public" {
   source = "../../../../abd-cloud-modules/network/dns/public-zone"
 
   use_existing_zones = var.use_existing_zones

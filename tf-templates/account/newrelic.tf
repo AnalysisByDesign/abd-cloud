@@ -4,7 +4,7 @@
 
 # Create automation role and allow to be attached to EC2 instance
 # Only if this role needs to assume remote account roles
-module "newrelic_role" "newrelic" {
+module "newrelic_role" {
   source = "../../../abd-cloud-modules/security/iam-role"
 
   required = var.newrelic_required

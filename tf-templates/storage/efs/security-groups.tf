@@ -5,7 +5,7 @@
 # --------------------------------------------------------------------------------------------
 # EFS Security Group
 # --------------------------------------------------------------------------------------------
-module "efs-sg" "efs" {
+module "efs-sg" {
   source = "../../../../abd-cloud-modules/security/security-group"
 
   # Required variables

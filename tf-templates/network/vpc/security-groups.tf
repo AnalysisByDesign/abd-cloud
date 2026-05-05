@@ -39,7 +39,7 @@ module "management-ssh-sg" {
 }
 
 # --------------------------------------------------------------------------------------------
-module "management-ssh-sgr-in" "this" {
+module "management-ssh-sgr-in" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   required = length(var.management_ingress_locations) > 0 ? 1 : 0
