@@ -28,5 +28,5 @@ module "r53_mx" {
   name     = ""
   type     = "MX"
   ttl      = "300"
-  records  = ["${var.mx_records}"]
+  records  = var.mx_records
 }
