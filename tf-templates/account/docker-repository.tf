@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "docker_repository" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//compute/docker-repository"
+  source = "../../../abd-cloud-modules/compute/docker-repository"
 
   required                   = var.docker_repository_required
   repository_name            = var.docker_repository_name
@@ -11,5 +11,5 @@ module "docker_repository" {
 
   repository_lifecycle_document = (var.docker_repository_lifecycle_policy != ""
     ? var.docker_repository_lifecycle_policy
-  : data.template_file.repository_lifecycle_policy.rendered)
+  : local.repository_lifecycle_policy)
 }

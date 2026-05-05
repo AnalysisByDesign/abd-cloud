@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------
 # Application RDS connectivity
 module "db-username" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/secret-store"
+  source = "../../../../abd-cloud-modules/security/secret-store"
 
   required    = var.require_db ? 1 : 0
   key         = "${local.vpc_name}/${var.component_name}/database/username"
@@ -15,7 +15,7 @@ module "db-username" {
 }
 
 module "db-password" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/secret-store"
+  source = "../../../../abd-cloud-modules/security/secret-store"
 
   required    = var.require_db ? 1 : 0
   key         = "${local.vpc_name}/${var.component_name}/database/password"

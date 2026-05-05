@@ -7,7 +7,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "alb-sg" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
+  source = "../../../../abd-cloud-modules/security/security-group"
 
   name        = format("%s-%s-alb", local.vpc_name, var.name)
   description = format("%s-%s-alb", local.vpc_name, var.name)
@@ -16,7 +16,7 @@ module "alb-sg" {
 }
 
 module "alb-sgr-http-in" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   security_group_id = module.alb-sg.id
   description       = "HTTP inbound"
@@ -27,7 +27,7 @@ module "alb-sgr-http-in" {
 }
 
 module "alb-sgr-https-in" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   security_group_id = module.alb-sg.id
   description       = "HTTPS inbound"
@@ -42,7 +42,7 @@ module "alb-sgr-https-in" {
 # --------------------------------------------------------------------------------------------
 
 module "ecs-sg" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
+  source = "../../../../abd-cloud-modules/security/security-group"
 
   name        = format("%s-%s-ecs", local.vpc_name, var.name)
   description = format("%s-%s-ecs", local.vpc_name, var.name)
@@ -51,7 +51,7 @@ module "ecs-sg" {
 }
 
 module "alb-ecs-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
   security_group_id        = module.alb-sg.id
   description              = "HTTP ALB to ECS"
@@ -62,7 +62,7 @@ module "alb-ecs-sgr" {
 }
 
 module "ecs-alb-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
   security_group_id        = module.ecs-sg.id
   description              = "HTTP ALB to ECS"
@@ -73,7 +73,7 @@ module "ecs-alb-sgr" {
 }
 
 module "ecs-rds-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
   security_group_id        = module.ecs-sg.id
   description              = "MySQL ECS to Aurora"
@@ -84,7 +84,7 @@ module "ecs-rds-sgr" {
 }
 
 module "rds-ecs-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-link"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
   security_group_id        = data.aws_security_group.rds.id
   description              = "MySQL ECS to Aurora"
@@ -95,7 +95,7 @@ module "rds-ecs-sgr" {
 }
 
 module "ecs-http-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   security_group_id = module.ecs-sg.id
   description       = "HTTP outbound"
@@ -106,7 +106,7 @@ module "ecs-http-sgr" {
 }
 
 module "ecs-https-sgr" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   security_group_id = module.ecs-sg.id
   description       = "HTTPS outbound"

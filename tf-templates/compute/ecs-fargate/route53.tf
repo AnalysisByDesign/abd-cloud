@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "dns_apex" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/alias-record"
+  source = "../../../../abd-cloud-modules/network/dns/alias-record"
 
   # Required variables
   zone_id                      = data.aws_route53_zone.public.zone_id

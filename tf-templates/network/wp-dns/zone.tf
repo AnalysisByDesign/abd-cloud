@@ -3,13 +3,13 @@
 # --------------------------------------------------------------------------------------------
 
 module "r53_delegate" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/delegation-set"
+  source = "../../../../abd-cloud-modules/network/dns/delegation-set"
 
   delegate_set_name = var.delegate_set_name
 }
 
 module "r53_public" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/public-zone"
+  source = "../../../../abd-cloud-modules/network/dns/public-zone"
 
   # Required variables
   search_domain = local.public_search_domain

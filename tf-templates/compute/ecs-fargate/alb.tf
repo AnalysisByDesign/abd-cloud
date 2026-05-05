@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "load_balancer" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//compute/alb"
+  source = "../../../../abd-cloud-modules/compute/alb"
 
   # Required variables
   name       = format("%s-%s", local.vpc_name, var.name)
