@@ -26,7 +26,14 @@ variable "target_region" {
 # -------------------------------------------------------------------------------------------
 
 terraform {
-  required_version = ">= 0.11.13"
+  required_version = ">= 1.9.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
 
   backend "s3" {
     encrypt        = true
@@ -38,7 +45,6 @@ terraform {
 }
 
 provider "aws" {
-
   region = var.target_region
 
   assume_role {

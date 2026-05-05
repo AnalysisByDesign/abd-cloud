@@ -4,27 +4,27 @@
 
 # Create cluster
 module "ecs_cluster" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//compute/ecs/cluster"
+  source = "../../../../abd-cloud-modules/compute/ecs/cluster"
   name   = format("%s-%s", local.vpc_name, var.name)
 }
 
 # Create task definition
 module "ecs_task_definitions" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//compute/ecs/task"
+  source = "../../../../abd-cloud-modules/compute/ecs/task"
 
   family                   = format("%s-%s", local.vpc_name, var.name)
   role_arn                 = module.ecs_role.arns
   network_mode             = var.network_mode
   requires_compatibilities = "FARGATE"
 
-  container_definitions = data.template_file.tasks_tpl.rendered
+  container_definitions = local.tasks_tpl
   cpu                   = var.task_definition_cpu
   memory                = var.task_definition_memory
 }
 
 # Create service
 module "ecs_service" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//compute/ecs/service"
+  source = "../../../../abd-cloud-modules/compute/ecs/service"
 
   name              = format("%s-%s", local.vpc_name, var.name)
   cluster_id        = module.ecs_cluster.cluster_id

@@ -22,14 +22,17 @@ variable "s3_acl" {
 }
 
 variable "s3_logging" {
-  description = "Logging configuration of the bucket"
-  type        = list(string)
-  default     = []
+  description = "Access logging configuration. Set to null to disable."
+  type = object({
+    target_bucket = string
+    target_prefix = string
+  })
+  default = null
 }
 
 variable "s3_lifecycle_rule" {
-  description = "A list of lifecycle_rule maps to apply to the bucket"
-  type        = list(string)
+  description = "A list of lifecycle rule objects to apply to the bucket"
+  type        = list(any)
   default     = []
 }
 
@@ -45,9 +48,9 @@ variable "s3_force_destroy" {
 }
 
 variable "s3_acceleration_status" {
-  description = "Acceleration status of the bucket"
+  description = "Transfer acceleration status. Set to 'Enabled' to enable, or leave empty to leave unconfigured."
   type        = string
-  default     = "Suspended"
+  default     = ""
 }
 
 variable "s3_enable_versioning" {

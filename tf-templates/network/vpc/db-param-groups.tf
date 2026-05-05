@@ -3,17 +3,18 @@
 # --------------------------------------------------------------------------------------------
 
 module "db-cluster-param-group-provisioned" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//database/cluster-param-group"
+  source = "../../../../abd-cloud-modules/database/cluster-param-group"
 
   count            = var.db_param_group_name == "" ? 0 : 1
   name             = format("%s-%s", var.vpc_name, var.db_param_group_name)
   description      = "Cluster parameter group for databases"
+  db_family        = "aurora-mysql5.7"
   common_tags      = local.common_tags
   param_group_tags = var.db_param_group_tags
 }
 
 module "db-cluster-param-group-serverless" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//database/cluster-param-group"
+  source = "../../../../abd-cloud-modules/database/cluster-param-group"
 
   count            = var.db_param_group_name == "" ? 0 : 1
   name             = format("%s-%s-serverless", var.vpc_name, var.db_param_group_name)
@@ -24,7 +25,7 @@ module "db-cluster-param-group-serverless" {
 }
 
 module "db-param-group" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//database/param-group"
+  source = "../../../../abd-cloud-modules/database/param-group"
 
   count       = var.db_param_group_name == "" ? 0 : 1
   name        = format("%s-%s", var.vpc_name, var.db_param_group_name)

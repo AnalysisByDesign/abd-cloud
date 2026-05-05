@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "r53_private" "zone" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/private-zone"
+  source = "../../../../abd-cloud-modules/network/dns/private-zone"
 
   use_existing_zones = var.use_existing_zones
 
@@ -19,7 +19,7 @@ module "r53_private" "zone" {
 # Route53 Public Sub-Domain -----------------------------------------------------------------
 
 module "r53_delegate" "set" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/delegation-set"
+  source = "../../../../abd-cloud-modules/network/dns/delegation-set"
 
   use_existing_zones = var.use_existing_zones
 
@@ -27,7 +27,7 @@ module "r53_delegate" "set" {
 }
 
 module "r53_public" "zone" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/public-zone"
+  source = "../../../../abd-cloud-modules/network/dns/public-zone"
 
   use_existing_zones = var.use_existing_zones
 

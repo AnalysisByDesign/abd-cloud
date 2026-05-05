@@ -2,12 +2,12 @@
 # Launch Template
 # --------------------------------------------------------------------------------------------
 module "launch_template" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//compute/launch-template"
+  source = "../../../../abd-cloud-modules/compute/launch-template"
 
   # Required variables
   name               = format("%s-%s", local.vpc_name, var.name)
   image_id           = data.aws_ami.this.id
-  security_group_ids = ["${module.ec2-sg.id}"]
+  security_group_ids = [module.ec2-sg.id]
   common_tags        = local.common_tags
 
   # Optional variables
@@ -20,14 +20,8 @@ module "launch_template" {
 }
 
 locals {
-  user_data_script = base64encode(data.template_file.user_data_script.rendered)
-}
-
-data "template_file" "user_data_script" {
-  template = file("${var.user_data_script_folder}/${var.user_data_script}")
-
-  vars {
-    env  = var.common_tag_environment
-    name = var.name
-  }
+  user_data_script = base64encode(templatefile(
+    "${var.user_data_script_folder}/${var.user_data_script}",
+    { env = var.common_tag_environment, name = var.name }
+  ))
 }
