@@ -23,7 +23,7 @@ module "r53_public" {
 module "r53_mx" {
   source = "../../../abd-cloud-modules/network/dns/record"
 
-  required = length(var.mx_records) > 0 ? 1 : 0
+  required = length(var.mx_records) > 0
   zone_id  = module.r53_public.zone_id
   name     = ""
   type     = "MX"
