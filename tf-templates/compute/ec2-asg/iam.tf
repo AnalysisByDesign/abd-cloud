@@ -8,7 +8,7 @@ resource "aws_iam_instance_profile" "ec2-asg" {
 }
 
 module "ec2_asg_role" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-role"
+  source = "../../../../abd-cloud-modules/security/iam-role"
 
   roles = [{
     name               = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
@@ -19,12 +19,12 @@ module "ec2_asg_role" {
 }
 
 module "ec2_asg_policy" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-policy"
+  source = "../../../../abd-cloud-modules/security/iam-policy"
 
   count       = var.ec2_policy_template == "" ? 0 : 1
   name        = format("%s-%s", local.vpc_name, var.asg_iam_profile_name)
   description = "Allow EC2 instance to use selected bucket"
-  policy      = join("", data.template_file.ec2_asg_policy.*.rendered)
+  policy      = local.ec2_asg_policy_document
 }
 
 resource "aws_iam_role_policy_attachment" "attach_policy" {

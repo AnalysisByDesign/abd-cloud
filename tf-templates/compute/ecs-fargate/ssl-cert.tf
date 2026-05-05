@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "ssl_cert" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/ssl-certs"
+  source = "../../../../abd-cloud-modules/security/ssl-certs"
 
   required = true
 

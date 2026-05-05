@@ -8,8 +8,8 @@ resource "aws_iam_service_linked_role" "es" {
 
 # --------------------------------------------------------------------------------------------
 # RDS Enhanced Monitoring Role Enabled at account level
-module "rds_monitoring_role" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-role"
+module "rds_monitoring_role" "rds_enhanced" {
+  source = "../../../abd-cloud-modules/security/iam-role"
 
   roles = [{
     name               = "rds-enhanced-monitoring"
@@ -21,8 +21,8 @@ module "rds_monitoring_role" {
 
 # --------------------------------------------------------------------------------------------
 # Administrator cross-account role access
-module "remote_admins" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-role"
+module "remote_admins" "this" {
+  source = "../../../abd-cloud-modules/security/iam-role"
 
   roles = [{
     name               = "admins"

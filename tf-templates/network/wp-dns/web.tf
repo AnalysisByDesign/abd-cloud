@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "dns_subdomain" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/alias-record"
+  source = "../../../../abd-cloud-modules/network/dns/alias-record"
 
   zone_id                      = data.aws_route53_zone.wordpress.zone_id
   name                         = var.wp_sub_domain
@@ -13,7 +13,7 @@ module "dns_subdomain" {
 }
 
 module "dns_naked" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/alias-record"
+  source = "../../../../abd-cloud-modules/network/dns/alias-record"
 
   zone_id                      = module.r53_public.zone_id
   name                         = ""
@@ -23,7 +23,7 @@ module "dns_naked" {
 }
 
 module "dns_www" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/record"
+  source = "../../../../abd-cloud-modules/network/dns/record"
 
   zone_id = module.r53_public.zone_id
   name    = "www"

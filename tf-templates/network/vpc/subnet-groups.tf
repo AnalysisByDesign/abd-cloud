@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "db-subnet-group" "this" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/db-subnet-group"
+  source = "../../../../abd-cloud-modules/network/db-subnet-group"
 
   count       = length(var.private_db_subnets) > 0 ? 1 : 0
   name        = format("%s-%s", var.vpc_name, var.db_subnet_group_name)
@@ -14,7 +14,7 @@ module "db-subnet-group" "this" {
 }
 
 module "cache-subnet-group" "this" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/cache-subnet-group"
+  source = "../../../../abd-cloud-modules/network/cache-subnet-group"
 
   count       = length(var.private_cache_subnets) > 0 ? 1 : 0
   name        = format("%s-%s", var.vpc_name, var.cache_subnet_group_name)

@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "r53-aurora-rw" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/record"
+  source = "../../../../abd-cloud-modules/network/dns/record"
 
   # Required variables
   zone_id = data.aws_route53_zone.private.zone_id
@@ -13,7 +13,7 @@ module "r53-aurora-rw" {
 }
 
 module "r53-aurora-ro" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/record"
+  source = "../../../../abd-cloud-modules/network/dns/record"
 
   # Required variables
   zone_id = data.aws_route53_zone.private.zone_id
