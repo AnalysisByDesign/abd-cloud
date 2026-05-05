@@ -19,8 +19,7 @@ resource "aws_default_security_group" "egress" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = (merge(local.common_tags,
-  map("Name", format("%s-public", var.vpc_name))))
+  tags = merge(local.common_tags, tomap({ "Name" = format("%s-public", var.vpc_name) }))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -42,7 +41,7 @@ module "management-ssh-sg" {
 module "management-ssh-sgr-in" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
-  required = length(var.management_ingress_locations) > 0 ? 1 : 0
+  required = length(var.management_ingress_locations) > 0
 
   # Required variables
   security_group_id = module.management-ssh-sg.id
@@ -50,7 +49,7 @@ module "management-ssh-sgr-in" {
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "22"
-  cidr_blocks       = ["${var.management_ingress_locations}"]
+  cidr_blocks       = var.management_ingress_locations
 }
 
 # --------------------------------------------------------------------------------------------

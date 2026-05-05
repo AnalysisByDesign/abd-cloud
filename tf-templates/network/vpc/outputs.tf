@@ -18,13 +18,13 @@ output "vpc_cidr_block" {
 # Public Route Table
 output "public_route_table_id" {
   description = "The ID of the Public Route Table"
-  value       = ["${aws_default_route_table.public.id}"]
+  value       = [aws_default_route_table.public.id]
 }
 
 # Private Route Tables
 output "private_route_table_ids" {
   description = "The IDs of the Private Route Tables"
-  value       = ["${aws_route_table.private.*.id}"]
+  value       = aws_route_table.private[*].id
 }
 
 # --------------------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ output "private_name_servers" {
 # Subnet Groups
 output "db_subnet_group_name" {
   description = "The name of the db subnet group"
-  value       = module.db-subnet-group.name
+  value       = module.db-subnet-group[0].name
 }
 
 # --------------------------------------------------------------------------------------------

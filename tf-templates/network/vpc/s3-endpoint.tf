@@ -22,7 +22,7 @@ resource "aws_vpc_endpoint_route_table_association" "s3_rt" {
     )
   : 0)
 
-  vpc_endpoint_id = aws_vpc_endpoint.s3.id
+  vpc_endpoint_id = aws_vpc_endpoint.s3[0].id
   route_table_id  = element(aws_route_table.private.*.id, count.index)
 }
 
@@ -30,7 +30,7 @@ resource "aws_vpc_endpoint_route_table_association" "s3_rt" {
 resource "aws_vpc_endpoint_subnet_association" "s3_web_subnet" {
   count = var.vpc_endpoint_s3_web_enable ? length(var.private_web_subnets) : 0
 
-  vpc_endpoint_id = aws_vpc_endpoint.s3.id
+  vpc_endpoint_id = aws_vpc_endpoint.s3[0].id
   subnet_id       = element(aws_subnet.private-web.*.id, count.index)
 }
 
@@ -38,6 +38,6 @@ resource "aws_vpc_endpoint_subnet_association" "s3_web_subnet" {
 resource "aws_vpc_endpoint_subnet_association" "s3_app_subnet" {
   count = var.vpc_endpoint_s3_app_enable ? length(var.private_app_subnets) : 0
 
-  vpc_endpoint_id = aws_vpc_endpoint.s3.id
+  vpc_endpoint_id = aws_vpc_endpoint.s3[0].id
   subnet_id       = element(aws_subnet.private-app.*.id, count.index)
 }

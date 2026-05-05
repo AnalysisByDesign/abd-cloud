@@ -5,10 +5,9 @@
 # Adopt the Default RouteTable and use it as Public routing.
 resource "aws_default_route_table" "public" {
   default_route_table_id = aws_vpc.this.default_route_table_id
-  propagating_vgws       = ["${var.public_propagating_vgws}"]
+  propagating_vgws       = var.public_propagating_vgws
 
-  tags = (merge(local.common_tags, var.public_route_table_tags,
-  map("Name", format("%s-public", var.vpc_name))))
+  tags = merge(local.common_tags, var.public_route_table_tags, tomap({ "Name" = format("%s-public", var.vpc_name) }))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -18,7 +17,7 @@ resource "aws_route" "public_internet_gateway" {
 
   route_table_id         = aws_default_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.this.id
+  gateway_id             = aws_internet_gateway.this[0].id
 }
 
 # --------------------------------------------------------------------------------------------
@@ -33,15 +32,14 @@ resource "aws_route_table" "private" {
   length(var.private_db_subnets)))
 
   vpc_id           = aws_vpc.this.id
-  propagating_vgws = ["${var.private_propagating_vgws}"]
+  propagating_vgws = var.private_propagating_vgws
 
-  tags = (merge(local.common_tags, var.private_route_table_tags,
-  map("Name", format("%s-private-%s", var.vpc_name, element(var.azs, count.index)))))
+  tags = merge(local.common_tags, var.private_route_table_tags, tomap({ "Name" = format("%s-private-%s", var.vpc_name, element(var.azs, count.index)) }))
 
   lifecycle {
     # When attaching VPN gateways it is common to define aws_vpn_gateway_route_propagation
     # resources that manipulate the attributes of the routing table (typically for the private subnets)
-    ignore_changes = ["propagating_vgws"]
+    ignore_changes = [propagating_vgws]
   }
 }
 
