@@ -29,7 +29,7 @@ resource "aws_default_security_group" "egress" {
 # Management ingress SSH security group
 # --------------------------------------------------------------------------------------------
 module "management-ssh-sg" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
+  source = "../../../../abd-cloud-modules/security/security-group"
 
   # Required variables
   name        = format("%s-management-ssh", var.vpc_name)
@@ -39,8 +39,8 @@ module "management-ssh-sg" {
 }
 
 # --------------------------------------------------------------------------------------------
-module "management-ssh-sgr-in" "this" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+module "management-ssh-sgr-in" {
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   required = length(var.management_ingress_locations) > 0 ? 1 : 0
 

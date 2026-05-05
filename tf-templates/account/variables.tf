@@ -195,6 +195,22 @@ variable "cloudwatch_loggroup_names" {
 }
 
 # ============================================================================================
+#                                      GitHub Actions OIDC
+# ============================================================================================
+
+variable "github_org" {
+  description = "GitHub organisation name — set to enable OIDC role creation (management account only)"
+  type        = string
+  default     = ""
+}
+
+variable "github_actions_role_name" {
+  description = "Name of the IAM role assumed by GitHub Actions via OIDC"
+  type        = string
+  default     = "github-actions-terraform"
+}
+
+# ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================
 

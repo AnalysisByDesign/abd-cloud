@@ -6,7 +6,7 @@
 # When FIFO comes to London, this provider and relevant other code can be removed
 
 provider "aws" {
-  alias   = "queue-special-region"
+  alias = "queue-special-region"
 
   region = "eu-west-1"
 
@@ -22,11 +22,11 @@ provider "aws" {
 # --------------------------------------------------------------------------------------------
 
 module "queue-dead-letter" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//integrate/queue"
+  source = "../../../../abd-cloud-modules/integrate/queue"
 
   # As we require the queues to be in Ireland for FIFO, we need this
   providers = {
-    hashicorp/aws = aws.queue-special-region
+    hashicorp / aws = aws.queue-special-region
   }
 
   count = var.queue_name != "" ? 1 : 0
@@ -47,11 +47,11 @@ module "queue-dead-letter" {
 # --------------------------------------------------------------------------------------------
 
 module "queue" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//integrate/queue"
+  source = "../../../../abd-cloud-modules/integrate/queue"
 
   # As we require the queues to be in Ireland for FIFO, we need this
   providers = {
-    hashicorp/aws = aws.queue-special-region
+    hashicorp / aws = aws.queue-special-region
   }
 
   count = var.queue_name != "" ? 1 : 0

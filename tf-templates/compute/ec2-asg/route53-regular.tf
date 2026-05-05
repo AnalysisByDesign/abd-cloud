@@ -10,7 +10,7 @@
 
 # Load Balancer frontend traffic - http(s)://abd-wp.uk/ -> Load Balancer
 module "dns_load_balancer" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//network/dns/alias-record"
+  source = "../../../../abd-cloud-modules/network/dns/alias-record"
 
   zone_id                      = data.aws_route53_zone.public.zone_id
   name                         = ""

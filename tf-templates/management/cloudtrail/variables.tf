@@ -35,8 +35,8 @@ variable "s3_name" {
 # Optional -----------------------------------------------------------------------------------
 
 variable "s3_lifecycle_rule" {
-  description = "A list of lifecycle_rule maps to apply to the bucket"
-  type        = list(string)
+  description = "A list of lifecycle rule objects to apply to the bucket"
+  type        = list(any)
   default     = []
 }
 

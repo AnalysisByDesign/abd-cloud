@@ -4,7 +4,7 @@
 
 # Create role
 module "ecs_role" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-role"
+  source = "../../../../abd-cloud-modules/security/iam-role"
 
   roles = [{
     name               = "${format("%s-ecs-role", local.vpc_name)}"
@@ -16,7 +16,7 @@ module "ecs_role" {
 
 # Create policy
 #module "ecs_policy" "ecs" {
-#  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/iam-policy"
+#  source = "../../../../abd-cloud-modules/security/iam-policy"
 #
 #  name        = "${var.name}EcsPolicy"
 #  description = "Policy for Elastic Container Service"

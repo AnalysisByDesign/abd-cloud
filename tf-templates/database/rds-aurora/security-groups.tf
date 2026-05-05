@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------
 
 module "sg-aurora" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group"
+  source = "../../../../abd-cloud-modules/security/security-group"
 
   # Required variables
   name        = format("%s-%s", local.vpc_name, var.name)
@@ -13,7 +13,7 @@ module "sg-aurora" {
 }
 
 module "sg-aurora-ingress-mysql" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//security/security-group-rule-cidr"
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
   required = length(var.management_ingress_locations) > 0 ? 1 : 0
 

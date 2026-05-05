@@ -23,7 +23,7 @@ provider "aws" {
 # --------------------------------------------------------------------------------------------
 
 module "queue-dead-letter" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//integrate/queue"
+  source = "../../../../abd-cloud-modules/integrate/queue"
 
   # As we require the queues to be in Ireland for FIFO, we need this
   providers = {
@@ -48,7 +48,7 @@ module "queue-dead-letter" {
 # --------------------------------------------------------------------------------------------
 
 module "queue" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//integrate/queue"
+  source = "../../../../abd-cloud-modules/integrate/queue"
 
   # As we require the queues to be in Ireland for FIFO, we need this
   providers = {

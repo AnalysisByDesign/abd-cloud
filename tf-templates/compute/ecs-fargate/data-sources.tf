@@ -26,15 +26,16 @@ data "aws_route53_zone" "public" {
 
 # -----------------------------------------------------------------------------
 
-data "template_file" "tasks_tpl" {
-  template = file("${var.tasks_folder}/${var.tasks_file}")
-
-  vars {
-    container_name        = format("%s-%s", local.vpc_name, var.name)
-    docker_image          = var.docker_image
-    container_port        = var.container_port
-    awslogs-group         = var.awslogs_group
-    awslogs-region        = var.target_region
-    awslogs-stream-prefix = format("%s-%s", local.vpc_name, var.name)
-  }
+locals {
+  tasks_tpl = templatefile(
+    "${var.tasks_folder}/${var.tasks_file}",
+    {
+      container_name        = format("%s-%s", local.vpc_name, var.name)
+      docker_image          = var.docker_image
+      container_port        = var.container_port
+      awslogs-group         = var.awslogs_group
+      awslogs-region        = var.target_region
+      awslogs-stream-prefix = format("%s-%s", local.vpc_name, var.name)
+    }
+  )
 }

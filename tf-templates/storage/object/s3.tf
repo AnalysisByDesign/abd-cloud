@@ -2,18 +2,9 @@
 # S3 Bucket
 # --------------------------------------------------------------------------------------------
 
-data "template_file" "s3-policy" {
-  template = file("${var.policy_folder}/${var.policy_file}")
-
-  vars {
-    s3_name    = var.s3_name
-    account_id = var.acct_target
-  }
-}
-
 # --------------------------------------------------------------------------------------------
-module "abd-s3" "object" {
-  source = "git@github.com:AnalysisByDesign/abd-cloud-modules.git//storage/aws-s3"
+module "abd-s3" {
+  source = "../../../../abd-cloud-modules/storage/aws-s3"
 
   # Required variables
   name        = var.s3_name
@@ -25,10 +16,10 @@ module "abd-s3" "object" {
 
   bucket_policy = (var.s3_policy != ""
     ? var.s3_policy
-  : data.template_file.s3-policy.rendered)
+  : templatefile("${var.policy_folder}/${var.policy_file}", { s3_name = var.s3_name, account_id = var.acct_target }))
 
-  logging             = ["${var.s3_logging}"]
-  lifecycle_rule      = ["${var.s3_lifecycle_rule}"]
+  logging             = var.s3_logging
+  lifecycle_rule      = var.s3_lifecycle_rule
   acceleration_status = var.s3_acceleration_status
   force_destroy       = var.s3_force_destroy
   enable_versioning   = var.s3_enable_versioning
