@@ -34,7 +34,7 @@ resource "aws_route53_record" "apex" {
   type    = "NS"
 
   ttl     = "86400"
-  records = [module.r53_public.name_servers[count.index]]
+  records = module.r53_public.name_servers[count.index]
 
   lifecycle {
     create_before_destroy = true
