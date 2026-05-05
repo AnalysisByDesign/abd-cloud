@@ -13,18 +13,23 @@ abd-cloud-modules/         Reusable child modules — the "building blocks"
 
 ### Running a build
 
+All build commands are run from the `abd-cloud/` directory. AWS credentials are supplied via `aws-vault` using the `abd_global` profile — even when targeting the `abd-wordpress` account, because both accounts are accessed by assuming a role from the management account.
+
 ```bash
+# Initialise a single resource (required on first use and after provider upgrades)
+aws-vault exec abd_global -- ./tf-run.sh -v init ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
+
 # Plan a single resource
-./tf-run.sh plan /path/to/abd-cloud-params/abd-wordpress/wordpress-vpc
+aws-vault exec abd_global -- ./tf-run.sh plan ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
 
 # Apply a single resource
-./tf-run.sh apply /path/to/abd-cloud-params/abd-wordpress/wordpress-vpc
+aws-vault exec abd_global -- ./tf-run.sh apply ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
 
 # Dry-run (show terraform commands without executing)
-./tf-run.sh -d plan /path/to/abd-cloud-params/abd-wordpress/wordpress-vpc
+aws-vault exec abd_global -- ./tf-run.sh -d plan ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
 
 # Run the full stack in priority order
-./tf-run-all.sh apply
+aws-vault exec abd_global -- ./tf-run-all.sh apply
 ```
 
 `tf-run.sh` reads the `*_config.sh` and `*.tfvars` files from the target path outward to the params root, then runs Terraform against the appropriate template. State is stored in S3 (`abd-tf-state`) with DynamoDB locking.
@@ -89,9 +94,10 @@ Terraform state is stored in the S3 bucket `abd-tf-state` (in `abd-global`) with
 ## Requirements
 
 | Tool | Version |
-|------|---------|
+| --- | --- |
 | Terraform | >= 1.9.0 |
 | AWS Provider | ~> 5.0 |
+| aws-vault | >= 6.0 |
 
 ## Pre-commit
 
