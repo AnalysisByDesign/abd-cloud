@@ -28,6 +28,6 @@ resource "aws_cloudtrail" "this" {
       values = ["arn:aws:s3:::"]
     }
   }
-  tags       = merge(local.common_tags, map("Name", format("%s", var.cloudtrail_name)))
-  depends_on = ["module.cloudtrail-s3"]
+  tags       = merge(local.common_tags, tomap({ "Name" = format("%s", var.cloudtrail_name) }))
+  depends_on = [module.cloudtrail-s3]
 }

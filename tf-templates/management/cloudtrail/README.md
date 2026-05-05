@@ -26,7 +26,7 @@ Provisions an AWS CloudTrail trail with a dedicated S3 bucket and bucket policy 
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
 
 ## Modules
 
