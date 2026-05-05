@@ -1,0 +1,440 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      resource:
+        description: "Single resource path to apply (leave empty to apply all in sequence)"
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_DEFAULT_REGION: eu-west-1
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Priority 1100 — Foundation (global account)
+  # -------------------------------------------------------------------------
+  apply-global-dynamodb:
+    name: Apply abd-global/account-global/dynamodb/terraform
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-global/account-global/dynamodb/terraform
+
+  apply-global-cloudtrail:
+    name: Apply abd-global/account-global/cloudtrail
+    needs: [apply-global-dynamodb]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-global/account-global/cloudtrail
+
+  apply-global-s3-access-log:
+    name: Apply abd-global/account-global/s3/access-log
+    needs: [apply-global-cloudtrail]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-global/account-global/s3/access-log
+
+  apply-global-s3-lambda:
+    name: Apply abd-global/account-global/s3/lambda
+    needs: [apply-global-s3-access-log]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-global/account-global/s3/lambda
+
+  # -------------------------------------------------------------------------
+  # Priority 1100 — Foundation (wordpress account)
+  # -------------------------------------------------------------------------
+  apply-wordpress-cloudtrail:
+    name: Apply abd-wordpress/account-global/cloudtrail
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/account-global/cloudtrail
+
+  apply-wordpress-s3-access-log:
+    name: Apply abd-wordpress/account-global/s3/access-log
+    needs: [apply-wordpress-cloudtrail]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/account-global/s3/access-log
+
+  apply-wordpress-s3-lambda:
+    name: Apply abd-wordpress/account-global/s3/lambda
+    needs: [apply-wordpress-s3-access-log]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/account-global/s3/lambda
+
+  # -------------------------------------------------------------------------
+  # Priority 2000 — VPCs (global and wordpress run independently)
+  # -------------------------------------------------------------------------
+  apply-global-vpc:
+    name: Apply abd-global/services-vpc
+    needs: [apply-global-s3-lambda]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-global/services-vpc
+
+  apply-wordpress-vpc:
+    name: Apply abd-wordpress/wordpress-vpc
+    needs: [apply-wordpress-s3-lambda]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc
+
+  # -------------------------------------------------------------------------
+  # Priority 2500 — VPC Peering (requires both VPCs)
+  # -------------------------------------------------------------------------
+  apply-vpc-peering:
+    name: Apply abd-wordpress/wordpress-vpc/vpc-peering
+    needs: [apply-global-vpc, apply-wordpress-vpc]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/vpc-peering
+
+  # -------------------------------------------------------------------------
+  # Priority 3000 — Data / Storage
+  # -------------------------------------------------------------------------
+  apply-database:
+    name: Apply abd-wordpress/wordpress-vpc/database
+    needs: [apply-vpc-peering]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/database
+
+  apply-efs:
+    name: Apply abd-wordpress/wordpress-vpc/storage/efs
+    needs: [apply-vpc-peering]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/storage/efs
+
+  apply-s3:
+    name: Apply abd-wordpress/wordpress-vpc/storage/s3
+    needs: [apply-vpc-peering]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/storage/s3
+
+  # -------------------------------------------------------------------------
+  # Priority 4000 — Compute
+  # -------------------------------------------------------------------------
+  apply-application:
+    name: Apply abd-wordpress/wordpress-vpc/application
+    needs: [apply-database, apply-efs, apply-s3]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/application
+
+  # -------------------------------------------------------------------------
+  # Priority 5000 — DNS / Hosted Sites (all can run in parallel)
+  # -------------------------------------------------------------------------
+  apply-hosted-sites:
+    name: Apply hosted-sites/${{ matrix.site }}
+    needs: [apply-application]
+    runs-on: ubuntu-latest
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        site:
+          - amyegillin.uk
+          - analysisbydesign.co.uk
+          - baltihot.co.uk
+          - blacklit.uk
+          - daverix.uk
+          - oranjj.uk
+          - rixinteriors.co.uk
+          - abd.training
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.9", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh apply $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/hosted-sites/${{ matrix.site }}

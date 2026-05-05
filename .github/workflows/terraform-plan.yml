@@ -1,0 +1,120 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      resource:
+        description: "Single resource path to plan (leave empty to plan all)"
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    name: Plan ${{ matrix.resource }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        resource:
+          - abd-global/account-global/dynamodb/terraform
+          - abd-global/account-global/cloudtrail
+          - abd-global/account-global/s3/access-log
+          - abd-global/account-global/s3/lambda
+          - abd-global/services-vpc
+          - abd-wordpress/account-global/cloudtrail
+          - abd-wordpress/account-global/s3/access-log
+          - abd-wordpress/account-global/s3/lambda
+          - abd-wordpress/wordpress-vpc
+          - abd-wordpress/wordpress-vpc/vpc-peering
+          - abd-wordpress/wordpress-vpc/database
+          - abd-wordpress/wordpress-vpc/storage/efs
+          - abd-wordpress/wordpress-vpc/storage/s3
+          - abd-wordpress/wordpress-vpc/application
+          - abd-wordpress/wordpress-vpc/hosted-sites/amyegillin.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/analysisbydesign.co.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/baltihot.co.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/blacklit.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/daverix.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/oranjj.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/rixinteriors.co.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/abd.training
+
+    steps:
+      - name: Checkout abd-cloud
+        uses: actions/checkout@v4
+        with:
+          path: abd-cloud
+
+      - name: Checkout abd-cloud-params
+        uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Checkout abd-cloud-modules
+        uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+          terraform_wrapper: false
+
+      - name: Terraform Plan
+        id: plan
+        env:
+          AWS_DEFAULT_REGION: eu-west-1
+        run: |
+          set +e
+          PLAN_OUTPUT=$(abd-cloud/tf-run.sh plan $GITHUB_WORKSPACE/abd-cloud-params/${{ matrix.resource }} 2>&1)
+          EXIT_CODE=$?
+          echo "plan_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit $EXIT_CODE
+
+      - name: Post plan to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const resource = '${{ matrix.resource }}';
+            const exitCode = '${{ steps.plan.outputs.exit_code }}';
+            const status = exitCode === '0' ? '✅' : '❌';
+            const planOutput = `${{ steps.plan.outputs.plan_output }}`;
+            const body = [
+              `### ${status} Terraform Plan: \`${resource}\``,
+              '',
+              '<details><summary>Show Plan</summary>',
+              '',
+              '```hcl',
+              planOutput.slice(0, 60000),
+              '```',
+              '',
+              '</details>',
+            ].join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
