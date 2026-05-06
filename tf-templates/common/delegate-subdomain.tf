@@ -4,8 +4,6 @@
 provider "aws" {
   alias = "apex"
 
-  version = "~> 1.60"
-
   region = var.target_region
 
   assume_role {
@@ -14,7 +12,7 @@ provider "aws" {
 }
 
 data "aws_route53_zone" "apex" {
-  provider     = "aws.apex"
+  provider     = aws.apex
   count        = var.delegation_enabled ? 1 : 0
   name         = "${var.public_apex_domain}."
   private_zone = false
@@ -25,18 +23,18 @@ data "aws_route53_zone" "apex" {
 # Using a dedicated resource here due to requiring an alternate provider
 # -----------------------------------------------------------------------------
 resource "aws_route53_record" "apex" {
-  provider = "aws.apex"
+  provider = aws.apex
 
   count = (var.delegation_enabled
     ? (var.use_existing_zones ? 0 : length(local.public_sub_domains))
   : 0)
 
-  zone_id = data.aws_route53_zone.apex.zone_id
+  zone_id = data.aws_route53_zone.apex[0].zone_id
   name    = local.public_sub_domains[count.index]
   type    = "NS"
 
   ttl     = "86400"
-  records = ["${module.r53_public.name_servers[count.index]}"]
+  records = module.r53_public.name_servers[count.index]
 
   lifecycle {
     create_before_destroy = true

@@ -7,8 +7,7 @@ resource "aws_vpc" "this" {
   enable_dns_hostnames = var.enable_dns_hostnames
   enable_dns_support   = var.enable_dns_support
 
-  tags = (merge(local.common_tags, var.vpc_tags,
-  map("Name", format("%s", var.vpc_name))))
+  tags = merge(local.common_tags, var.vpc_tags, tomap({ "Name" = format("%s", var.vpc_name) }))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -23,8 +22,7 @@ resource "aws_vpc_dhcp_options" "this" {
   netbios_name_servers = var.dhcp_options_netbios_name_servers
   netbios_node_type    = var.dhcp_options_netbios_node_type
 
-  tags = (merge(local.common_tags, var.dhcp_options_tags,
-  map("Name", format("%s", var.vpc_name))))
+  tags = merge(local.common_tags, var.dhcp_options_tags, tomap({ "Name" = format("%s", var.vpc_name) }))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -34,5 +32,5 @@ resource "aws_vpc_dhcp_options_association" "this" {
   count = var.enable_dhcp_options ? 1 : 0
 
   vpc_id          = aws_vpc.this.id
-  dhcp_options_id = aws_vpc_dhcp_options.this.id
+  dhcp_options_id = aws_vpc_dhcp_options.this[0].id
 }

@@ -75,7 +75,7 @@ locals {
   }
 
   # Route53 search domain lists for creating new Zones
-  public_sub_domains = coalescelist(var.public_sub_domains, list(var.public_sub_domain))
+  public_sub_domains = coalescelist(var.public_sub_domains, tolist([var.public_sub_domain]))
 
   # Route53 search domain for adding R53 records
   private_search_domain = (var.public_sub_domain == ""

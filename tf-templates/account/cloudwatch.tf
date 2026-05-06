@@ -8,5 +8,5 @@ module "cloudwatch_groups" {
   common_tags     = local.common_tags
   cloudwatch_tags = var.cloudwatch_tags
 
-  cloudwatch_loggroup_names = ["${var.cloudwatch_loggroup_names}"]
+  cloudwatch_loggroup_names = var.cloudwatch_loggroup_names
 }

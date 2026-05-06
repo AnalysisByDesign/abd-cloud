@@ -9,7 +9,7 @@ module "r53_private" {
 
   # Required variables
   vpc_id         = aws_vpc.this.id
-  search_domains = ["${formatlist("int.%s.%s", local.public_sub_domains, var.public_apex_domain)}"]
+  search_domains = formatlist("int.%s.%s", local.public_sub_domains, var.public_apex_domain)
   common_tags    = local.common_tags
 
   # Optional variables
@@ -32,7 +32,7 @@ module "r53_public" {
   use_existing_zones = var.use_existing_zones
 
   # Required variables
-  search_domains = ["${formatlist("%s.%s", local.public_sub_domains, var.public_apex_domain)}"]
+  search_domains = formatlist("%s.%s", local.public_sub_domains, var.public_apex_domain)
   common_tags    = local.common_tags
 
   # Optional variables
@@ -50,6 +50,6 @@ data "aws_route53_zone" "existing" {
 
 resource "aws_route53_zone_association" "secondary" {
   count   = var.use_existing_zones ? 1 : 0
-  zone_id = data.aws_route53_zone.existing.zone_id
+  zone_id = data.aws_route53_zone.existing[0].zone_id
   vpc_id  = aws_vpc.this.id
 }

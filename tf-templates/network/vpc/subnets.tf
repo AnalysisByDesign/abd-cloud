@@ -10,7 +10,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = var.map_public_ip
 
   tags = (merge(local.common_tags, var.subnet_tags,
-  map("Name", format("%s-public-%s", var.vpc_name, element(var.azs, count.index)))))
+  tomap({ "Name" = format("%s-public-%s", var.vpc_name, element(var.azs, count.index)) })))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ resource "aws_subnet" "private-web" {
   map_public_ip_on_launch = false
 
   tags = (merge(local.common_tags, var.subnet_tags,
-  map("Name", format("%s-pvt-web-%s", var.vpc_name, element(var.azs, count.index)))))
+  tomap({ "Name" = format("%s-pvt-web-%s", var.vpc_name, element(var.azs, count.index)) })))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ resource "aws_subnet" "private-app" {
   map_public_ip_on_launch = false
 
   tags = (merge(local.common_tags, var.subnet_tags,
-  map("Name", format("%s-pvt-app-%s", var.vpc_name, element(var.azs, count.index)))))
+  tomap({ "Name" = format("%s-pvt-app-%s", var.vpc_name, element(var.azs, count.index)) })))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ resource "aws_subnet" "private-cache" {
   map_public_ip_on_launch = false
 
   tags = (merge(local.common_tags, var.subnet_tags,
-  map("Name", format("%s-pvt-cache-%s", var.vpc_name, element(var.azs, count.index)))))
+  tomap({ "Name" = format("%s-pvt-cache-%s", var.vpc_name, element(var.azs, count.index)) })))
 }
 
 # --------------------------------------------------------------------------------------------
@@ -70,5 +70,5 @@ resource "aws_subnet" "private-db" {
   map_public_ip_on_launch = false
 
   tags = (merge(local.common_tags, var.subnet_tags,
-  map("Name", format("%s-pvt-db-%s", var.vpc_name, element(var.azs, count.index)))))
+  tomap({ "Name" = format("%s-pvt-db-%s", var.vpc_name, element(var.azs, count.index)) })))
 }
