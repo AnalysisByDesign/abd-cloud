@@ -10,28 +10,30 @@ resource "aws_vpc_peering_connection" "requester" {
   peer_region   = var.accepter_region != "" ? var.accepter_region : var.target_region
   auto_accept   = false
 
-  tags = (merge(local.common_tags,
-    map("Peer Side", "Requester"),
-    map("Peer Requester", format("%s / %s", local.vpc_tags["Account"], local.vpc_tags["Name"])),
-    map("Peer Accepter", format("%s / %s", local.accepter_vpc_tags["Account"], local.accepter_vpc_tags["Name"])),
-  map("Name", format("%s → %s", local.vpc_tags["Name"], local.accepter_vpc_tags["Name"]))))
+  tags = merge(local.common_tags, {
+    "Peer Side"      = "Requester"
+    "Peer Requester" = format("%s / %s", local.vpc_tags["Account"], local.vpc_tags["Name"])
+    "Peer Accepter"  = format("%s / %s", local.accepter_vpc_tags["Account"], local.accepter_vpc_tags["Name"])
+    "Name"           = format("%s → %s", local.vpc_tags["Name"], local.accepter_vpc_tags["Name"])
+  })
 }
 
 # Accepter's side of the connection.
 resource "aws_vpc_peering_connection_accepter" "accepter" {
-  provider = "aws.accepter"
+  provider = aws.accepter
 
   vpc_peering_connection_id = aws_vpc_peering_connection.requester.id
   auto_accept               = true
 
-  tags = (merge(local.common_tags,
-    map("Peer Side", "Accepter"),
-    map("Peer Requester", format("%s / %s", local.vpc_tags["Account"], local.vpc_tags["Name"])),
-    map("Peer Accepter", format("%s / %s", local.accepter_vpc_tags["Account"], local.accepter_vpc_tags["Name"])),
-  map("Name", format("%s ← %s", local.accepter_vpc_tags["Name"], local.vpc_tags["Name"]))))
+  tags = merge(local.common_tags, {
+    "Peer Side"      = "Accepter"
+    "Peer Requester" = format("%s / %s", local.vpc_tags["Account"], local.vpc_tags["Name"])
+    "Peer Accepter"  = format("%s / %s", local.accepter_vpc_tags["Account"], local.accepter_vpc_tags["Name"])
+    "Name"           = format("%s ← %s", local.accepter_vpc_tags["Name"], local.vpc_tags["Name"])
+  })
 
   lifecycle {
-    ignore_changes = ["tags"]
+    ignore_changes = [tags]
   }
 }
 
@@ -42,7 +44,7 @@ resource "aws_vpc_peering_connection_options" "requester" {
 }
 
 resource "aws_vpc_peering_connection_options" "accepter" {
-  provider = "aws.accepter"
+  provider = aws.accepter
 
   vpc_peering_connection_id = aws_vpc_peering_connection_accepter.accepter.id
 }

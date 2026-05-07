@@ -9,13 +9,13 @@ module "sg-rds-mysql" {
   name        = format("%s-%s", local.vpc_name, var.name)
   description = "RDS MySQL database"
   common_tags = local.common_tags
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = data.aws_vpc.vpc[0].id
 }
 
 module "sg-rds-mysql-ingress-mysql" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
-  required = length(var.management_ingress_locations) > 0 ? 1 : 0
+  required = length(var.management_ingress_locations) > 0
 
   # Required variables
   security_group_id = module.sg-rds-mysql.id
@@ -23,5 +23,5 @@ module "sg-rds-mysql-ingress-mysql" {
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "3306"
-  cidr_blocks       = ["${var.management_ingress_locations}"]
+  cidr_blocks       = var.management_ingress_locations
 }

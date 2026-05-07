@@ -12,7 +12,7 @@ module "ssl_cert" {
   certificate_region = var.target_region
 
   domain_name               = local.public_search_domain
-  subject_alternative_names = ["${var.subject_alternative_names}"]
+  subject_alternative_names = var.subject_alternative_names
 
   r53_zone_id = module.r53_public.zone_id
 

@@ -12,7 +12,7 @@ module "alb-sg" {
   name        = format("%s-%s-alb", local.vpc_name, var.name)
   description = format("%s-%s-alb", local.vpc_name, var.name)
   common_tags = local.common_tags
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = data.aws_vpc.vpc[0].id
 }
 
 module "alb-sgr-http-in" {
@@ -23,7 +23,7 @@ module "alb-sgr-http-in" {
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "80"
-  cidr_blocks       = ["${var.alb_ingress_cidr}"]
+  cidr_blocks       = [var.alb_ingress_cidr]
 }
 
 module "alb-sgr-https-in" {
@@ -34,7 +34,7 @@ module "alb-sgr-https-in" {
   type              = "ingress"
   protocol          = "tcp"
   single_port       = "443"
-  cidr_blocks       = ["${var.alb_ingress_cidr}"]
+  cidr_blocks       = [var.alb_ingress_cidr]
 }
 
 # --------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ module "ec2-sg" {
   name        = format("%s-%s-ec2", local.vpc_name, var.name)
   description = format("%s-%s-ec2", local.vpc_name, var.name)
   common_tags = local.common_tags
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = data.aws_vpc.vpc[0].id
 }
 
 module "alb-ec2-sgr" {

@@ -12,5 +12,5 @@ module "efs-sg" {
   name        = format("%s-%s-efs", local.vpc_name, var.name)
   description = format("%s-%s-efs", local.vpc_name, var.name)
   common_tags = local.common_tags
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = data.aws_vpc.vpc[0].id
 }

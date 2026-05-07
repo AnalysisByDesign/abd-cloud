@@ -7,7 +7,7 @@ data "aws_ami" "this" {
 
   filter {
     name   = "name"
-    values = ["${var.asg_ami_image_glob}"]
+    values = [var.asg_ami_image_glob]
   }
 
   filter {
@@ -15,7 +15,7 @@ data "aws_ami" "this" {
     values = ["hvm"]
   }
 
-  owners = ["${var.asg_ami_image_owner}"]
+  owners = [var.asg_ami_image_owner]
 }
 
 # -----------------------------------------------------------------------------

@@ -21,15 +21,14 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | Name | Version |
 | ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 1.60 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
 
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 1.60 ~> 5.0 |
-| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | ~> 1.60 ~> 5.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
+| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 5.100.0 |
 
 ## Modules
 
@@ -71,7 +70,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | <a name="input_common_tag_subsystem"></a> [common\_tag\_subsystem](#input\_common\_tag\_subsystem) | n/a | `string` | n/a | yes |
 | <a name="input_delegate_set_name"></a> [delegate\_set\_name](#input\_delegate\_set\_name) | A reference name for the delegate set | `string` | `""` | no |
 | <a name="input_delegation_enabled"></a> [delegation\_enabled](#input\_delegation\_enabled) | Do we need this sub-domain delegated from our apex domain | `bool` | `false` | no |
-| <a name="input_dns_extra"></a> [dns\_extra](#input\_dns\_extra) | Extra DNS records that might be required | `list(string)` | `[]` | no |
+| <a name="input_dns_extra"></a> [dns\_extra](#input\_dns\_extra) | Extra DNS records that might be required | `list(map(string))` | `[]` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_mx_records"></a> [mx\_records](#input\_mx\_records) | Records to use as MX records for this zone | `list(string)` | `[]` | no |
 | <a name="input_public_apex_domain"></a> [public\_apex\_domain](#input\_public\_apex\_domain) | The public search domain suffix to create a zone for | `string` | n/a | yes |

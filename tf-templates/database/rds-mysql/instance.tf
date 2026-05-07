@@ -22,11 +22,11 @@ resource "aws_db_instance" "rds" {
 
   username = var.admin_name
   password = var.admin_password
-  name     = var.schema_name
+  db_name  = var.schema_name
 
   iam_database_authentication_enabled = var.iam_authentication_enabled
   kms_key_id                          = var.kms_key_id
-  vpc_security_group_ids              = ["${module.sg-rds-mysql.id}"]
+  vpc_security_group_ids              = [module.sg-rds-mysql.id]
 
   backup_retention_period = var.backup_retention
   backup_window           = var.backup_window
@@ -36,20 +36,16 @@ resource "aws_db_instance" "rds" {
   monitoring_role_arn             = data.aws_iam_role.rds_monitoring.arn
   monitoring_interval             = var.monitoring_interval
 
-  #  performance_insights_enabled    = "${var.performance_insights_enabled}"
-  #  performance_insights_kms_key_id = "${var.performance_insights_kms_key_id}"
-
-  #  snapshot_identifier       = "${local.snapshot_identifier}"
   skip_final_snapshot         = var.skip_final_snapshot
   final_snapshot_identifier   = format("%s-%s", local.vpc_name, var.final_snapshot_identifier)
   apply_immediately           = var.apply_immediately
   auto_minor_version_upgrade  = false
   allow_major_version_upgrade = false
   lifecycle {
-    ignore_changes = ["snapshot_identifier"]
+    ignore_changes = [snapshot_identifier]
   }
   copy_tags_to_snapshot = true
-  tags = (merge(local.common_tags,
-    var.rds_tags,
-  map("Name", format("%s-%s", local.vpc_name, var.name))))
+  tags = merge(local.common_tags, var.rds_tags, {
+    "Name" = format("%s-%s", local.vpc_name, var.name)
+  })
 }
