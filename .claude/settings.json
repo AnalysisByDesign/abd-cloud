@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(/tmp/tfmigrate-venv/bin/pip install *)",
+      "Bash(aws-vault exec *)",
+      "Bash(aws-vault list *)",
+      "Bash(export TF_DATA_DIR=*)",
+      "Bash(export TF_VAR_*)",
+      "Bash(git checkout *)",
+      "Bash(git reset *)",
+      "Bash(grep \"\\\\.tfstate$\")",
+      "Bash(md5 -q *)",
+      "Bash(pip3 install *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import json,sys; imgs=json.load\\(sys.stdin\\)['Images']; [print\\(i['Name'], i['ImageId']\\) for i in imgs]\")",
+      "Bash(python3 -c \"import json,sys; lbs=json.load\\(sys.stdin\\)['LoadBalancers']; [print\\(lb['LoadBalancerName']\\) for lb in lbs]\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/tmp/abd-global-cloudtrail.tfstate.bak'\\)\\); print\\('version:', d['version'], 'tf_version:', d.get\\('terraform_version','?'\\), 'resources:', len\\(d.get\\('resources', d.get\\('modules',[{}]\\)[0].get\\('resources',{}\\)\\)\\)\\)\")",
+      "Bash(python3 -m venv /tmp/tfmigrate-venv)",
+      "Bash(python3 /tmp/*)",
+      "Bash(python3)",
+      "Bash(sed -n *)",
+      "Bash(tee)",
+      "Bash(xargs cat *)",
+      "Bash(xargs git *)",
+      "Bash(xargs grep *)",
+      "Bash(xargs ls *)",
+      "Bash(xargs sed *)",
+      "Read(//tmp/**)",
+      "Read(//Users/dave/Documents/Projects/abd-cloud/**)",
+      "Skill(update-config:*)",
+      "Skill(update-config)"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/private/tmp"
+    ]
+  }
+}
