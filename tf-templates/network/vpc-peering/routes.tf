@@ -39,7 +39,7 @@ resource "aws_route" "requester_private" {
 # --- Configure the accepter routes back to the requester
 
 resource "aws_route" "accepter_public" {
-  provider       = "aws.accepter"
+  provider       = aws.accepter
   count          = length(local.accepter_public_rtb_ids)
   route_table_id = element(local.accepter_public_rtb_ids, count.index)
 
@@ -56,7 +56,7 @@ resource "aws_route" "accepter_public" {
 }
 
 resource "aws_route" "accepter_private" {
-  provider       = "aws.accepter"
+  provider       = aws.accepter
   count          = length(local.accepter_private_rtb_ids)
   route_table_id = element(local.accepter_private_rtb_ids, count.index)
 

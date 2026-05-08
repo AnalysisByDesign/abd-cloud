@@ -30,7 +30,7 @@ module "ec2_asg_policy" {
 resource "aws_iam_role_policy_attachment" "attach_policy" {
   count      = var.ec2_policy_template == "" ? 0 : 1
   role       = module.ec2_asg_role.names
-  policy_arn = module.ec2_asg_policy.arn
+  policy_arn = module.ec2_asg_policy[0].arn
 }
 
 #resource "aws_iam_role_policy_attachment" "attach_cloudwatch" {

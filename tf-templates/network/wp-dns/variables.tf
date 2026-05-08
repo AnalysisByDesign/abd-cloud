@@ -82,6 +82,6 @@ variable "mx_records" {
 
 variable "dns_extra" {
   description = "Extra DNS records that might be required"
-  type        = list(string)
+  type        = list(map(string))
   default     = []
 }

@@ -28,5 +28,5 @@ module "dns_www" {
   zone_id = module.r53_public.zone_id
   name    = "www"
   type    = "CNAME"
-  records = ["${local.public_search_domain}"]
+  records = [local.public_search_domain]
 }

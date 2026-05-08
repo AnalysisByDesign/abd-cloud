@@ -28,13 +28,9 @@ variable "accepter_region" {
 provider "aws" {
   alias = "accepter"
 
-  version = "~> 1.48"
-
   region = var.accepter_region != "" ? var.accepter_region : var.target_region
 
   assume_role {
-    role_arn = "arn:aws:iam::${var.accepter_target}:role/${var.accepter_target_role == ""
-      ? "terraform"
-    : var.accepter_target_role}"
+    role_arn = "arn:aws:iam::${var.accepter_target}:role/${var.accepter_target_role == "" ? "terraform" : var.accepter_target_role}"
   }
 }

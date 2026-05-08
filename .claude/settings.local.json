@@ -1,27 +1,8 @@
 {
   "permissions": {
+    "defaultMode": "dontAsk",
     "allow": [
-      "Bash(aws-vault *)",
-      "Bash(./tf-run.sh *)",
-      "Bash(terraform *)",
-      "Bash(git *)",
-      "Bash(xargs git *)",
-      "Bash(xargs sed *)",
-      "Bash(python3 *)",
-      "Bash(pip3 *)",
-      "Bash(grep *)",
-      "Bash(find *)",
-      "Bash(ls *)",
-      "Bash(cat *)",
-      "Bash(jq *)",
-      "Bash(aws *)",
-      "Bash(/tmp/tfmigrate-venv/bin/pip *)",
-      "Bash(/tmp/tfmigrate-venv/bin/python *)",
-      "Skill(update-config)",
-      "Skill(update-config:*)"
-    ],
-    "deny": [
-      "Bash(./tf-run.sh *apply*)"
+      "Bash(python3 -c ' *)"
     ]
   }
 }

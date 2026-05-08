@@ -25,8 +25,8 @@ data "aws_vpc" "vpc" {
 # --------------------------------------------------------------------------------------------
 
 locals {
-  vpc_id   = data.aws_vpc.vpc.id
-  vpc_name = data.aws_vpc.vpc.tags["Name"]
-  vpc_cidr = data.aws_vpc.vpc.cidr_block
-  vpc_tags = data.aws_vpc.vpc.tags
+  vpc_id   = data.aws_vpc.vpc[0].id
+  vpc_name = data.aws_vpc.vpc[0].tags["Name"]
+  vpc_cidr = data.aws_vpc.vpc[0].cidr_block
+  vpc_tags = data.aws_vpc.vpc[0].tags
 }
