@@ -33,10 +33,12 @@ jobs:
           - abd-wordpress/account-global/s3/lambda
           - abd-wordpress/wordpress-vpc
           - abd-wordpress/wordpress-vpc/vpc-peering
-          - abd-wordpress/wordpress-vpc/database
+          - abd-wordpress/wordpress-vpc/db.wordpress
           - abd-wordpress/wordpress-vpc/storage/efs
-          - abd-wordpress/wordpress-vpc/storage/s3
-          - abd-wordpress/wordpress-vpc/application
+          - abd-wordpress/wordpress-vpc/storage/s3.wordpress
+          - abd-wordpress/wordpress-vpc/storage/s3.training
+          - abd-wordpress/wordpress-vpc/app.wordpress
+          - abd-wordpress/wordpress-vpc/app.training
           - abd-wordpress/wordpress-vpc/hosted-sites/amyegillin.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/analysisbydesign.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/baltihot.co.uk
