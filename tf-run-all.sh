@@ -253,7 +253,7 @@ for buildLine in ${build_list}; do
 
     log_message "    executing resource ${seq} - ${paramPath}/${build}" notice
     if [ "Y" = ${verbose} ]; then
-        ./tf-run.sh ${opts} ${action} "${paramPath}/${build}"
+        ./tf-run.sh ${opts} "${paramPath}/${build}" ${action}
 
         ret=$?
         if [ ${ret} -ne 0 ]; then
@@ -263,7 +263,7 @@ for buildLine in ${build_list}; do
         fi
     else
         # Write regular messages to the log file, allow stderr to fall out of script
-        ./tf-run.sh ${opts} ${action} "${paramPath}/${build}" > ${buildlogpath}/build.log &
+        ./tf-run.sh ${opts} "${paramPath}/${build}" ${action} > ${buildlogpath}/build.log &
     fi
 
 done

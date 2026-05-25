@@ -1,0 +1,16 @@
+# Variables assigned by sourced *_config.sh files (shellcheck can't follow dynamic sources)
+disable=SC2154
+# Non-constant source paths are intentional (funcPath, cf_file, etc.)
+disable=SC1090
+# Unused variables — some pass through to tf-run.sh via ${opts}, others are sourced-lib artifacts
+disable=SC2034
+# Word splitting in dynamic path resolution is intentional and controlled
+disable=SC2046
+# cd without || exit — scripts rely on trap for error handling
+disable=SC2164
+# -a in test conditions — legacy bash style used consistently across scripts
+disable=SC2166
+# for f in $(ls ...) — filenames in this codebase never contain spaces
+disable=SC2045
+# Declare and assign in same statement — acceptable tradeoff in this context
+disable=SC2155

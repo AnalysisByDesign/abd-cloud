@@ -70,7 +70,7 @@ jobs:
         id: plan
         run: |
           set +e
-          PLAN_OUTPUT=$(abd-cloud/tf-run.sh plan $GITHUB_WORKSPACE/abd-cloud-params/${{ matrix.resource }} 2>&1)
+          PLAN_OUTPUT=$(abd-cloud/tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/${{ matrix.resource }} plan 2>&1)
           EXIT_CODE=$?
           # Detect drift: a clean plan exits 0 and contains "No changes"
           HAS_DRIFT="false"
