@@ -42,8 +42,8 @@ function script_usage() {
 
          cat << EOF
 
-Usage: 
-        $0 [ OPTIONS ]  action  build_path
+Usage:
+        $0 [ OPTIONS ]  build_path  action  [ terraform_args... ]
 
 Options:
         -h                Show this message
@@ -55,9 +55,11 @@ Options:
         -vv               Very verbose output
 
 Example:
-        $0       plan    tf-params
-        $0 -v -d apply   tf-params/account
-        $0 -vvd  destroy tf-params/account/vpc
+        $0       tf-params               plan
+        $0 -v -d tf-params/account       apply
+        $0 -vvd  tf-params/account/vpc   destroy
+        $0       tf-params/account/vpc   state list
+        $0       tf-params/account/vpc   state show aws_instance.foo
 
 EOF
 
@@ -127,11 +129,12 @@ shift $((OPTIND - 1))
 # -----------------------------------------------------------------------------
 # Validate the environment and the passed in parameters
 # -----------------------------------------------------------------------------
-action=$1
-target=$2
+target=$1; shift
+action=$1; shift
+extra_args="$*"
 
 # Validate the passed in action
-options="init|fmt|graph|refresh|show|taint|plan|apply|destroy|upload-state"
+options="init|fmt|graph|output|refresh|show|state|taint|plan|apply|destroy|validate|workspace|upload-state"
 chk=`echo ${action} | egrep ${options}`
 if [ "" = "${chk}" ]; then
     log_message "No valid action supplied." err
@@ -304,10 +307,10 @@ for resource in ${build_resources}; do
         if [ "${action}" = "upload-state" ]; then
             log_message "Uploading terraform state file"
             cmd_params="state push errored.tfstate"
-        elif [ "${action}" = "show" ]; then
-            cmd_params="${action}"
+        elif [ "${action}" = "plan" ] || [ "${action}" = "apply" ] || [ "${action}" = "destroy" ] || [ "${action}" = "refresh" ]; then
+            cmd_params="${action} ${extra_args} ${opts} ${tfvars}"
         else
-            cmd_params="${action} ${opts} ${tfvars}"
+            cmd_params="${action} ${extra_args}"
         fi
 
         [ "Y" = ${v_verbose} ] && export TF_LOG=INFO
