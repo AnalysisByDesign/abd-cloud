@@ -310,6 +310,8 @@ for resource in ${build_resources}; do
             cmd_params="state push errored.tfstate"
         elif [ "${action}" = "plan" ] || [ "${action}" = "apply" ] || [ "${action}" = "destroy" ] || [ "${action}" = "refresh" ]; then
             cmd_params="${action} ${extra_args} ${opts} ${tfvars}"
+        elif [ "${action}" = "import" ]; then
+            cmd_params="${action} ${extra_args} -lock=${lock} -lock-timeout=${locktimeout} ${tfvars}"
         else
             cmd_params="${action} ${extra_args}"
         fi
