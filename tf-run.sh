@@ -311,7 +311,7 @@ for resource in ${build_resources}; do
         elif [ "${action}" = "plan" ] || [ "${action}" = "apply" ] || [ "${action}" = "destroy" ] || [ "${action}" = "refresh" ]; then
             cmd_params="${action} ${extra_args} ${opts} ${tfvars}"
         elif [ "${action}" = "import" ]; then
-            cmd_params="${action} ${extra_args} -lock=${lock} -lock-timeout=${locktimeout} ${tfvars}"
+            cmd_params="${action} -lock=${lock} -lock-timeout=${locktimeout} ${tfvars} ${extra_args}"
         else
             cmd_params="${action} ${extra_args}"
         fi
