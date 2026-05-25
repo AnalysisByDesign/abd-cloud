@@ -44,7 +44,7 @@ jobs:
           aws-region: eu-west-1
       - uses: hashicorp/setup-terraform@v3
         with: { terraform_version: "~1.9", terraform_wrapper: false }
-      - run: abd-cloud/tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/abd-global/account-global/dynamodb/terraform apply
+      - run: abd-cloud/tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/abd-global/account-global/dynamodb apply
 
   apply-global-cloudtrail:
     name: Apply abd-global/account-global/cloudtrail
