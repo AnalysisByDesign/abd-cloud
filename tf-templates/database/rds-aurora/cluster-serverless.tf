@@ -36,9 +36,9 @@ resource "aws_rds_cluster" "serverless" {
   final_snapshot_identifier = format("%s-%s", local.vpc_name, var.final_snapshot_identifier)
   apply_immediately         = var.apply_immediately
   lifecycle {
-    ignore_changes = ["snapshot_identifier"]
+    ignore_changes = [snapshot_identifier]
   }
-  tags = (merge(local.common_tags,
-    var.rds_tags,
-  map("Name", format("%s-%s", local.vpc_name, var.name))))
+  tags = merge(local.common_tags, var.rds_tags, {
+    "Name" = format("%s-%s", local.vpc_name, var.name)
+  })
 }

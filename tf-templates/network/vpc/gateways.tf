@@ -20,8 +20,6 @@ resource "aws_eip" "nat" {
     : length(var.azs))
   : 0)
 
-  vpc = true
-
   tags = merge(local.common_tags, tomap({ "Name" = format("%s-nat-%s", var.vpc_name, element(var.azs, var.single_nat_gateway ? 0 : count.index)) }))
 }
 
