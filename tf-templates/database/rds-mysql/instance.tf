@@ -42,7 +42,7 @@ resource "aws_db_instance" "rds" {
   auto_minor_version_upgrade  = false
   allow_major_version_upgrade = false
   lifecycle {
-    ignore_changes = [snapshot_identifier]
+    ignore_changes = [snapshot_identifier, deletion_protection]
   }
   copy_tags_to_snapshot = true
   tags = merge(local.common_tags, var.rds_tags, {
