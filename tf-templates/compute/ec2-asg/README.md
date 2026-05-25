@@ -57,7 +57,6 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="module_rds-ec2-sgr"></a> [rds-ec2-sgr](#module\_rds-ec2-sgr) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
 | <a name="module_ssh-key-pair"></a> [ssh-key-pair](#module\_ssh-key-pair) | ../../../../abd-cloud-modules/security/ssh-key | n/a |
 | <a name="module_ssl_cert"></a> [ssl\_cert](#module\_ssl\_cert) | ../../../../abd-cloud-modules/security/ssl-certs | n/a |
-| <a name="module_ssl_cert_cloudfront"></a> [ssl\_cert\_cloudfront](#module\_ssl\_cert\_cloudfront) | ../../../../abd-cloud-modules/security/ssl-certs | n/a |
 
 ## Resources
 
