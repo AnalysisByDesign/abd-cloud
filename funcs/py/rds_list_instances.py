@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys, json
 
 #------------------------------------------------------------
@@ -19,5 +19,5 @@ jsondata = json.loads(data)
 # print out all instance names in the supplied data
 output = []
 for instance in jsondata['DBInstances']:
-	print instance['DBInstanceIdentifier']
+	print(instance['DBInstanceIdentifier'])
 

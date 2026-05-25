@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(grep *)",
+      "Bash(git -C /Users/dave/Documents/Projects/abd-cloud/abd-cloud ls-files)",
+      "Bash(git -C /Users/dave/Documents/Projects/abd-cloud/abd-cloud status --short -- \"*.log\")",
+      "Bash(git *)"
     ]
   }
 }

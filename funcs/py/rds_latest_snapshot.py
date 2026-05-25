@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys, json
 
 #------------------------------------------------------------
@@ -30,4 +30,4 @@ for snap in jsondata['DBSnapshots']:
 output.sort()
 
 # Write out the last line
-print output.pop()
+print(output.pop())
