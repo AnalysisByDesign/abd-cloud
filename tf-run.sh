@@ -60,6 +60,7 @@ Example:
         $0 -vvd  tf-params/account/vpc   destroy
         $0       tf-params/account/vpc   state list
         $0       tf-params/account/vpc   state show aws_instance.foo
+        $0       tf-params/account/vpc   import aws_cloudtrail.this my-trail
 
 EOF
 
@@ -134,7 +135,7 @@ action=$1; shift
 extra_args="$*"
 
 # Validate the passed in action
-options="init|fmt|graph|output|refresh|show|state|taint|plan|apply|destroy|validate|workspace|upload-state"
+options="init|fmt|graph|output|refresh|show|state|taint|plan|apply|destroy|validate|workspace|import|upload-state"
 chk=`echo ${action} | egrep ${options}`
 if [ "" = "${chk}" ]; then
     log_message "No valid action supplied." err
