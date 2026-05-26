@@ -10,7 +10,12 @@ resource "aws_rds_cluster" "serverless" {
   engine_mode        = "serverless"
   port               = "3306"
 
-  scaling_configuration = ["${var.scaling_configuration}"]
+  scaling_configuration {
+    auto_pause               = var.scaling_configuration["auto_pause"]
+    max_capacity             = var.scaling_configuration["max_capacity"]
+    min_capacity             = var.scaling_configuration["min_capacity"]
+    seconds_until_auto_pause = var.scaling_configuration["seconds_until_auto_pause"]
+  }
 
   db_subnet_group_name            = format("%s-%s", local.vpc_name, var.subnet_group_name)
   db_cluster_parameter_group_name = format("%s-%s-serverless", local.vpc_name, var.param_group_name)
@@ -23,7 +28,7 @@ resource "aws_rds_cluster" "serverless" {
   storage_encrypted = var.storage_encrypted
   kms_key_id        = var.kms_key_id
 
-  iam_roles                           = ["${var.iam_roles}"]
+  iam_roles                           = var.iam_roles
   iam_database_authentication_enabled = var.iam_authentication_enabled
 
   backtrack_window        = var.backtrack_window

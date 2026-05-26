@@ -23,7 +23,7 @@ resource "aws_rds_cluster" "provisioned" {
   storage_encrypted = var.storage_encrypted
   kms_key_id        = var.kms_key_id
 
-  iam_roles                           = ["${var.iam_roles}"]
+  iam_roles                           = var.iam_roles
   iam_database_authentication_enabled = var.iam_authentication_enabled
 
   backtrack_window             = var.backtrack_window
