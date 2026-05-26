@@ -36,5 +36,5 @@ module "ecs_service" {
   container_port    = var.container_port
   target_group_arn  = module.load_balancer.target_group_arn
   security_group_id = module.ecs-sg.id
-  depends_on        = module.load_balancer.target_group_arn
+  depends_on        = [module.load_balancer]
 }
