@@ -37,7 +37,6 @@ terraform {
 
   backend "s3" {
     encrypt        = true
-    acl            = "bucket-owner-full-control"
     dynamodb_table = "terraform-state-lock"
     region         = "eu-west-1"
     role_arn       = "arn:aws:iam::813984516777:role/terraform"
