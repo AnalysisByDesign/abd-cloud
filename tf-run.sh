@@ -281,8 +281,8 @@ for resource in ${build_resources}; do
     # We always run an init command
     log_verbose "    - preparing backend store"
     if [ "Y" = ${dryRun} ]; then
-        log_message "terraform terraform init -lock=${lock} 
-            -backend-config=\"bucket=${statefileBucket}\" 
+        log_message "terraform terraform init -lock=${lock}
+            -backend-config=\"bucket=${statefileBucket}\"
             -backend-config=\"key=${statefile}\""
     else
         if [ "Y" = ${verbose} ]; then
