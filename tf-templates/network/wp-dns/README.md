@@ -20,15 +20,15 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 
 | Name | Version |
 | ---- | ------- |
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.15.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
 
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.46.0 |
-| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.46.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.47.0 |
+| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.47.0 |
 
 ## Modules
 

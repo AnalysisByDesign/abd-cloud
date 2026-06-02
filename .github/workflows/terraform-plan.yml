@@ -19,6 +19,7 @@ jobs:
   plan:
     name: Plan ${{ matrix.resource }}
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.resource == '' || github.event.inputs.resource == matrix.resource
     strategy:
       fail-fast: false
       matrix:
