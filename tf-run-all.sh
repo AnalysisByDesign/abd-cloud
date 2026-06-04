@@ -43,8 +43,8 @@ function script_usage() {
 
     cat << EOF
 
-Usage: 
-        $0 [ OPTIONS ]  action  [ target ]
+Usage:
+        $0 [ OPTIONS ]  target  action  [ tf-run args... ]
 
 Options:
         -h                Show this message
@@ -56,9 +56,10 @@ Options:
         -vv               Very verbose output
 
 Example:
-        $0       plan    
-        $0 -v -d apply   
-        $0 -vvd  destroy 
+        $0       ../params/env  plan
+        $0 -v -d ../params/env  apply
+        $0 -vvd  ../params/env  destroy
+        $0 -c -v ../params/env  init -upgrade
 
 EOF
 
@@ -132,8 +133,10 @@ shift $((OPTIND - 1))
 # -----------------------------------------------------------------------------
 # Validate the environment and the passed in parameters
 # -----------------------------------------------------------------------------
-action=$1
-target=$2
+target=$1
+action=$2
+shift 2
+extraArgs="$*"
 
 # Validate the passed in action
 options="init|fmt|graph|refresh|show|taint|plan|apply|destroy"
@@ -253,7 +256,7 @@ for buildLine in ${build_list}; do
 
     log_message "    executing resource ${seq} - ${paramPath}/${build}" notice
     if [ "Y" = ${verbose} ]; then
-        ./tf-run.sh ${opts} "${paramPath}/${build}" ${action}
+        ./tf-run.sh ${opts} "${paramPath}/${build}" ${action} ${extraArgs}
 
         ret=$?
         if [ ${ret} -ne 0 ]; then
@@ -263,7 +266,7 @@ for buildLine in ${build_list}; do
         fi
     else
         # Write regular messages to the log file, allow stderr to fall out of script
-        ./tf-run.sh ${opts} "${paramPath}/${build}" ${action} > ${buildlogpath}/build.log &
+        ./tf-run.sh ${opts} "${paramPath}/${build}" ${action} ${extraArgs} > ${buildlogpath}/build.log &
     fi
 
 done
