@@ -4,8 +4,9 @@
 
 # Create cluster
 module "ecs_cluster" {
-  source = "../../../../abd-cloud-modules/compute/ecs/cluster"
-  name   = format("%s-%s", local.vpc_name, var.name)
+  source      = "../../../../abd-cloud-modules/compute/ecs/cluster"
+  name        = format("%s-%s", local.vpc_name, var.name)
+  common_tags = local.common_tags
 }
 
 # Create task definition
