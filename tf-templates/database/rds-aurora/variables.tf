@@ -143,7 +143,7 @@ variable "build_from_latest_snapshot" {
 
 variable "skip_final_snapshot" {
   description = "Do not create a final snapshot on termination"
-  default     = true
+  default     = false
 }
 
 variable "final_snapshot_identifier" {
@@ -161,7 +161,7 @@ variable "backtrack_window" {
 variable "backup_retention" {
   description = "How many days of automated backups to retain"
   type        = string
-  default     = "1"
+  default     = "7"
 }
 
 variable "backup_window" {

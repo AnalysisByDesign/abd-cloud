@@ -39,6 +39,10 @@ Provisions an AWS CloudTrail trail with a dedicated S3 bucket and bucket policy 
 | Name | Type |
 | ---- | ---- |
 | [aws_cloudtrail.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudtrail) | resource |
+| [aws_kms_alias.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
+| [aws_kms_key.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_iam_policy_document.cloudtrail_kms](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
 ## Inputs
 
@@ -47,6 +51,7 @@ Provisions an AWS CloudTrail trail with a dedicated S3 bucket and bucket policy 
 | <a name="input_account_name"></a> [account\_name](#input\_account\_name) | n/a | `string` | n/a | yes |
 | <a name="input_acct_target"></a> [acct\_target](#input\_acct\_target) | Target AWS account to build infrastructure into | `string` | n/a | yes |
 | <a name="input_acct_target_role"></a> [acct\_target\_role](#input\_acct\_target\_role) | Role in target account to assume when building infrastructure | `string` | `"terraform"` | no |
+| <a name="input_cloudtrail_allowed_accounts"></a> [cloudtrail\_allowed\_accounts](#input\_cloudtrail\_allowed\_accounts) | Additional AWS account IDs permitted to use the CloudTrail KMS key (for cross-account log writing) | `list(string)` | `[]` | no |
 | <a name="input_cloudtrail_hub"></a> [cloudtrail\_hub](#input\_cloudtrail\_hub) | Is this the CloudTrail central hub | `bool` | `false` | no |
 | <a name="input_cloudtrail_name"></a> [cloudtrail\_name](#input\_cloudtrail\_name) | The name of the CloudTrail configuration | `string` | n/a | yes |
 | <a name="input_common_tag_component"></a> [common\_tag\_component](#input\_common\_tag\_component) | n/a | `string` | n/a | yes |

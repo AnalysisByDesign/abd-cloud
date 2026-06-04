@@ -123,7 +123,7 @@ while read line; do
     log_message "    - something has gone wrong, ensure that keybase command is available"
   fi
 
-  log_message "    - password = ${password}"
+  echo "    - password: ${password}"
 
 done
 

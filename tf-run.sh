@@ -283,16 +283,19 @@ for resource in ${build_resources}; do
     if [ "Y" = ${dryRun} ]; then
         log_message "terraform terraform init -lock=${lock} ${extra_args}
             -backend-config=\"bucket=${statefileBucket}\"
-            -backend-config=\"key=${statefile}\""
+            -backend-config=\"key=${statefile}\"
+            -backend-config=\"role_arn=arn:aws:iam::${acct_management}:role/terraform\""
     else
         if [ "Y" = ${verbose} ]; then
             terraform init -lock=${lock} ${extra_args} \
                 -backend-config="bucket=${statefileBucket}" \
-                -backend-config="key=${statefile}"
+                -backend-config="key=${statefile}" \
+                -backend-config="role_arn=arn:aws:iam::${acct_management}:role/terraform"
         else
             terraform init -lock=${lock} ${extra_args} \
                 -backend-config="bucket=${statefileBucket}" \
-                -backend-config="key=${statefile}" > /dev/null
+                -backend-config="key=${statefile}" \
+                -backend-config="role_arn=arn:aws:iam::${acct_management}:role/terraform" > /dev/null
         fi
     fi
 

@@ -210,6 +210,12 @@ variable "github_actions_role_name" {
   default     = "github-actions-terraform"
 }
 
+variable "github_repos" {
+  description = "Specific repo slugs within github_org permitted to assume the OIDC role"
+  type        = list(string)
+  default     = []
+}
+
 # ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================

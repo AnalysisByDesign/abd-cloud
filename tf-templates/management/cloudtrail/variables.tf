@@ -45,3 +45,9 @@ variable "s3_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "cloudtrail_allowed_accounts" {
+  description = "Additional AWS account IDs permitted to use the CloudTrail KMS key (for cross-account log writing)"
+  type        = list(string)
+  default     = []
+}
