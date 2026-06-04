@@ -21,7 +21,6 @@ jobs:
       fail-fast: false
       matrix:
         resource:
-          - abd-global/account-global/dynamodb
           - abd-global/account-global/cloudtrail
           - abd-global/account-global/s3/access-log
           - abd-global/account-global/s3/lambda
@@ -64,7 +63,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
           aws-region: eu-west-1
       - uses: hashicorp/setup-terraform@v3
-        with: { terraform_version: "~1.9", terraform_wrapper: false }
+        with: { terraform_version: "~1.15", terraform_wrapper: false }
 
       - name: Terraform Plan (drift check)
         id: plan
@@ -84,10 +83,12 @@ jobs:
       - name: File drift issue
         if: steps.plan.outputs.has_drift == 'true'
         uses: actions/github-script@v7
+        env:
+          PLAN_OUTPUT: ${{ steps.plan.outputs.plan_output }}
         with:
           script: |
             const resource = '${{ matrix.resource }}';
-            const planOutput = `${{ steps.plan.outputs.plan_output }}`;
+            const planOutput = process.env.PLAN_OUTPUT;
             const title = `[Drift] ${resource}`;
             const body = [
               `## Infrastructure drift detected in \`${resource}\``,

@@ -89,12 +89,14 @@ jobs:
       - name: Post plan to PR
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          PLAN_OUTPUT: ${{ steps.plan.outputs.plan_output }}
         with:
           script: |
             const resource = '${{ matrix.resource }}';
             const exitCode = '${{ steps.plan.outputs.exit_code }}';
             const status = exitCode === '0' ? '✅' : '❌';
-            const planOutput = `${{ steps.plan.outputs.plan_output }}`;
+            const planOutput = process.env.PLAN_OUTPUT;
             const body = [
               `### ${status} Terraform Plan: \`${resource}\``,
               '',

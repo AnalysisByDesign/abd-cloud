@@ -39,7 +39,6 @@ terraform {
     encrypt      = true
     use_lockfile = true
     region       = "eu-west-1"
-    role_arn     = "arn:aws:iam::813984516777:role/terraform"
   }
 }
 

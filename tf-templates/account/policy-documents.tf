@@ -31,13 +31,15 @@ data "aws_iam_policy_document" "newrelic" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "repository_policy" {
   statement {
     sid    = "EcrRepositoryPolicy"
     effect = "Allow"
 
     principals {
-      identifiers = ["*"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
       type        = "AWS"
     }
 
@@ -55,6 +57,12 @@ data "aws_iam_policy_document" "remote_assume_role_policy" {
       identifiers = [
         "arn:aws:iam::${var.acct_auth}:root",
       ]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["true"]
     }
   }
 }

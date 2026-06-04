@@ -63,7 +63,7 @@ Provisions an Aurora RDS cluster with configurable engine (MySQL or PostgreSQL),
 | <a name="input_apply_immediately"></a> [apply\_immediately](#input\_apply\_immediately) | Create a final snapshot on termination | `bool` | `false` | no |
 | <a name="input_azs"></a> [azs](#input\_azs) | Availability zones to launch instances into | `list(string)` | `[]` | no |
 | <a name="input_backtrack_window"></a> [backtrack\_window](#input\_backtrack\_window) | The backtrack window in seconds | `string` | `"0"` | no |
-| <a name="input_backup_retention"></a> [backup\_retention](#input\_backup\_retention) | How many days of automated backups to retain | `string` | `"1"` | no |
+| <a name="input_backup_retention"></a> [backup\_retention](#input\_backup\_retention) | How many days of automated backups to retain | `string` | `"7"` | no |
 | <a name="input_backup_window"></a> [backup\_window](#input\_backup\_window) | When to run automated snapshots | `string` | `"02:00-02:30"` | no |
 | <a name="input_build_from_latest_snapshot"></a> [build\_from\_latest\_snapshot](#input\_build\_from\_latest\_snapshot) | Create the cluster from the latest snapshot | `bool` | `true` | no |
 | <a name="input_cloudwatch_logging"></a> [cloudwatch\_logging](#input\_cloudwatch\_logging) | List of cloudwatch logging options | `list(string)` | <pre>[<br/>  "audit",<br/>  "error",<br/>  "slowquery"<br/>]</pre> | no |
@@ -97,7 +97,7 @@ Provisions an Aurora RDS cluster with configurable engine (MySQL or PostgreSQL),
 | <a name="input_scaling_configuration"></a> [scaling\_configuration](#input\_scaling\_configuration) | RDS Aurora Serverless scaling configuration | `map(string)` | <pre>{<br/>  "auto_pause": true,<br/>  "max_capacity": 2,<br/>  "min_capacity": 1,<br/>  "seconds_until_auto_pause": 300<br/>}</pre> | no |
 | <a name="input_schema_name"></a> [schema\_name](#input\_schema\_name) | The name of the initial schema to create if required | `string` | `""` | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | Security groups for instances | `list(string)` | `[]` | no |
-| <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | Do not create a final snapshot on termination | `bool` | `true` | no |
+| <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | Do not create a final snapshot on termination | `bool` | `false` | no |
 | <a name="input_snapshot_identifier"></a> [snapshot\_identifier](#input\_snapshot\_identifier) | Name of snapshot to create cluster from | `string` | `""` | no |
 | <a name="input_storage_encrypted"></a> [storage\_encrypted](#input\_storage\_encrypted) | Encrypt the RDS storage at rest | `bool` | `true` | no |
 | <a name="input_subnet_group_name"></a> [subnet\_group\_name](#input\_subnet\_group\_name) | The db subnet group name | `string` | `"rds"` | no |

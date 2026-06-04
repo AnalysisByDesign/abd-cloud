@@ -1,4 +1,78 @@
 # --------------------------------------------------------------------------------------------
+# CloudTrail KMS key
+# --------------------------------------------------------------------------------------------
+
+data "aws_caller_identity" "current" {}
+
+data "aws_iam_policy_document" "cloudtrail_kms" {
+  statement {
+    sid       = "EnableRootAccess"
+    effect    = "Allow"
+    actions   = ["kms:*"]
+    resources = ["*"]
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+  }
+
+  statement {
+    sid       = "AllowCloudTrailDescribeKey"
+    effect    = "Allow"
+    actions   = ["kms:DescribeKey"]
+    resources = ["*"]
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "AllowCloudTrailEncrypt"
+    effect    = "Allow"
+    actions   = ["kms:GenerateDataKey*"]
+    resources = ["*"]
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:aws:cloudtrail:arn"
+      values   = ["arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.cloudtrail_allowed_accounts
+    content {
+      sid       = "AllowCrossAccountCloudTrail${statement.key}"
+      effect    = "Allow"
+      actions   = ["kms:GenerateDataKey*", "kms:DescribeKey"]
+      resources = ["*"]
+      principals {
+        type        = "AWS"
+        identifiers = ["arn:aws:iam::${statement.value}:root"]
+      }
+    }
+  }
+}
+
+resource "aws_kms_key" "cloudtrail" {
+  count               = var.cloudtrail_hub ? 1 : 0
+  description         = "KMS key for CloudTrail log encryption — ${var.cloudtrail_name}"
+  enable_key_rotation = true
+  policy              = data.aws_iam_policy_document.cloudtrail_kms.json
+  tags                = merge(local.common_tags, { Name = "${var.cloudtrail_name}-kms" })
+}
+
+resource "aws_kms_alias" "cloudtrail" {
+  count         = var.cloudtrail_hub ? 1 : 0
+  name          = "alias/${var.cloudtrail_name}"
+  target_key_id = aws_kms_key.cloudtrail[0].key_id
+}
+
+# --------------------------------------------------------------------------------------------
 # CloudTrail
 # --------------------------------------------------------------------------------------------
 
@@ -10,9 +84,7 @@ resource "aws_cloudtrail" "this" {
   enable_logging                = true
   is_multi_region_trail         = true
   enable_log_file_validation    = true
-
-  # TODO - Need to add encryption to the files that are stored
-  # kms_key_id = ""
+  kms_key_id                    = var.cloudtrail_hub ? aws_kms_key.cloudtrail[0].arn : null
 
   event_selector {
     read_write_type           = "All"

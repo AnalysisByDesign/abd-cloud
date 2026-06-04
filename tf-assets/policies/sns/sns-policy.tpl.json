@@ -22,7 +22,6 @@
         "SNS:Receive",
         "SNS:Subscribe",
         "SNS:GetTopicAttributes",
-        "SNS:SetTopicAttributes",
         "SNS:ListSubscriptionsByTopic"
       ],
       "Resource" : "arn:aws:sns:${region}:${acct_target}:${sns_topic}",

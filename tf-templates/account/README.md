@@ -57,6 +57,7 @@ This template must be applied before any other template in the account, as other
 | [aws_iam_role_policy_attachment.github_actions_terraform](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_service_linked_role.es](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_service_linked_role) | resource |
 | [aws_route53_record.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_iam_policy_document.newrelic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.rds_enhanced](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.remote_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -89,6 +90,7 @@ This template must be applied before any other template in the account, as other
 | <a name="input_docker_repository_required"></a> [docker\_repository\_required](#input\_docker\_repository\_required) | Defines whether we need to build a Docker repository in this account | `bool` | `false` | no |
 | <a name="input_github_actions_role_name"></a> [github\_actions\_role\_name](#input\_github\_actions\_role\_name) | Name of the IAM role assumed by GitHub Actions via OIDC | `string` | `"github-actions-terraform"` | no |
 | <a name="input_github_org"></a> [github\_org](#input\_github\_org) | GitHub organisation name — set to enable OIDC role creation (management account only) | `string` | `""` | no |
+| <a name="input_github_repos"></a> [github\_repos](#input\_github\_repos) | Specific repo slugs within github\_org permitted to assume the OIDC role | `list(string)` | `[]` | no |
 | <a name="input_hard_expiry"></a> [hard\_expiry](#input\_hard\_expiry) | n/a | `bool` | `true` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_minimum_password_length"></a> [minimum\_password\_length](#input\_minimum\_password\_length) | n/a | `number` | `10` | no |
