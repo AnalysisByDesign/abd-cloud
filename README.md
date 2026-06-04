@@ -17,19 +17,22 @@ All build commands are run from the `abd-cloud/` directory. AWS credentials are 
 
 ```bash
 # Initialise a single resource (required on first use and after provider upgrades)
-aws-vault exec abd_global -- ./tf-run.sh -v init ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
+aws-vault exec abd_global -- ./tf-run.sh -v ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress init
 
 # Plan a single resource
-aws-vault exec abd_global -- ./tf-run.sh plan ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
+aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress plan
 
 # Apply a single resource
-aws-vault exec abd_global -- ./tf-run.sh apply ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
+aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress apply
 
 # Dry-run (show terraform commands without executing)
-aws-vault exec abd_global -- ./tf-run.sh -d plan ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress
+aws-vault exec abd_global -- ./tf-run.sh -d ../abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress plan
 
 # Run the full stack in priority order
-aws-vault exec abd_global -- ./tf-run-all.sh apply
+aws-vault exec abd_global -- ./tf-run-all.sh ../abd-cloud-params/abd-global apply
+
+# Initialise all resources with provider upgrade
+aws-vault exec --region=eu-west-1 abd_global -- ./tf-run-all.sh -c -v ../abd-cloud-params/abd-global init -upgrade
 ```
 
 `tf-run.sh` reads the `*_config.sh` and `*.tfvars` files from the target path outward to the params root, then runs Terraform against the appropriate template. State is stored in S3 (`abd-tf-state`) with DynamoDB locking.
@@ -89,7 +92,7 @@ Both accounts are managed by assuming `arn:aws:iam::{account_id}:role/terraform`
 
 ## State Management
 
-Terraform state is stored in the S3 bucket `abd-tf-state` (in `abd-global`) with DynamoDB table `terraform-state-lock` for concurrency control. Each resource has a unique state key derived from the account name and `statefile_basename` configured in its `*_config.sh`.
+Terraform state is stored in the S3 bucket `abd-tf-state` (in `abd-global`) with native S3 lock files for concurrency control. Each resource has a unique state key derived from the account name and `statefile_basename` configured in its `*_config.sh`.
 
 ## Requirements
 
