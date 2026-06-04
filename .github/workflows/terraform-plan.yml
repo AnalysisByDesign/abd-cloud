@@ -78,7 +78,7 @@ jobs:
           AWS_DEFAULT_REGION: eu-west-1
         run: |
           set +e
-          PLAN_OUTPUT=$(abd-cloud/tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/${{ matrix.resource }} plan 2>&1)
+          PLAN_OUTPUT=$(cd $GITHUB_WORKSPACE/abd-cloud && ./tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/${{ matrix.resource }} plan 2>&1)
           EXIT_CODE=$?
           echo "plan_output<<EOF" >> $GITHUB_OUTPUT
           echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
