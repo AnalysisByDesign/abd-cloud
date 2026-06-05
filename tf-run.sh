@@ -280,22 +280,26 @@ for resource in ${build_resources}; do
 
     # We always run an init command
     log_verbose "    - preparing backend store"
+    # Terraform 1.10+ requires role_arn via an assume_role block; write to a temp HCL file
+    # since nested blocks cannot be passed as flat -backend-config key=value args
+    backendRoleFile="${tmpPath}/backend-role.hcl"
+    echo "assume_role = { role_arn = \"arn:aws:iam::${acct_management}:role/terraform\" }" > "${backendRoleFile}"
     if [ "Y" = ${dryRun} ]; then
         log_message "terraform terraform init -lock=${lock} ${extra_args}
             -backend-config=\"bucket=${statefileBucket}\"
             -backend-config=\"key=${statefile}\"
-            -backend-config=\"role_arn=arn:aws:iam::${acct_management}:role/terraform\""
+            -backend-config=\"${backendRoleFile}\""
     else
         if [ "Y" = ${verbose} ]; then
             terraform init -lock=${lock} ${extra_args} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}" \
-                -backend-config="role_arn=arn:aws:iam::${acct_management}:role/terraform"
+                -backend-config="${backendRoleFile}"
         else
             terraform init -lock=${lock} ${extra_args} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}" \
-                -backend-config="role_arn=arn:aws:iam::${acct_management}:role/terraform" > /dev/null
+                -backend-config="${backendRoleFile}" > /dev/null
         fi
     fi
 
