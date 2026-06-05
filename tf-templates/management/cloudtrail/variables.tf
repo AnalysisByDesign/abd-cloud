@@ -51,3 +51,9 @@ variable "cloudtrail_allowed_accounts" {
   type        = list(string)
   default     = []
 }
+
+variable "cloudtrail_kms_key_arn" {
+  description = "ARN of an existing KMS key for CloudTrail encryption — used when cloudtrail_hub = false to write to a central account's KMS-encrypted bucket"
+  type        = string
+  default     = ""
+}

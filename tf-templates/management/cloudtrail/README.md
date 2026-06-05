@@ -53,6 +53,7 @@ Provisions an AWS CloudTrail trail with a dedicated S3 bucket and bucket policy 
 | <a name="input_acct_target_role"></a> [acct\_target\_role](#input\_acct\_target\_role) | Role in target account to assume when building infrastructure | `string` | `"terraform"` | no |
 | <a name="input_cloudtrail_allowed_accounts"></a> [cloudtrail\_allowed\_accounts](#input\_cloudtrail\_allowed\_accounts) | Additional AWS account IDs permitted to use the CloudTrail KMS key (for cross-account log writing) | `list(string)` | `[]` | no |
 | <a name="input_cloudtrail_hub"></a> [cloudtrail\_hub](#input\_cloudtrail\_hub) | Is this the CloudTrail central hub | `bool` | `false` | no |
+| <a name="input_cloudtrail_kms_key_arn"></a> [cloudtrail\_kms\_key\_arn](#input\_cloudtrail\_kms\_key\_arn) | ARN of an existing KMS key for CloudTrail encryption — used when cloudtrail\_hub = false to write to a central account's KMS-encrypted bucket | `string` | `""` | no |
 | <a name="input_cloudtrail_name"></a> [cloudtrail\_name](#input\_cloudtrail\_name) | The name of the CloudTrail configuration | `string` | n/a | yes |
 | <a name="input_common_tag_component"></a> [common\_tag\_component](#input\_common\_tag\_component) | n/a | `string` | n/a | yes |
 | <a name="input_common_tag_environment"></a> [common\_tag\_environment](#input\_common\_tag\_environment) | n/a | `string` | n/a | yes |
@@ -70,5 +71,7 @@ Provisions an AWS CloudTrail trail with a dedicated S3 bucket and bucket policy 
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+| ---- | ----------- |
+| <a name="output_kms_key_arn"></a> [kms\_key\_arn](#output\_kms\_key\_arn) | ARN of the CloudTrail KMS key (only set when cloudtrail\_hub = true) |
 <!-- END_TF_DOCS -->
