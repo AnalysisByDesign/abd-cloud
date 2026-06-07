@@ -25,11 +25,12 @@ module "remote_admins" {
   source = "../../../abd-cloud-modules/security/iam-role"
 
   roles = [{
-    name               = "admins"
-    description        = "admins"
-    path               = "/"
-    assume_role_policy = "${data.aws_iam_policy_document.remote_assume_role_policy.json}"
-    policy_arn         = "arn:aws:iam::aws:policy/AdministratorAccess"
+    name                 = "admins"
+    description          = "admins"
+    max_session_duration = 28800
+    path                 = "/"
+    assume_role_policy   = "${data.aws_iam_policy_document.remote_assume_role_policy.json}"
+    policy_arn           = "arn:aws:iam::aws:policy/AdministratorAccess"
   }]
 }
 
