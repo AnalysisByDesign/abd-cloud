@@ -284,19 +284,20 @@ for resource in ${build_resources}; do
     # since nested blocks cannot be passed as flat -backend-config key=value args
     backendRoleFile="${tmpPath}/backend-role.hcl"
     echo "assume_role = { role_arn = \"arn:aws:iam::${acct_management}:role/terraform\" }" > "${backendRoleFile}"
+    [ "${action}" = "init" ] && init_extra_args="${extra_args}" || init_extra_args=""
     if [ "Y" = ${dryRun} ]; then
-        log_message "terraform terraform init -lock=${lock} ${extra_args}
+        log_message "terraform terraform init -lock=${lock} ${init_extra_args}
             -backend-config=\"bucket=${statefileBucket}\"
             -backend-config=\"key=${statefile}\"
             -backend-config=\"${backendRoleFile}\""
     else
         if [ "Y" = ${verbose} ]; then
-            terraform init -lock=${lock} ${extra_args} \
+            terraform init -lock=${lock} ${init_extra_args} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}" \
                 -backend-config="${backendRoleFile}"
         else
-            terraform init -lock=${lock} ${extra_args} \
+            terraform init -lock=${lock} ${init_extra_args} \
                 -backend-config="bucket=${statefileBucket}" \
                 -backend-config="key=${statefile}" \
                 -backend-config="${backendRoleFile}" > /dev/null
