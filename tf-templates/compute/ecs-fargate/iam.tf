@@ -6,12 +6,14 @@
 module "ecs_role" {
   source = "../../../../abd-cloud-modules/security/iam-role"
 
-  roles = [{
-    name               = "${format("%s-ecs-role", local.vpc_name)}"
-    description        = "${format("%s-ecs-role", local.vpc_name)}"
-    assume_role_policy = "${data.aws_iam_policy_document.ecs_assume_role_policy.json}"
-    policy_arn         = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  }]
+  roles = {
+    "${format("%s-ecs-role", local.vpc_name)}" = {
+      name               = "${format("%s-ecs-role", local.vpc_name)}"
+      description        = "${format("%s-ecs-role", local.vpc_name)}"
+      assume_role_policy = "${data.aws_iam_policy_document.ecs_assume_role_policy.json}"
+      policy_arn         = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+    }
+  }
 }
 
 # Create policy
@@ -30,4 +32,3 @@ module "ecs_role" {
 #  role       = "${module.ecs_role.names}"
 #  policy_arn = "${module.ecs_policy.arn}"
 #}
-

@@ -9,10 +9,12 @@ module "newrelic_role" {
 
   required = var.newrelic_required
 
-  roles = [{
-    name               = "NewRelicInfrastructure-Integrations"
-    description        = "Allows remote monitoring by NewRelic"
-    assume_role_policy = "${data.aws_iam_policy_document.newrelic.json}"
-    policy_arn         = "arn:aws:iam::aws:policy/ReadOnlyAccess"
-  }]
+  roles = {
+    "NewRelic-Int" = {
+      description          = "Allows remote monitoring by NewRelic"
+      assume_role_policy   = "${data.aws_iam_policy_document.newrelic.json}"
+      policy_arn           = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+      max_session_duration = 3600
+    }
+  }
 }
