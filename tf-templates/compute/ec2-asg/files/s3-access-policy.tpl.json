@@ -31,6 +31,15 @@
       "Resource": "*"
     },
     {
+      "Sid": "AllowEFSManagement",
+      "Effect": "Allow",
+      "Action": [
+        "elasticfilesystem:DescribeFileSystems",
+        "elasticfilesystem:UpdateFileSystem"
+      ],
+      "Resource": "*"
+    },
+    {
       "Sid": "AllowListSSMParameters",
       "Effect": "Allow",
       "Action": [
