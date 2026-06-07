@@ -39,16 +39,19 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
     condition {
       test     = "StringLike"
       variable = "kms:EncryptionContext:aws:cloudtrail:arn"
-      values   = ["arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"]
+      values = concat(
+        ["arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"],
+        [for acct in var.cloudtrail_allowed_accounts : "arn:aws:cloudtrail:*:${acct}:trail/*"]
+      )
     }
   }
 
   dynamic "statement" {
     for_each = var.cloudtrail_allowed_accounts
     content {
-      sid       = "AllowCrossAccountCloudTrail${statement.key}"
+      sid       = "AllowCrossAccountKeyAccess${statement.key}"
       effect    = "Allow"
-      actions   = ["kms:GenerateDataKey*", "kms:DescribeKey"]
+      actions   = ["kms:DescribeKey"]
       resources = ["*"]
       principals {
         type        = "AWS"
@@ -84,7 +87,7 @@ resource "aws_cloudtrail" "this" {
   enable_logging                = true
   is_multi_region_trail         = true
   enable_log_file_validation    = true
-  kms_key_id                    = var.cloudtrail_hub ? aws_kms_key.cloudtrail[0].arn : null
+  kms_key_id                    = var.cloudtrail_hub ? aws_kms_key.cloudtrail[0].arn : (var.cloudtrail_kms_key_arn != "" ? var.cloudtrail_kms_key_arn : null)
 
   event_selector {
     read_write_type           = "All"
