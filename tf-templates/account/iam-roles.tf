@@ -11,12 +11,14 @@ resource "aws_iam_service_linked_role" "es" {
 module "rds_monitoring_role" {
   source = "../../../abd-cloud-modules/security/iam-role"
 
-  roles = [{
-    name               = "rds-enhanced-monitoring"
-    description        = "Allows RDS enhanced monitoring"
-    assume_role_policy = "${data.aws_iam_policy_document.rds_enhanced.json}"
-    policy_arn         = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-  }]
+  roles = {
+    "rds-enhanced-monitoring" = {
+      name               = "rds-enhanced-monitoring"
+      description        = "Allows RDS enhanced monitoring"
+      assume_role_policy = "${data.aws_iam_policy_document.rds_enhanced.json}"
+      policy_arn         = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+    }
+  }
 }
 
 # --------------------------------------------------------------------------------------------
@@ -24,13 +26,16 @@ module "rds_monitoring_role" {
 module "remote_admins" {
   source = "../../../abd-cloud-modules/security/iam-role"
 
-  roles = [{
-    name               = "admins"
-    description        = "admins"
-    path               = "/"
-    assume_role_policy = "${data.aws_iam_policy_document.remote_assume_role_policy.json}"
-    policy_arn         = "arn:aws:iam::aws:policy/AdministratorAccess"
-  }]
+  roles = {
+    "admins" = {
+      name                 = "admins"
+      description          = "admins"
+      max_session_duration = 28800
+      path                 = "/"
+      assume_role_policy   = "${data.aws_iam_policy_document.remote_assume_role_policy.json}"
+      policy_arn           = "arn:aws:iam::aws:policy/AdministratorAccess"
+    }
+  }
 }
 
 # ============================================================================================

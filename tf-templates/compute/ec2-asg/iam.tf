@@ -10,12 +10,14 @@ resource "aws_iam_instance_profile" "ec2-asg" {
 module "ec2_asg_role" {
   source = "../../../../abd-cloud-modules/security/iam-role"
 
-  roles = [{
-    name               = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
-    description        = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
-    assume_role_policy = "${data.aws_iam_policy_document.instance_assume_role_policy.json}"
-    policy_arn         = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-  }]
+  roles = {
+    "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}" = {
+      name               = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
+      description        = "${format("%s-%s", local.vpc_name, var.asg_iam_profile_name)}"
+      assume_role_policy = "${data.aws_iam_policy_document.instance_assume_role_policy.json}"
+      policy_arn         = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+    }
+  }
 }
 
 module "ec2_asg_policy" {
@@ -37,4 +39,3 @@ resource "aws_iam_role_policy_attachment" "attach_policy" {
 #  role       = "${module.ec2_asg_role.names}"
 #  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 #}
-
