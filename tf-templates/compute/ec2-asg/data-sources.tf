@@ -14,6 +14,26 @@ data "aws_subnet" "asg" {
 
 # -----------------------------------------------------------------------------
 
+data "aws_ami" "this" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = [var.asg_ami_image_glob]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = [var.asg_ami_image_owner]
+}
+
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+
 data "aws_security_group" "rds" {
   name = format("%s-%s", local.vpc_name, var.rds_security_group)
 }
