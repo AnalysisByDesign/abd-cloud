@@ -6,7 +6,8 @@ module "launch_template" {
 
   # Required variables
   name               = format("%s-%s", local.vpc_name, var.name)
-  image_id           = data.aws_ami.this.id
+  ami_name_filter    = var.asg_ami_image_glob
+  ami_owners         = [var.asg_ami_image_owner]
   security_group_ids = [module.ec2-sg.id]
   common_tags        = local.common_tags
 
