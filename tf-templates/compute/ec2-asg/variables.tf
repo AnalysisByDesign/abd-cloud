@@ -89,6 +89,12 @@ variable "asg_iam_profile_name" {
   default     = ""
 }
 
+variable "s3_kms_key_arn" {
+  description = "ARN of the KMS key used to encrypt the S3 bucket"
+  type        = string
+  default     = ""
+}
+
 variable "ec2_policy_template_folder" {
   description = "Folder containing policy templates to apply to the instance roles"
   type        = string

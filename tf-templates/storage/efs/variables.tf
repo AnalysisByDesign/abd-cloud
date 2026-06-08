@@ -22,6 +22,30 @@ variable "performance_mode" {
   default     = "generalPurpose"
 }
 
+variable "throughput_mode" {
+  description = "Throughput mode for the EFS filesystem (bursting, provisioned, elastic)"
+  type        = string
+  default     = "bursting"
+}
+
+variable "lifecycle_policy_transition_to_ia" {
+  description = "How long until files transition to Infrequent Access storage (e.g. AFTER_30_DAYS)"
+  type        = string
+  default     = null
+}
+
+variable "lifecycle_policy_transition_to_archive" {
+  description = "How long until files transition to Archive storage (e.g. AFTER_90_DAYS)"
+  type        = string
+  default     = null
+}
+
+variable "lifecycle_policy_transition_to_primary_storage_class" {
+  description = "When to move files back to primary storage on access (AFTER_1_ACCESS)"
+  type        = string
+  default     = null
+}
+
 variable "encrypted" {
   description = "Create an encrypted data volume"
   default     = true

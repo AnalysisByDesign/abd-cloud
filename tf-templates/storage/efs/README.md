@@ -58,6 +58,9 @@ Provisions an EFS file system with mount targets in each private subnet, a Route
 | <a name="input_efs_tags"></a> [efs\_tags](#input\_efs\_tags) | Additional tags for the EFS volume | `map(string)` | <pre>{<br/>  "Component": "storage"<br/>}</pre> | no |
 | <a name="input_encrypted"></a> [encrypted](#input\_encrypted) | Create an encrypted data volume | `bool` | `true` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | Create an encrypted data volume | `string` | `""` | no |
+| <a name="input_lifecycle_policy_transition_to_archive"></a> [lifecycle\_policy\_transition\_to\_archive](#input\_lifecycle\_policy\_transition\_to\_archive) | How long until files transition to Archive storage (e.g. AFTER\_90\_DAYS) | `string` | `null` | no |
+| <a name="input_lifecycle_policy_transition_to_ia"></a> [lifecycle\_policy\_transition\_to\_ia](#input\_lifecycle\_policy\_transition\_to\_ia) | How long until files transition to Infrequent Access storage (e.g. AFTER\_30\_DAYS) | `string` | `null` | no |
+| <a name="input_lifecycle_policy_transition_to_primary_storage_class"></a> [lifecycle\_policy\_transition\_to\_primary\_storage\_class](#input\_lifecycle\_policy\_transition\_to\_primary\_storage\_class) | When to move files back to primary storage on access (AFTER\_1\_ACCESS) | `string` | `null` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_name"></a> [name](#input\_name) | The name of the EFS volume | `string` | n/a | yes |
 | <a name="input_performance_mode"></a> [performance\_mode](#input\_performance\_mode) | The performance mode of the EFS filesystem | `string` | `"generalPurpose"` | no |
@@ -66,6 +69,7 @@ Provisions an EFS file system with mount targets in each private subnet, a Route
 | <a name="input_public_sub_domain"></a> [public\_sub\_domain](#input\_public\_sub\_domain) | The public search domain prefix to create a zone for | `string` | `""` | no |
 | <a name="input_public_sub_domains"></a> [public\_sub\_domains](#input\_public\_sub\_domains) | A list of public search domain prefix to create zones for | `list(string)` | `[]` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
+| <a name="input_throughput_mode"></a> [throughput\_mode](#input\_throughput\_mode) | Throughput mode for the EFS filesystem (bursting, provisioned, elastic) | `string` | `"bursting"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The VPC CIDR range to extract | `string` | `""` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC id to extract | `string` | `""` | no |
 
