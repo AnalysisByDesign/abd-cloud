@@ -64,6 +64,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | ---- | ---- |
 | [aws_iam_instance_profile.ec2-asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role_policy_attachment.attach_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_ami.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_iam_policy_document.instance_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_route53_zone.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_security_group.efs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
@@ -119,6 +120,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_queue_receive_wait_time_seconds"></a> [queue\_receive\_wait\_time\_seconds](#input\_queue\_receive\_wait\_time\_seconds) | Receive wait time (seconds) | `number` | `0` | no |
 | <a name="input_r53_name"></a> [r53\_name](#input\_r53\_name) | The name for the route53 entry | `string` | `""` | no |
 | <a name="input_rds_security_group"></a> [rds\_security\_group](#input\_rds\_security\_group) | The name of the RDS security group | `string` | n/a | yes |
+| <a name="input_s3_kms_key_arn"></a> [s3\_kms\_key\_arn](#input\_s3\_kms\_key\_arn) | ARN of the KMS key used to encrypt the S3 bucket | `string` | `""` | no |
 | <a name="input_s3_name"></a> [s3\_name](#input\_s3\_name) | The name of the S3 bucket for storage | `string` | `""` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
 | <a name="input_user_data_script"></a> [user\_data\_script](#input\_user\_data\_script) | User data template file to apply to the instance | `string` | `"blank-user-data.tpl.sh"` | no |

@@ -56,6 +56,15 @@
       "Resource": [
         "arn:aws:ssm:*:*:parameter/${ssm_key_prefix}/*"
       ]
-    }
+    }%{ if kms_key_arn != "" },
+    {
+      "Sid": "AllowS3KMSAccess",
+      "Effect": "Allow",
+      "Action": [
+        "kms:GenerateDataKey",
+        "kms:Decrypt"
+      ],
+      "Resource": "${kms_key_arn}"
+    }%{ endif }
   ]
 }

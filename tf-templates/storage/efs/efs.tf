@@ -14,7 +14,13 @@ module "efs" {
 
   # Optional variables
   performance_mode = var.performance_mode
+  throughput_mode  = var.throughput_mode
   encrypted        = var.encrypted
   kms_key_id       = var.kms_key_id
   efs_tags         = var.efs_tags
+
+  lifecycle_policy_transition_to_ia                    = var.lifecycle_policy_transition_to_ia
+  lifecycle_policy_transition_to_archive               = var.lifecycle_policy_transition_to_archive
+  lifecycle_policy_transition_to_primary_storage_class = var.lifecycle_policy_transition_to_primary_storage_class
+
 }
