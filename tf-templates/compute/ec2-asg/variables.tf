@@ -204,6 +204,36 @@ variable "asg_delete_timeout" {
   default     = "15m"
 }
 
+variable "asg_enable_instance_refresh" {
+  description = "Automatically trigger a rolling instance refresh when the launch template changes"
+  type        = bool
+  default     = false
+}
+
+variable "asg_instance_refresh_min_healthy_percentage" {
+  description = "Minimum percentage of instances that must remain healthy during an instance refresh"
+  type        = number
+  default     = 100
+}
+
+variable "asg_instance_refresh_max_healthy_percentage" {
+  description = "Maximum percentage of instances that must remain healthy during an instance refresh"
+  type        = number
+  default     = 110
+}
+
+variable "asg_instance_refresh_instance_warmup" {
+  description = "Seconds to wait after a new instance comes in service before moving on during an instance refresh"
+  type        = number
+  default     = null
+}
+
+variable "asg_instance_refresh_triggers" {
+  description = "List of property name changes to trigger a refresh"
+  type        = list(string)
+  default     = []
+}
+
 # ============================================================================================
 #                                  S3 Bucket
 # ============================================================================================
@@ -249,4 +279,3 @@ variable "queue_receive_wait_time_seconds" {
 # ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================
-

@@ -9,7 +9,8 @@ module "autoscaling-group" {
   subnet_ids = data.aws_subnet.asg[*].id
 
   # Optional variables
-  launch_template_id = module.launch_template.id
+  launch_template_id      = module.launch_template.id
+  launch_template_version = module.launch_template.latest_version
 
   min_size                  = var.asg_min_size
   desired_capacity          = var.asg_desired_capacity
@@ -22,6 +23,12 @@ module "autoscaling-group" {
   force_delete              = var.asg_force_delete
   termination_policies      = var.asg_termination_policies
   delete_timeout            = var.asg_delete_timeout
+
+  enable_instance_refresh                 = var.asg_enable_instance_refresh
+  instance_refresh_min_healthy_percentage = var.asg_instance_refresh_min_healthy_percentage
+  instance_refresh_max_healthy_percentage = var.asg_instance_refresh_max_healthy_percentage
+  instance_refresh_instance_warmup        = var.asg_instance_refresh_instance_warmup
+  instance_refresh_triggers               = var.asg_instance_refresh_triggers
 
   tag_map = [
     { key = "Name", value = format("%s-%s", local.vpc_name, var.name), propagate_at_launch = true },
