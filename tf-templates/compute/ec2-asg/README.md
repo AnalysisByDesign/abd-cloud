@@ -90,9 +90,14 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_asg_delete_timeout"></a> [asg\_delete\_timeout](#input\_asg\_delete\_timeout) | Delete timeout setting | `string` | `"15m"` | no |
 | <a name="input_asg_desired_capacity"></a> [asg\_desired\_capacity](#input\_asg\_desired\_capacity) | Desired size of the autoscaling group | `string` | `"0"` | no |
 | <a name="input_asg_ec2_instance_type"></a> [asg\_ec2\_instance\_type](#input\_asg\_ec2\_instance\_type) | The EC2 instance type to build | `string` | `"t3.micro"` | no |
+| <a name="input_asg_enable_instance_refresh"></a> [asg\_enable\_instance\_refresh](#input\_asg\_enable\_instance\_refresh) | Automatically trigger a rolling instance refresh when the launch template changes | `bool` | `false` | no |
 | <a name="input_asg_force_delete"></a> [asg\_force\_delete](#input\_asg\_force\_delete) | Force delete of autoscaling group if instances not terminating | `string` | `"false"` | no |
 | <a name="input_asg_health_check_grace_period"></a> [asg\_health\_check\_grace\_period](#input\_asg\_health\_check\_grace\_period) | Maximum | `string` | `"240"` | no |
 | <a name="input_asg_iam_profile_name"></a> [asg\_iam\_profile\_name](#input\_asg\_iam\_profile\_name) | IAM instance profile to use for EC2 instances | `string` | `""` | no |
+| <a name="input_asg_instance_refresh_instance_warmup"></a> [asg\_instance\_refresh\_instance\_warmup](#input\_asg\_instance\_refresh\_instance\_warmup) | Seconds to wait after a new instance comes in service before moving on during an instance refresh | `number` | `null` | no |
+| <a name="input_asg_instance_refresh_max_healthy_percentage"></a> [asg\_instance\_refresh\_max\_healthy\_percentage](#input\_asg\_instance\_refresh\_max\_healthy\_percentage) | Maximum percentage of instances that must remain healthy during an instance refresh | `number` | `110` | no |
+| <a name="input_asg_instance_refresh_min_healthy_percentage"></a> [asg\_instance\_refresh\_min\_healthy\_percentage](#input\_asg\_instance\_refresh\_min\_healthy\_percentage) | Minimum percentage of instances that must remain healthy during an instance refresh | `number` | `100` | no |
+| <a name="input_asg_instance_refresh_triggers"></a> [asg\_instance\_refresh\_triggers](#input\_asg\_instance\_refresh\_triggers) | List of property name changes to trigger a refresh | `list(string)` | `[]` | no |
 | <a name="input_asg_max_size"></a> [asg\_max\_size](#input\_asg\_max\_size) | Maximum size of the autoscaling group | `string` | `"1"` | no |
 | <a name="input_asg_min_size"></a> [asg\_min\_size](#input\_asg\_min\_size) | Minimum size of the autoscaling group | `string` | `"0"` | no |
 | <a name="input_asg_ssh_key_name"></a> [asg\_ssh\_key\_name](#input\_asg\_ssh\_key\_name) | Name of SSH key to upload | `string` | n/a | yes |
