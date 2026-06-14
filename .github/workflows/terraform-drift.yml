@@ -41,6 +41,7 @@ jobs:
           - abd-wordpress/wordpress-vpc/hosted-sites/baltihot.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/blacklit.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/daverix.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/daverix.ai
           - abd-wordpress/wordpress-vpc/hosted-sites/oranjj.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/rixinteriors.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/abd.training
