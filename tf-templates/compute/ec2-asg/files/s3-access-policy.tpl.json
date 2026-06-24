@@ -65,6 +65,14 @@
         "kms:Decrypt"
       ],
       "Resource": "${kms_key_arn}"
+    }%{ endif }%{ if ssm_kms_key_arn != "" },
+    {
+      "Sid": "AllowSSMKMSDecrypt",
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt"
+      ],
+      "Resource": "${ssm_kms_key_arn}"
     }%{ endif }
   ]
 }

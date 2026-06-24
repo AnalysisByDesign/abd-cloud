@@ -95,6 +95,12 @@ variable "s3_kms_key_arn" {
   default     = ""
 }
 
+variable "ssm_kms_key_arn" {
+  description = "ARN of the KMS key used to encrypt SSM SecureString parameters"
+  type        = string
+  default     = ""
+}
+
 variable "ec2_policy_template_folder" {
   description = "Folder containing policy templates to apply to the instance roles"
   type        = string
