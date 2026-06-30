@@ -101,6 +101,12 @@ variable "ssm_kms_key_arn" {
   default     = ""
 }
 
+variable "ssm_extra_key_prefixes" {
+  description = "Additional SSM parameter path prefixes to grant GetParameter access to, beyond the default /{vpc_name}/*"
+  type        = list(string)
+  default     = []
+}
+
 variable "ec2_policy_template_folder" {
   description = "Folder containing policy templates to apply to the instance roles"
   type        = string

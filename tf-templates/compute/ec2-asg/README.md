@@ -127,6 +127,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_rds_security_group"></a> [rds\_security\_group](#input\_rds\_security\_group) | The name of the RDS security group | `string` | n/a | yes |
 | <a name="input_s3_kms_key_arn"></a> [s3\_kms\_key\_arn](#input\_s3\_kms\_key\_arn) | ARN of the KMS key used to encrypt the S3 bucket | `string` | `""` | no |
 | <a name="input_s3_name"></a> [s3\_name](#input\_s3\_name) | The name of the S3 bucket for storage | `string` | `""` | no |
+| <a name="input_ssm_extra_key_prefixes"></a> [ssm\_extra\_key\_prefixes](#input\_ssm\_extra\_key\_prefixes) | Additional SSM parameter path prefixes to grant GetParameter access to, beyond the default /{vpc\_name}/* | `list(string)` | `[]` | no |
 | <a name="input_ssm_kms_key_arn"></a> [ssm\_kms\_key\_arn](#input\_ssm\_kms\_key\_arn) | ARN of the KMS key used to encrypt SSM SecureString parameters | `string` | `""` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
 | <a name="input_user_data_script"></a> [user\_data\_script](#input\_user\_data\_script) | User data template file to apply to the instance | `string` | `"blank-user-data.tpl.sh"` | no |
