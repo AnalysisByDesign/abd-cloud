@@ -54,7 +54,8 @@
         "ssm:GetParameter*"
       ],
       "Resource": [
-        "arn:aws:ssm:*:*:parameter/${ssm_key_prefix}/*"
+        "arn:aws:ssm:*:*:parameter/${ssm_key_prefix}/*"%{ for prefix in ssm_extra_key_prefixes },
+        "arn:aws:ssm:*:*:parameter/${prefix}/*"%{ endfor }
       ]
     }%{ if kms_key_arn != "" },
     {
