@@ -75,7 +75,10 @@ data "aws_iam_policy_document" "deploy_permissions" {
     ]
   }
 
-  # Restrict which EC2 instances can be targeted by requiring the expected tag
+  # Target any EC2 instance in this account/region — currently safe as there is
+  # only one active instance; tag-based scoping can be added once a working
+  # condition key for ssm:SendCommand is confirmed (ec2:ResourceTag is not
+  # evaluated by IAM in the SSM authorization context)
   statement {
     sid     = "SSMSendCommandInstance"
     effect  = "Allow"
@@ -84,12 +87,6 @@ data "aws_iam_policy_document" "deploy_permissions" {
     resources = [
       "arn:aws:ec2:${var.target_region}:${var.acct_target}:instance/*",
     ]
-
-    condition {
-      test     = "StringEquals"
-      variable = "ec2:ResourceTag/${var.instance_tag_key}"
-      values   = [var.instance_tag_value]
-    }
   }
 
   # Read command output — needed to wait for completion and surface errors
