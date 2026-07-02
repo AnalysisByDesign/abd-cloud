@@ -35,6 +35,11 @@ resource "aws_iam_role_policy_attachment" "attach_policy" {
   policy_arn = module.ec2_asg_policy[0].arn
 }
 
+resource "aws_iam_role_policy_attachment" "attach_ssm_core" {
+  role       = module.ec2_asg_role.names
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 #resource "aws_iam_role_policy_attachment" "attach_cloudwatch" {
 #  role       = "${module.ec2_asg_role.names}"
 #  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
