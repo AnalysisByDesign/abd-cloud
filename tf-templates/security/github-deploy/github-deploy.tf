@@ -64,15 +64,25 @@ data "aws_iam_policy_document" "deploy_permissions" {
     resources = ["*"]
   }
 
-  # Send a shell command to instances carrying the expected tag
+  # Allow the specific SSM document to be used — no tag condition (documents have no EC2 tags)
   statement {
-    sid     = "SSMSendCommand"
+    sid     = "SSMSendCommandDocument"
+    effect  = "Allow"
+    actions = ["ssm:SendCommand"]
+
+    resources = [
+      "arn:aws:ssm:${var.target_region}::document/AWS-RunShellScript",
+    ]
+  }
+
+  # Restrict which EC2 instances can be targeted by requiring the expected tag
+  statement {
+    sid     = "SSMSendCommandInstance"
     effect  = "Allow"
     actions = ["ssm:SendCommand"]
 
     resources = [
       "arn:aws:ec2:${var.target_region}:${var.acct_target}:instance/*",
-      "arn:aws:ssm:${var.target_region}::document/AWS-RunShellScript",
     ]
 
     condition {
