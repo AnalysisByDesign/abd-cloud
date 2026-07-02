@@ -27,8 +27,8 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.47.0 |
-| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.47.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.52.0 |
+| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.52.0 |
 
 ## Modules
 
