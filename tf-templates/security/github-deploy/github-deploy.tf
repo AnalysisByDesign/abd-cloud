@@ -14,10 +14,12 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
 }
 
 # -----------------------------------------------------------------------------
-# Deploy Role
+# Deploy Roles - one per GitHub repository
 # -----------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "deploy_trust" {
+  for_each = var.deploy_roles
+
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -36,24 +38,30 @@ data "aws_iam_policy_document" "deploy_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/${var.github_branch}"]
+      values   = ["repo:${each.value.github_repo}:ref:refs/heads/${each.value.github_branch}"]
     }
   }
 }
 
 resource "aws_iam_role" "deploy" {
-  name               = var.deploy_role_name
-  assume_role_policy = data.aws_iam_policy_document.deploy_trust.json
+  for_each = var.deploy_roles
+
+  name               = each.value.role_name
+  assume_role_policy = data.aws_iam_policy_document.deploy_trust[each.key].json
 
   tags = merge(local.common_tags, {
-    Purpose = "GitHub Actions deploy role for ${var.github_repo}"
-    Repo    = var.github_repo
+    Purpose = "GitHub Actions deploy role for ${each.value.github_repo}"
+    Repo    = each.value.github_repo
   })
 }
 
 # -----------------------------------------------------------------------------
 # Deploy Role Inline Permissions
 # -----------------------------------------------------------------------------
+# The permissions are identical for every deploy role (trigger a Run Command
+# and read its result), so a single policy document is shared by all of them.
+# Deliberately absent: ssm:GetParameter - the instance profile reads the app
+# secrets itself; the GitHub Actions identity must not be able to.
 
 data "aws_iam_policy_document" "deploy_permissions" {
   # Discover the running instance — DescribeInstances cannot be resource-scoped
@@ -102,7 +110,23 @@ data "aws_iam_policy_document" "deploy_permissions" {
 }
 
 resource "aws_iam_role_policy" "deploy" {
-  name   = "${var.deploy_role_name}-inline"
-  role   = aws_iam_role.deploy.id
+  for_each = var.deploy_roles
+
+  name   = "${each.value.role_name}-inline"
+  role   = aws_iam_role.deploy[each.key].id
   policy = data.aws_iam_policy_document.deploy_permissions.json
+}
+
+# -----------------------------------------------------------------------------
+# State moves - the property-calculator role predates the deploy_roles map
+# -----------------------------------------------------------------------------
+
+moved {
+  from = aws_iam_role.deploy
+  to   = aws_iam_role.deploy["property-calculator"]
+}
+
+moved {
+  from = aws_iam_role_policy.deploy
+  to   = aws_iam_role_policy.deploy["property-calculator"]
 }

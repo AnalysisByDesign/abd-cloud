@@ -2,20 +2,13 @@
 # GitHub Actions deploy role configuration
 # ============================================================================================
 
-variable "github_repo" {
-  description = "GitHub repository in Org/Repo format permitted to assume this role (e.g. AnalysisByDesign/property-calculator)"
-  type        = string
-}
-
-variable "github_branch" {
-  description = "GitHub branch permitted to assume this role"
-  type        = string
-  default     = "main"
-}
-
-variable "deploy_role_name" {
-  description = "Name of the IAM role created for GitHub Actions deploys"
-  type        = string
+variable "deploy_roles" {
+  description = "GitHub Actions deploy roles to create, keyed by a short app name. Each entry grants one GitHub repository (on one branch) the right to trigger SSM Run Command deploys."
+  type = map(object({
+    github_repo   = string                   # Org/Repo permitted to assume the role (e.g. AnalysisByDesign/property-calculator)
+    github_branch = optional(string, "main") # Branch permitted to assume the role
+    role_name     = string                   # Name of the IAM role created for GitHub Actions deploys
+  }))
 }
 
 variable "instance_tag_key" {
