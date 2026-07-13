@@ -107,6 +107,12 @@ variable "ssm_extra_key_prefixes" {
   default     = []
 }
 
+variable "ses_identity_arns" {
+  description = "SES identity ARNs (verified email addresses and/or domains) that this instance role may send from via ses:SendEmail / ses:SendRawEmail"
+  type        = list(string)
+  default     = []
+}
+
 variable "ec2_policy_template_folder" {
   description = "Folder containing policy templates to apply to the instance roles"
   type        = string
