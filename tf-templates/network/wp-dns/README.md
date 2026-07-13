@@ -36,6 +36,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | ---- | ------ | ------- |
 | <a name="module_dns_naked"></a> [dns\_naked](#module\_dns\_naked) | ../../../../abd-cloud-modules/network/dns/alias-record | n/a |
 | <a name="module_dns_subdomain"></a> [dns\_subdomain](#module\_dns\_subdomain) | ../../../../abd-cloud-modules/network/dns/alias-record | n/a |
+| <a name="module_dns_wildcard"></a> [dns\_wildcard](#module\_dns\_wildcard) | ../../../../abd-cloud-modules/network/dns/alias-record | n/a |
 | <a name="module_dns_www"></a> [dns\_www](#module\_dns\_www) | ../../../../abd-cloud-modules/network/dns/record | n/a |
 | <a name="module_r53_delegate"></a> [r53\_delegate](#module\_r53\_delegate) | ../../../../abd-cloud-modules/network/dns/delegation-set | n/a |
 | <a name="module_r53_mx"></a> [r53\_mx](#module\_r53\_mx) | ../../../../abd-cloud-modules/network/dns/record | n/a |
@@ -83,6 +84,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | <a name="input_use_existing_zones"></a> [use\_existing\_zones](#input\_use\_existing\_zones) | Re-use existing public and private zones | `bool` | `false` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The VPC CIDR range to extract | `string` | `""` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC id to extract | `string` | `""` | no |
+| <a name="input_wildcard_dns_enabled"></a> [wildcard\_dns\_enabled](#input\_wildcard\_dns\_enabled) | Create a wildcard (*) alias record for this domain, pointing at the WP load balancer | `bool` | `false` | no |
 | <a name="input_wp_apex_domain"></a> [wp\_apex\_domain](#input\_wp\_apex\_domain) | The public wordpress apex domain | `string` | n/a | yes |
 | <a name="input_wp_lb_name"></a> [wp\_lb\_name](#input\_wp\_lb\_name) | The load balancer name for the main WP installation | `string` | n/a | yes |
 | <a name="input_wp_sub_domain"></a> [wp\_sub\_domain](#input\_wp\_sub\_domain) | The public wordpress subdomain domain prefix | `string` | n/a | yes |
