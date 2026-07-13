@@ -74,6 +74,19 @@
         "kms:Decrypt"
       ],
       "Resource": "${ssm_kms_key_arn}"
+    }%{ endif }%{ if length(ses_identity_arns) > 0 },
+    {
+      "Sid": "AllowSESSendFromVerifiedIdentities",
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+      ],
+      "Resource": [
+%{ for i, arn in ses_identity_arns ~}
+        "${arn}"%{ if i < length(ses_identity_arns) - 1 },%{ endif }
+%{ endfor ~}
+      ]
     }%{ endif }
   ]
 }
