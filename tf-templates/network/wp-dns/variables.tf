@@ -66,6 +66,12 @@ variable "subject_alternative_names" {
   default     = []
 }
 
+variable "wildcard_dns_enabled" {
+  description = "Create a wildcard (*) alias record for this domain, pointing at the WP load balancer"
+  type        = bool
+  default     = false
+}
+
 # ============================================================================================
 #                                      Email
 # ============================================================================================
