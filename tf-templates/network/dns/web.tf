@@ -4,9 +4,10 @@
 
 module "dns_subdomain" {
   source = "../../../../abd-cloud-modules/network/dns/alias-record"
+  count  = var.enable_wordpress ? 1 : 0
 
-  zone_id                      = data.aws_route53_zone.target.zone_id
-  name                         = var.trg_sub_domain
+  zone_id                      = data.aws_route53_zone.wordpress[0].zone_id
+  name                         = var.wp_sub_domain
   alias_name                   = data.aws_lb.target.dns_name
   alias_zone_id                = data.aws_lb.target.zone_id
   alias_evaluate_target_health = false
@@ -41,4 +42,9 @@ module "dns_wildcard" {
   alias_name                   = data.aws_lb.target.dns_name
   alias_zone_id                = data.aws_lb.target.zone_id
   alias_evaluate_target_health = false
+}
+
+moved {
+  from = module.dns_subdomain
+  to   = module.dns_subdomain[0]
 }

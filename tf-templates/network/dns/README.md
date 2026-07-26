@@ -53,7 +53,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 | [aws_lb.target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
 | [aws_lb_listener.target443](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_listener) | data source |
 | [aws_route53_zone.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
-| [aws_route53_zone.target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
+| [aws_route53_zone.wordpress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
 
 ## Inputs
@@ -72,6 +72,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 | <a name="input_delegate_set_name"></a> [delegate\_set\_name](#input\_delegate\_set\_name) | A reference name for the delegate set | `string` | `""` | no |
 | <a name="input_delegation_enabled"></a> [delegation\_enabled](#input\_delegation\_enabled) | Do we need this sub-domain delegated from our apex domain | `bool` | `false` | no |
 | <a name="input_dns_extra"></a> [dns\_extra](#input\_dns\_extra) | Extra DNS records that might be required | `list(map(string))` | `[]` | no |
+| <a name="input_enable_wordpress"></a> [enable\_wordpress](#input\_enable\_wordpress) | Enable Wordpress load balancer and DNS records | `bool` | `true` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_mx_records"></a> [mx\_records](#input\_mx\_records) | Records to use as MX records for this zone | `list(string)` | `[]` | no |
 | <a name="input_public_apex_domain"></a> [public\_apex\_domain](#input\_public\_apex\_domain) | The public search domain suffix to create a zone for | `string` | n/a | yes |
@@ -81,13 +82,13 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 | <a name="input_ssl_cert_enabled"></a> [ssl\_cert\_enabled](#input\_ssl\_cert\_enabled) | Does this site require an SSL cert. (Always false until NameServer change) | `bool` | `true` | no |
 | <a name="input_subject_alternative_names"></a> [subject\_alternative\_names](#input\_subject\_alternative\_names) | Subject alternative names for the SSL cert if required | `list(string)` | `[]` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
-| <a name="input_trg_apex_domain"></a> [trg\_apex\_domain](#input\_trg\_apex\_domain) | The public target apex domain | `string` | n/a | yes |
-| <a name="input_trg_lb_name"></a> [trg\_lb\_name](#input\_trg\_lb\_name) | The load balancer name for the main WP installation | `string` | n/a | yes |
-| <a name="input_trg_sub_domain"></a> [trg\_sub\_domain](#input\_trg\_sub\_domain) | The public target subdomain domain prefix | `string` | n/a | yes |
+| <a name="input_trg_lb_name"></a> [trg\_lb\_name](#input\_trg\_lb\_name) | The load balancer name for the main WP installation | `string` | `""` | no |
 | <a name="input_use_existing_zones"></a> [use\_existing\_zones](#input\_use\_existing\_zones) | Re-use existing public and private zones | `bool` | `false` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The VPC CIDR range to extract | `string` | `""` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC id to extract | `string` | `""` | no |
 | <a name="input_wildcard_dns_enabled"></a> [wildcard\_dns\_enabled](#input\_wildcard\_dns\_enabled) | Create a wildcard (*) alias record for this domain, pointing at the WP load balancer | `bool` | `false` | no |
+| <a name="input_wp_apex_domain"></a> [wp\_apex\_domain](#input\_wp\_apex\_domain) | The public target apex domain | `string` | `""` | no |
+| <a name="input_wp_sub_domain"></a> [wp\_sub\_domain](#input\_wp\_sub\_domain) | The public target subdomain domain prefix | `string` | `""` | no |
 
 ## Outputs
 

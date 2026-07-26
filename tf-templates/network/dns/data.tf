@@ -2,8 +2,9 @@
 # Data Sources
 # -----------------------------------------------------------------------------
 
-data "aws_route53_zone" "target" {
-  name = "${var.trg_apex_domain}."
+data "aws_route53_zone" "wordpress" {
+  count = var.enable_wordpress ? 1 : 0
+  name  = "${var.wp_apex_domain}."
 }
 
 data "aws_lb" "target" {
