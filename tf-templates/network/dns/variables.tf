@@ -1,30 +1,44 @@
-# ============================================================================================
+# =============================================================================
 #                                      Required
-# ============================================================================================
+# =============================================================================
 
 variable "acct_apex" {
   description = "Account where Apex domain can be found"
   type        = string
 }
 
+# =============================================================================
+# Wordpress Specific DNS configuration
+# =============================================================================
+
+variable "enable_wordpress" {
+  description = "Enable Wordpress load balancer and DNS records"
+  type        = bool
+  default     = true
+}
+
+variable "enable_www_redirect" {
+  description = "Enable WWW to Apex redirect DNS record"
+  type        = bool
+  default     = true
+}
+
+# Usually used to prepare a subdomain from abd-wp.uk
 variable "wp_sub_domain" {
-  description = "The public wordpress subdomain domain prefix"
+  description = "The public target subdomain domain prefix"
   type        = string
+  default     = ""
 }
 
 variable "wp_apex_domain" {
-  description = "The public wordpress apex domain"
+  description = "The public target apex domain"
   type        = string
+  default     = ""
 }
 
-variable "wp_lb_name" {
-  description = "The load balancer name for the main WP installation"
-  type        = string
-}
-
-# ============================================================================================
+# =============================================================================
 #                                      DNS Zone
-# ============================================================================================
+# =============================================================================
 
 variable "delegate_set_name" {
   description = "A reference name for the delegate set"
@@ -51,9 +65,15 @@ variable "r53_tags" {
   }
 }
 
-# ============================================================================================
+# =============================================================================
 #                                      Website
-# ============================================================================================
+# =============================================================================
+
+variable "trg_lb_name" {
+  description = "The load balancer name for the main WP installation"
+  type        = string
+  default     = ""
+}
 
 variable "ssl_cert_enabled" {
   description = "Does this site require an SSL cert. (Always false until NameServer change)"
@@ -72,9 +92,9 @@ variable "wildcard_dns_enabled" {
   default     = false
 }
 
-# ============================================================================================
+# =============================================================================
 #                                      Email
-# ============================================================================================
+# =============================================================================
 
 variable "mx_records" {
   description = "Records to use as MX records for this zone"
@@ -82,9 +102,9 @@ variable "mx_records" {
   default     = []
 }
 
-# ============================================================================================
+# =============================================================================
 #                                    Extra Records
-# ============================================================================================
+# =============================================================================
 
 variable "dns_extra" {
   description = "Extra DNS records that might be required"

@@ -1,6 +1,6 @@
-# template: network/wp-dns
+# template: network/trg-dns
 
-Provisions the complete DNS, SSL, and routing configuration for a single WordPress hosted site: Route53 hosted zone, ALB alias records (apex and www), MX records, and an ACM certificate.
+Provisions the complete DNS, SSL, and routing configuration for a single target hosted site: Route53 hosted zone, ALB alias records (apex and www), MX records, and an ACM certificate.
 
 ## Resources Provisioned
 
@@ -11,7 +11,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 
 ## Notes
 
-- This template is applied once per hosted domain. All eight WordPress domains in the platform each have their own params directory under `hosted-sites/`.
+- This template is applied once per hosted domain. All eight target domains in the platform each have their own params directory under `hosted-sites/`.
 - The delegation set used must already exist (created by the `account` template). The name servers in the delegation set must be registered with the domain registrar before DNS will resolve.
 - The ACM certificate waits for DNS validation to complete before marking the resource as created, so plan time is short but apply may take several minutes on first run.
 
@@ -27,8 +27,8 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.52.0 |
-| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.52.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.56.0 |
+| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.56.0 |
 
 ## Modules
 
@@ -50,8 +50,8 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | [aws_lb_listener_certificate.example](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_certificate) | resource |
 | [aws_route53_record.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
-| [aws_lb.wordpress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
-| [aws_lb_listener.wordpress443](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_listener) | data source |
+| [aws_lb.target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
+| [aws_lb_listener.target443](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_listener) | data source |
 | [aws_route53_zone.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_route53_zone.wordpress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
@@ -72,6 +72,8 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | <a name="input_delegate_set_name"></a> [delegate\_set\_name](#input\_delegate\_set\_name) | A reference name for the delegate set | `string` | `""` | no |
 | <a name="input_delegation_enabled"></a> [delegation\_enabled](#input\_delegation\_enabled) | Do we need this sub-domain delegated from our apex domain | `bool` | `false` | no |
 | <a name="input_dns_extra"></a> [dns\_extra](#input\_dns\_extra) | Extra DNS records that might be required | `list(map(string))` | `[]` | no |
+| <a name="input_enable_wordpress"></a> [enable\_wordpress](#input\_enable\_wordpress) | Enable Wordpress load balancer and DNS records | `bool` | `true` | no |
+| <a name="input_enable_www_redirect"></a> [enable\_www\_redirect](#input\_enable\_www\_redirect) | Enable WWW to Apex redirect DNS record | `bool` | `true` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_mx_records"></a> [mx\_records](#input\_mx\_records) | Records to use as MX records for this zone | `list(string)` | `[]` | no |
 | <a name="input_public_apex_domain"></a> [public\_apex\_domain](#input\_public\_apex\_domain) | The public search domain suffix to create a zone for | `string` | n/a | yes |
@@ -81,13 +83,13 @@ Provisions the complete DNS, SSL, and routing configuration for a single WordPre
 | <a name="input_ssl_cert_enabled"></a> [ssl\_cert\_enabled](#input\_ssl\_cert\_enabled) | Does this site require an SSL cert. (Always false until NameServer change) | `bool` | `true` | no |
 | <a name="input_subject_alternative_names"></a> [subject\_alternative\_names](#input\_subject\_alternative\_names) | Subject alternative names for the SSL cert if required | `list(string)` | `[]` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
+| <a name="input_trg_lb_name"></a> [trg\_lb\_name](#input\_trg\_lb\_name) | The load balancer name for the main WP installation | `string` | `""` | no |
 | <a name="input_use_existing_zones"></a> [use\_existing\_zones](#input\_use\_existing\_zones) | Re-use existing public and private zones | `bool` | `false` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The VPC CIDR range to extract | `string` | `""` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC id to extract | `string` | `""` | no |
 | <a name="input_wildcard_dns_enabled"></a> [wildcard\_dns\_enabled](#input\_wildcard\_dns\_enabled) | Create a wildcard (*) alias record for this domain, pointing at the WP load balancer | `bool` | `false` | no |
-| <a name="input_wp_apex_domain"></a> [wp\_apex\_domain](#input\_wp\_apex\_domain) | The public wordpress apex domain | `string` | n/a | yes |
-| <a name="input_wp_lb_name"></a> [wp\_lb\_name](#input\_wp\_lb\_name) | The load balancer name for the main WP installation | `string` | n/a | yes |
-| <a name="input_wp_sub_domain"></a> [wp\_sub\_domain](#input\_wp\_sub\_domain) | The public wordpress subdomain domain prefix | `string` | n/a | yes |
+| <a name="input_wp_apex_domain"></a> [wp\_apex\_domain](#input\_wp\_apex\_domain) | The public target apex domain | `string` | `""` | no |
+| <a name="input_wp_sub_domain"></a> [wp\_sub\_domain](#input\_wp\_sub\_domain) | The public target subdomain domain prefix | `string` | `""` | no |
 
 ## Outputs
 
