@@ -17,6 +17,12 @@ variable "enable_wordpress" {
   default     = true
 }
 
+variable "enable_www_redirect" {
+  description = "Enable WWW to Apex redirect DNS record"
+  type        = bool
+  default     = true
+}
+
 # Usually used to prepare a subdomain from abd-wp.uk
 variable "wp_sub_domain" {
   description = "The public target subdomain domain prefix"
