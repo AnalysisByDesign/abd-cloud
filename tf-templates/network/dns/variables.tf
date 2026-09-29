@@ -111,3 +111,13 @@ variable "dns_extra" {
   type        = list(map(string))
   default     = []
 }
+
+# =============================================================================
+#                                 DNS Challenge User
+# =============================================================================
+
+variable "dns_challenge_user_name" {
+  description = "Name of an IAM user permitted to complete the ACME DNS-01 challenge in this zone only. Leave empty to create no user"
+  type        = string
+  default     = ""
+}
