@@ -15,6 +15,16 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 - The delegation set used must already exist (created by the `account` template). The name servers in the delegation set must be registered with the domain registrar before DNS will resolve.
 - The ACM certificate waits for DNS validation to complete before marking the resource as created, so plan time is short but apply may take several minutes on first run.
 
+## Developer Zones
+
+A per-developer development zone is a clone of an existing params directory, no template changes are needed. Setting `dns_challenge_user_name` also creates an IAM user that can complete the ACME DNS-01 challenge (for example with Caddy's caddy-dns/route53 plugin) in that zone and no other.
+
+- The user has programmatic access only, no console password is created.
+- `route53:ListHostedZones`, `route53:ListHostedZonesByName` and `route53:GetChange` cannot be resource-scoped and are read-only. All write capability is confined to the one zone ARN.
+- The access key is deliberately not created here, as the secret would land in state. Create it by hand after apply with `aws iam create-access-key --user-name <dns_challenge_user_name>`.
+
+See "Adding a Developer DNS Zone" in the `abd-cloud-params` README for the steps.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -27,8 +37,8 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.56.0 |
-| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.56.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.66.0 |
+| <a name="provider_aws.apex"></a> [aws.apex](#provider\_aws.apex) | 6.66.0 |
 
 ## Modules
 
@@ -47,9 +57,12 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 
 | Name | Type |
 | ---- | ---- |
+| [aws_iam_user.dns_challenge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user) | resource |
+| [aws_iam_user_policy.dns_challenge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy) | resource |
 | [aws_lb_listener_certificate.example](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_certificate) | resource |
 | [aws_route53_record.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_iam_policy_document.dns_challenge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_lb.target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
 | [aws_lb_listener.target443](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_listener) | data source |
 | [aws_route53_zone.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
@@ -71,6 +84,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 | <a name="input_common_tag_subsystem"></a> [common\_tag\_subsystem](#input\_common\_tag\_subsystem) | n/a | `string` | n/a | yes |
 | <a name="input_delegate_set_name"></a> [delegate\_set\_name](#input\_delegate\_set\_name) | A reference name for the delegate set | `string` | `""` | no |
 | <a name="input_delegation_enabled"></a> [delegation\_enabled](#input\_delegation\_enabled) | Do we need this sub-domain delegated from our apex domain | `bool` | `false` | no |
+| <a name="input_dns_challenge_user_name"></a> [dns\_challenge\_user\_name](#input\_dns\_challenge\_user\_name) | Name of an IAM user permitted to complete the ACME DNS-01 challenge in this zone only. Leave empty to create no user | `string` | `""` | no |
 | <a name="input_dns_extra"></a> [dns\_extra](#input\_dns\_extra) | Extra DNS records that might be required | `list(map(string))` | `[]` | no |
 | <a name="input_enable_wordpress"></a> [enable\_wordpress](#input\_enable\_wordpress) | Enable Wordpress load balancer and DNS records | `bool` | `true` | no |
 | <a name="input_enable_www_redirect"></a> [enable\_www\_redirect](#input\_enable\_www\_redirect) | Enable WWW to Apex redirect DNS record | `bool` | `true` | no |
@@ -95,5 +109,7 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 
 | Name | Description |
 | ---- | ----------- |
+| <a name="output_dns_challenge_user_name"></a> [dns\_challenge\_user\_name](#output\_dns\_challenge\_user\_name) | The IAM user for the ACME DNS-01 challenge. Create the access key by hand with aws iam create-access-key |
 | <a name="output_domain_validation_options"></a> [domain\_validation\_options](#output\_domain\_validation\_options) | n/a |
+| <a name="output_zone_id"></a> [zone\_id](#output\_zone\_id) | The ID of the public zone |
 <!-- END_TF_DOCS -->
