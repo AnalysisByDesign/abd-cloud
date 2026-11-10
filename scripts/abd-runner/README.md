@@ -57,11 +57,15 @@ Record the UID and password in the password manager. Do not add it to `docker-us
 
 ### 2. Docker CLI plugins for the account
 
-The Homebrew `docker-buildx` plugin lives outside the CLI's default search path:
+The Homebrew `docker-buildx` plugin lives outside the CLI's default search path. Colima also writes to `~/.docker/config.json` (the `colima` context), so merge the setting in rather than overwrite the file; safe to rerun at any point:
 
 ```bash
-sudo -u svc-ghrunner -H bash -c 'mkdir -p ~/.docker && echo "{\"cliPluginsExtraDirs\": [\"/opt/homebrew/lib/docker/cli-plugins\"]}" > ~/.docker/config.json'
+sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; mkdir -p ~/.docker; f=~/.docker/config.json;
+  [ -s "$f" ] || echo "{}" > "$f";
+  jq ".cliPluginsExtraDirs = [\"/opt/homebrew/lib/docker/cli-plugins\"]" "$f" > "$f.new" && mv "$f.new" "$f"'
 ```
+
+Check after step 7: `docker buildx version` as `svc-ghrunner` must print a version, or step 8 fails with `unknown flag: --load`.
 
 ### 3. GitHub App (organisation settings, Developer settings, GitHub Apps, New)
 
