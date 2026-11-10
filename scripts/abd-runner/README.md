@@ -30,7 +30,21 @@ Follows the machine conventions in Tulox's `docs/runbooks/setup/dev-server-setup
 
 ## Install
 
-Run as `abd-admin` over ssh unless a step says otherwise. Prerequisites: the base setup is done, and Homebrew has `colima`, `docker`, `docker-buildx`, `jq`, `git` and `make`.
+Run as `abd-admin` over ssh unless a step says otherwise. Prerequisites: the base setup is done, and Homebrew has `colima`, `docker`, `docker-buildx`, `jq`, `git`, `gh` and `make`.
+
+### 0. GitHub access and checkouts
+
+GitHub has no password auth on the Mac mini; `abd-admin` signs in with `gh` (device flow: open the URL on the laptop and enter the code). `setup-git` makes `gh` the credential helper, so plain `git pull` works too.
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+gh auth setup-git
+mkdir -p ~/Projects
+gh repo clone AnalysisByDesign/abd-cloud ~/Projects/abd-cloud
+gh repo clone AnalysisByDesign/abd-cloud-containers ~/Projects/abd-cloud-containers
+```
+
+Only `abd-admin` holds a GitHub token. `svc-ghrunner` never gets one: it receives code through `sudo install` (step 9) and `sudo rsync` (step 8).
 
 ### 1. Service account
 
