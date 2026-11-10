@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Keeps one single-use runner waiting in slot N: register just in time, run
-# one job, repeat. launchd runs one supervisor per slot (KeepAlive).
+# one job, repeat. launchd runs one supervisor per slot (KeepAlive), as
+# svc-ghrunner.
 #   abd-runner-supervise <slot>
 #
 # Each slot has its own container (abd-runner-<slot>) and work folder
@@ -30,10 +31,14 @@ cleanup() {
 }
 trap cleanup INT TERM
 
+# At boot Colima restarts dockerd while starting; let it settle before
+# registering anything.
+wait_for_engine
+
 while true; do
     if ! docker info >/dev/null 2>&1; then
-        log "slot ${slot}: Docker not reachable at ${DOCKER_HOST}; retrying in 30s"
-        sleep 30
+        log "slot ${slot}: Docker not reachable at ${DOCKER_HOST}; waiting for it to settle"
+        wait_for_engine
         continue
     fi
 

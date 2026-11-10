@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Shared by the abd-runner host scripts. Sourced, not run.
-# Reads abd-runner.env next to this file (see abd-runner.env.example).
+# Reads ${ABD_RUNNER_ENV:-$HOME/etc/abd-runner.env} (see abd-runner.env.example).
 
-ABD_RUNNER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ABD_RUNNER_ENV="${ABD_RUNNER_ENV:-${HOME}/etc/abd-runner.env}"
 # shellcheck source=abd-runner.env.example
-. "${ABD_RUNNER_DIR}/abd-runner.env"
+. "${ABD_RUNNER_ENV}"
 
-: "${GH_SCOPE:?}" "${RUNNER_IMAGE:?}" "${RUNNER_LABELS:?}" "${WORK_ROOT:?}"
+: "${GH_SCOPE:?}" "${RUNNER_IMAGE:?}" "${RUNNER_LABELS:?}" "${WORK_ROOT:?}" "${DOCKER_HOST:?}"
 : "${RUNNER_COUNT:=1}" "${RUNNER_GROUP_ID:=1}" "${HEARTBEAT_VAR:=RUNNER_HEARTBEAT}"
 : "${CONTAINER_NAME:=abd-runner}" "${CACHE_VOLUME:=abd-runner-cache}"
 export DOCKER_HOST
@@ -18,16 +18,31 @@ log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
 
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 
-# Short-lived JWT for the GitHub App. The private key is stored base64
-# encoded in the login Keychain and only ever passes through a pipe.
+# Colima restarts dockerd during its own start, so a socket that answers
+# once is not ready (dev-server-setup base doc, 5a.3). Returns once
+# `docker info` has succeeded continuously for 30 seconds.
+wait_for_engine() {
+    local stable=0
+    while [ "${stable}" -lt 30 ]; do
+        if docker info >/dev/null 2>&1; then
+            stable=$((stable + 5))
+        else
+            [ "${stable}" -gt 0 ] && log "engine dropped; waiting again"
+            stable=0
+        fi
+        sleep 5
+    done
+}
+
+# Short-lived JWT for the GitHub App. The private key is a file readable
+# only by the service account (GH_APP_KEY_FILE).
 gh_app_jwt() {
-    : "${GH_APP_ID:?}" "${KEYCHAIN_SERVICE:?}"
+    : "${GH_APP_ID:?}" "${GH_APP_KEY_FILE:?}"
     local now unsigned sig
     now="$(date +%s)"
     unsigned="$(printf '{"alg":"RS256","typ":"JWT"}' | b64url).$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' \
         $((now - 60)) $((now + 540)) "${GH_APP_ID}" | b64url)"
-    sig="$(printf '%s' "${unsigned}" | openssl dgst -sha256 -sign \
-        <(security find-generic-password -s "${KEYCHAIN_SERVICE}" -w | base64 -d) | b64url)"
+    sig="$(printf '%s' "${unsigned}" | openssl dgst -sha256 -sign "${GH_APP_KEY_FILE}" | b64url)"
     printf '%s.%s' "${unsigned}" "${sig}"
 }
 
