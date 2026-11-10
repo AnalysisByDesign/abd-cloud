@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Dead-man switch. Every 5 minutes (launchd): if a runner with our labels is
+# online in GitHub, write the current Unix time to the heartbeat variable.
+# Workflows treat a heartbeat older than 15 minutes as "Mac mini down" and
+# fall back to GitHub-hosted runners.
+set -euo pipefail
+# shellcheck source=lib.sh
+. "$(dirname "$0")/lib.sh"
+
+token="$(gh_token)"
+
+# Online (idle or busy) runners carrying every one of our labels.
+online="$(gh_api "${token}" GET "${GH_SCOPE}/actions/runners?per_page=100" \
+    | jq --arg labels "${RUNNER_LABELS}" '
+        ($labels | split(",") | map(ascii_downcase)) as $want
+        | [.runners[]
+           | select(.status == "online")
+           | select(([.labels[].name | ascii_downcase]) as $have | all($want[]; . as $l | $have | index($l)))]
+        | length')"
+
+if [ "${online}" -eq 0 ]; then
+    log "no runner online; heartbeat not refreshed"
+    exit 0
+fi
+
+now="$(date +%s)"
+if gh_api "${token}" PATCH "${GH_SCOPE}/actions/variables/${HEARTBEAT_VAR}" \
+        "$(jq -nc --arg v "${now}" '{value: $v}')" >/dev/null 2>&1; then
+    :
+else
+    # First run: create it. Organisation variables need a visibility.
+    create="$(jq -nc --arg n "${HEARTBEAT_VAR}" --arg v "${now}" '{name: $n, value: $v}')"
+    case "${GH_SCOPE}" in
+        orgs/*) create="$(jq -c '. + {visibility: "private"}' <<<"${create}")" ;;
+    esac
+    gh_api "${token}" POST "${GH_SCOPE}/actions/variables" "${create}" >/dev/null
+fi
+log "heartbeat ${now} (${online} runner(s) online)"

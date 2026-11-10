@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Keeps one single-use runner waiting: register just in time, run one job,
+# repeat. Run by launchd (KeepAlive).
+#
+# The runner shares the VM's network (--network host) so ports that jobs
+# publish on the host engine are reachable on 127.0.0.1, as on a hosted
+# runner.
+set -euo pipefail
+# shellcheck source=lib.sh
+. "$(dirname "$0")/lib.sh"
+
+runner_id=""
+
+cleanup() {
+    docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+    if [ -n "${runner_id}" ]; then
+        gh_api "$(gh_token)" DELETE "${GH_SCOPE}/actions/runners/${runner_id}" >/dev/null 2>&1 || true
+    fi
+    exit 0
+}
+trap cleanup INT TERM
+
+while true; do
+    if ! docker info >/dev/null 2>&1; then
+        log "Docker not reachable at ${DOCKER_HOST}; retrying in 30s"
+        sleep 30
+        continue
+    fi
+
+    # A runner left over from an earlier supervisor: let it finish its job.
+    if [ "$(docker container inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = true ]; then
+        log "${CONTAINER_NAME} already running; waiting for it"
+        docker wait "${CONTAINER_NAME}" >/dev/null 2>&1 &
+        wait $! || true
+        continue
+    fi
+    docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+
+    # Fresh, empty work folder owned by abd, at the same path in the VM.
+    if ! docker run --rm --user 0 --entrypoint sh -v "${WORK_DIR}:${WORK_DIR}" "${RUNNER_IMAGE}" \
+            -c "find '${WORK_DIR}' -mindepth 1 -delete && chown 10001:10001 '${WORK_DIR}'"; then
+        log "could not prepare ${WORK_DIR} with ${RUNNER_IMAGE}; retrying in 60s"
+        sleep 60
+        continue
+    fi
+
+    sock_gid="$(docker run --rm --entrypoint stat -v "${DOCKER_SOCK}:${DOCKER_SOCK}" \
+        "${RUNNER_IMAGE}" -c %g "${DOCKER_SOCK}")" || { sleep 60; continue; }
+
+    body="$(jq -nc \
+        --arg name "abd-$(hostname -s)-$(date +%s)" \
+        --argjson group "${RUNNER_GROUP_ID}" \
+        --arg labels "${RUNNER_LABELS}" \
+        --arg work "${WORK_DIR}" \
+        '{name: $name, runner_group_id: $group, labels: ($labels | split(",")), work_folder: $work}')"
+    if ! resp="$(gh_api "$(gh_token)" POST "${GH_SCOPE}/actions/runners/generate-jitconfig" "${body}")"; then
+        log "registration failed; retrying in 60s"
+        sleep 60
+        continue
+    fi
+    runner_id="$(jq -r .runner.id <<<"${resp}")"
+    log "runner ${runner_id} registered, waiting for a job"
+
+    ACTIONS_RUNNER_JITCONFIG="$(jq -r .encoded_jit_config <<<"${resp}")" \
+        docker run --rm --name "${CONTAINER_NAME}" \
+            --network host \
+            -e ACTIONS_RUNNER_JITCONFIG \
+            -v "${DOCKER_SOCK}:${DOCKER_SOCK}" --group-add "${sock_gid}" \
+            -v "${WORK_DIR}:${WORK_DIR}" \
+            "${RUNNER_IMAGE}" &
+    # Waiting in the background lets the TERM trap run immediately.
+    wait $! || log "runner ${runner_id} exited with $?"
+
+    # A single-use runner removes itself after its job; this catches one
+    # that stopped before taking a job.
+    gh_api "$(gh_token)" DELETE "${GH_SCOPE}/actions/runners/${runner_id}" >/dev/null 2>&1 || true
+    runner_id=""
+    sleep 2
+done
