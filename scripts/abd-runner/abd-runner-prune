@@ -14,7 +14,7 @@ set -euo pipefail
 
 docker container prune -f --filter until=24h
 docker image prune -f
-docker volume prune -f
+docker volume prune -f   # anonymous volumes only; the named cache volume is kept
 docker builder prune -f --filter until=168h
 
 used="$(docker run --rm --entrypoint df -v /var/lib/docker:/d:ro "${RUNNER_IMAGE}" -P /d |

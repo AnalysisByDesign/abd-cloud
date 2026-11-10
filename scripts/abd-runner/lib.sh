@@ -6,8 +6,9 @@ ABD_RUNNER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=abd-runner.env.example
 . "${ABD_RUNNER_DIR}/abd-runner.env"
 
-: "${GH_SCOPE:?}" "${RUNNER_IMAGE:?}" "${RUNNER_LABELS:?}" "${WORK_DIR:?}"
-: "${RUNNER_GROUP_ID:=1}" "${HEARTBEAT_VAR:=RUNNER_HEARTBEAT}" "${CONTAINER_NAME:=abd-runner}"
+: "${GH_SCOPE:?}" "${RUNNER_IMAGE:?}" "${RUNNER_LABELS:?}" "${WORK_ROOT:?}"
+: "${RUNNER_COUNT:=1}" "${RUNNER_GROUP_ID:=1}" "${HEARTBEAT_VAR:=RUNNER_HEARTBEAT}"
+: "${CONTAINER_NAME:=abd-runner}" "${CACHE_VOLUME:=abd-runner-cache}"
 export DOCKER_HOST
 
 GH_API=https://api.github.com
