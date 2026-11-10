@@ -57,6 +57,7 @@ Options:
 Example:
         $0       tf-params               plan
         $0 -v -d tf-params/account       apply
+        $0       tf-params/account       apply -auto-approve
         $0 -vvd  tf-params/account/vpc   destroy
         $0       tf-params/account/vpc   state list
         $0       tf-params/account/vpc   state show aws_instance.foo
@@ -195,8 +196,8 @@ log_verbose "Sequence file     = ${sequenceFiles}"
 
 opts=""
 build_resources=""
-[ "${action}" = "destroy" ] && opts="-force"
-[ "${action}" = "apply"   ] && opts="-auto-approve"
+# apply and destroy are not auto-approved: Terraform prompts for confirmation.
+# Pass -auto-approve explicitly as a terraform_arg to skip the prompt.
 
 # -----------------------------------------------------------------------------
 # Prepare the environment ready for execution
