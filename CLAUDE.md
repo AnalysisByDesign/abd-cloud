@@ -36,7 +36,7 @@ aws-vault exec abd_global -- ./tf-run-all.sh ../abd-cloud-params/abd-global appl
 aws-vault exec --region=eu-west-1 abd_global -- ./tf-run-all.sh -c -v ../abd-cloud-params/abd-global init -upgrade
 ```
 
-`tf-run.sh` flags: `-c` clean `.terraform` cache, `-d` dry-run, `-o` override the `protect` flag on destroy, `-t n` terraform parallelism, `-v`/`-vv` verbose (`-vv` sets `TF_LOG=INFO`). `apply` runs with `-auto-approve`, so run `plan` first.
+`tf-run.sh` flags: `-c` clean `.terraform` cache, `-d` dry-run, `-o` override the `protect` flag on destroy, `-t n` terraform parallelism, `-v`/`-vv` verbose (`-vv` sets `TF_LOG=INFO`). `apply` and `destroy` ask for confirmation. Only Dave approves applies: run `plan` and show the output, and never pass `-auto-approve` unless asked. In `tf-run-all.sh` without `-v`, resources run in the background with no terminal attached, so an apply there can't be confirmed and cancels itself.
 
 ## How tf-run.sh wires things together
 
@@ -69,7 +69,8 @@ To validate a template, use `./tf-run.sh <param-path> validate`. There are no un
 
 ## CI
 
-- `terraform-plan.yml` runs plan, `terraform-apply.yml` applies on push to `main` (or for a single resource via `workflow_dispatch`), and `terraform-drift.yml` runs a weekly drift check.
+- `terraform-plan.yml` runs plan on PRs to `main`, and `terraform-drift.yml` runs a weekly drift check.
+- **The `Terraform Apply` workflow is disabled in GitHub** (since 2026-11-10), so merging to `main` applies nothing. When it was enabled, it applied on push to `main`. Its apply steps would need an explicit `-auto-approve` before it could be turned back on.
 - The workflows authenticate by OIDC as `github-actions-terraform` in the management account.
 - `terraform-apply.yml` hardcodes one job per resource, chained with `needs:` in priority order. When you add a resource to the params sequence, also add a job here.
 - `terraform-apply.yml` still pins `terraform_version: "~1.9"`, while `common/providers.tf` requires `~> 1.15.0` and the plan workflow uses `~1.15`.
