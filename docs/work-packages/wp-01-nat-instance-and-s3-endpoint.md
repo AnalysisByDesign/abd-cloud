@@ -73,7 +73,7 @@ Recorded 2026-11-10, against the questions in `docs/discovery/wp-01.md`.
 2. **NAT count**: one NAT instance for all private subnets, matching today, to reduce cost.
 3. **Route flip packaging**: a user data script in the params repo (`abd-wordpress/wordpress-vpc/nat-instance/files/`), following the `app.wordpress` `cloud-init.sh` convention, on the stock fck-nat AMI. Nothing is baked. (Ruled 2026-11-11.)
 4. **Healthy signal**: a launch lifecycle hook, completed by the instance after it has flipped the routes.
-5. **Private default route ownership**: removed from Terraform state without destroying it (a `removed` block with `destroy = false`), so the NAT instance alone owns it.
+5. **Private default route ownership**: removed from Terraform state without destroying it, so the NAT instance alone owns it. **Revised 2026-11-11**: a `removed` block can't be used while `aws_route.private_nat_gateway` is still declared in the VPC template, so the routes are removed with `state rm` through `tf-run.sh`, then `enable_nat_gateway = false`. Rollback is not a plain flip back to `true`, because the routes already exist. See the runbook, "Rollback after teardown".
 6. **Public IP**: wire `require_public_ip` into the launch-template module. The NAT instance uses an auto-assigned (floating) public IP, so there is no confusion over which instance holds an address during a replacement. No static ENI and no EIP; the NAT gateway's EIP is released when the gateway is torn down. (An EIP hand-over was considered on 2026-11-11 and withdrawn.)
 7. **Module interface names**: follow the existing style and naming conventions. Dave reviews before commit. `instance_refresh_max_healthy_percentage` defaults to **110** (in the `asg` module and `ec2-asg`), so refreshes launch the replacement before terminating the old instance; this is now wired through, which intentionally changes `app.wordpress`.
 8. **Template**: refactor the existing `compute/ec2-asg` template rather than creating a new one. Add toggles (default on) for the ALB, SSL cert, DNS and ALB security groups, and for the RDS and EFS rules; add a subnet tier input (default `private_app`); pass the lifecycle hook and public IP through; add `moved` blocks for every module gaining a `count`. Proven by a no-diff plan on `app.wordpress` (and `app.training`). Params target: `abd-wordpress/wordpress-vpc/nat-instance`. (Ruled 2026-11-11.)
@@ -83,7 +83,7 @@ Recorded 2026-11-10, against the questions in `docs/discovery/wp-01.md`.
 
 ## Status
 
-**As of 2026-11-11, 11:15. Cutover done; the work package stays open until the NAT gateway is torn down.**
+**Complete as of 2026-11-11, 12:45.** All Done when criteria are met. The cutover was at 11:00, and the NAT gateway was torn down at 12:38.
 
 Merged and applied:
 - abd-cloud-modules #31: ASG max healthy percentage (110), lifecycle hooks, launch template public IP.
@@ -105,22 +105,25 @@ Refresh drill 1 (manual, 100/110/60), 2026-11-11:
 
 Done when, checked:
 - [x] Private subnets egress through the NAT instance.
-- [ ] The NAT gateway and its EIP are gone (still the rollback path).
+- [x] The NAT gateway and its EIP are gone (`nat-047a0c1aab3d1fee7` deleted at 12:38:55 on 2026-11-11; `99.80.147.236` released).
 - [x] The S3 gateway endpoint is in place (it already existed; confirmed in discovery).
 - [x] A planned refresh with no measurable egress interruption (drill 1).
 - [x] Existing callers plan with no diff (`app.wordpress`).
 
-In progress:
-- **Weekly scheduled refresh** (Settled): branch `feat/nat-weekly-refresh` in both repos. `ec2-asg` gains `asg_scheduled_refresh_expression` and `_timezone` (default off; `app.wordpress` plans clean). The target sets Tuesdays 04:00 Europe/London. EventBridge Scheduler calls `StartInstanceRefresh` directly, with no Lambda. Plans as 3 to add. See the runbook, "Weekly scheduled refresh".
+Weekly scheduled refresh: abd-cloud #61 and abd-cloud-params #29, applied. Schedule `abd-wordpress-nat-instance-refresh`, Tuesdays 04:00 Europe/London; first run 2026-11-17.
 
-Remaining before WP-01 closes:
-1. A few more refresh drills. Ruling 10 leaves the teardown timing to Dave.
-2. **Ruling 5 revisit**: a `removed` block can't be used while `aws_route.private_nat_gateway` is still declared in the VPC template. Recommended: `state rm` of `aws_route.private_nat_gateway[0..2]` through `tf-run.sh`, then `enable_nat_gateway = false`. See the runbook, "Teardown".
-3. Tear down the NAT gateway. That releases `99.80.147.236`, and the rollback section of the runbook then no longer applies.
+Teardown (Dave applied, 2026-11-11), per revised ruling 5:
+1. A copy of `abd-wordpress/abd-wordpress/vpc.tfstate` was taken (the bucket isn't versioned).
+2. `state rm` of `aws_route.private_nat_gateway[0..2]`.
+3. `enable_nat_gateway = false`; the apply destroyed only `aws_nat_gateway.this[0]` and `aws_eip.nat[0]`, plus the known RDS noise.
+4. Afterwards: the private routes still pointed at `i-021977d9d248ed2e2`, egress was confirmed, and both alarms were OK. The `wordpress-vpc` plan shows only the known noise, and no NAT entries remain in its state.
 
-Open, not blocking:
+Rollback from here is the runbook's "Rollback after teardown" section. It is not a plain flip of `enable_nat_gateway` back to `true`.
+
+Follow-ups (outside WP-01):
 - Naming: keep `nat-instance`, or rename to the `<role>.<name>` convention?
 - No alert fires on a failed instance refresh. A failed weekly drill would leave the old instance in service without telling anyone. A candidate fix is an EventBridge rule on the instance-refresh-failed event that publishes to `abd-alerts`, which needs a topic policy allowing EventBridge.
-- abd-cloud-params #28 (`app-ecs` renamed to `app.ecs`) is still open.
+- Further refresh drills happen through the weekly schedule; check the Tuesday results until a refresh-failure alert exists.
+- The `abd-tf-state` bucket isn't versioned. Turning versioning on would make state operations like this one recoverable without a manual copy.
 
 Known unrelated noise: `wordpress-vpc` shows a permanent in-place diff on the RDS parameter group `apply_method`. It predates WP-01.
