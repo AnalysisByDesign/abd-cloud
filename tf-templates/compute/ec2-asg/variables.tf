@@ -338,6 +338,18 @@ variable "managed_route_table_azs" {
   default     = []
 }
 
+variable "asg_scheduled_refresh_expression" {
+  description = "EventBridge Scheduler expression for a recurring instance refresh, e.g. cron(0 4 ? * TUE *) (empty for none)"
+  type        = string
+  default     = ""
+}
+
+variable "asg_scheduled_refresh_timezone" {
+  description = "Time zone for asg_scheduled_refresh_expression"
+  type        = string
+  default     = "Europe/London"
+}
+
 variable "asg_initial_lifecycle_hooks" {
   description = "Lifecycle hooks to create with the ASG (see the asg module's initial_lifecycle_hooks)"
   type = list(object({
