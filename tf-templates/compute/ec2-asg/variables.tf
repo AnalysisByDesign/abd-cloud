@@ -235,7 +235,7 @@ variable "asg_instance_refresh_min_healthy_percentage" {
 }
 
 variable "asg_instance_refresh_max_healthy_percentage" {
-  description = "Maximum percentage of instances that must remain healthy during an instance refresh"
+  description = "Maximum percentage of the desired capacity in service during an instance refresh. Above 100 (with a min of 100) launches replacements before terminating the old instances"
   type        = number
   default     = 110
 }
