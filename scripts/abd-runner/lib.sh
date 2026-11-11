@@ -9,17 +9,18 @@ ABD_RUNNER_ENV="${ABD_RUNNER_ENV:-${HOME}/etc/abd-runner.env}"
 : "${GH_SCOPE:?}" "${RUNNER_IMAGE:?}" "${RUNNER_LABELS:?}" "${WORK_ROOT:?}" "${DOCKER_HOST:?}"
 : "${RUNNER_COUNT:=1}" "${RUNNER_GROUP_ID:=1}" "${HEARTBEAT_VAR:=RUNNER_HEARTBEAT}"
 : "${CONTAINER_NAME:=abd-runner}" "${CACHE_VOLUME:=abd-runner-cache}"
+: "${DIND_IMAGE:=docker:29.9.2-dind}" "${DIND_MEMORY:=2g}" "${DIND_CPUS:=2}"
+: "${RUNNER_MEMORY:=1536m}" "${RUNNER_CPUS:=2}"
 export DOCKER_HOST
 
 GH_API=https://api.github.com
-export DOCKER_SOCK=/var/run/docker.sock
 
 log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
 
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 
-# Colima restarts dockerd during its own start, so a socket that answers
-# once is not ready (dev-server-setup base doc, 5a.3). Returns once
+# The shared engine is svc-colima's Colima. Colima restarts dockerd during
+# its own start, so a socket that answers once is not ready (dev-server-setup base doc, 5a.3). Returns once
 # `docker info` has succeeded continuously for 30 seconds.
 wait_for_engine() {
     local stable=0

@@ -1,17 +1,29 @@
 # abd-runner: GitHub Actions runners on the Mac mini
 
-Runs `RUNNER_COUNT` single-use GitHub Actions runners (`abd/github-runner`, built in `abd-cloud-containers`) side by side on `abd-dev-001`, in their own Colima VM under the service account `svc-ghrunner`, and keeps the `RUNNER_HEARTBEAT` organisation variable fresh so workflows fall back to GitHub-hosted runners when the Mac mini is down. Rulings: `abd-cloud-containers` WP-03, ruling 22.
+Runs `RUNNER_COUNT` single-use GitHub Actions runners (`abd/github-runner`, built in `abd-cloud-containers`) side by side on `abd-dev-001` under the service account `svc-ghrunner`, and keeps the `RUNNER_HEARTBEAT` organisation variable fresh so workflows fall back to GitHub-hosted runners when the Mac mini is down. Rulings: `abd-cloud-containers` WP-03, ruling 22.
 
 Follows the machine conventions in Tulox's `docs/runbooks/setup/dev-server-setup/` (base doc sections 1 and 5a; the `svc-mflux` and `svc-colima` roles): hidden `svc-` account, no auto-login, every service a LaunchDaemon with `UserName`, files placed with `install`.
+
+## Design: one shared engine, a private engine per slot
+
+The runners use the Mac mini's one Colima VM, `svc-colima`'s shared engine (`com.abd.colima`), which also runs the dev stack. (Until 2026-11-11 they had a VM of their own; two VMs next to mflux exhausted the 16 GB.)
+
+Jobs never use the shared engine directly. Each slot is two containers on it:
+
+| Container | What it is |
+|---|---|
+| `abd-runner-dind-<n>` | The slot's private Docker engine (`docker:dind`, privileged). A job's containers, `services:`, networks, volumes and image builds all live here, so a job cannot see or touch the dev stack or the other slot. Its `/var/lib/docker` is a volume, so image layers stay cached between jobs |
+| `abd-runner-<n>` | The runner. It talks only to its slot's engine (a socket in a shared volume) and shares that engine's network, so ports a job publishes answer on `127.0.0.1` as on a hosted runner, and the two slots can never clash on a port |
+
+Memory and CPU are capped per container (`DIND_*`, `RUNNER_*`). The engine's cap covers everything a job starts in it, so a runaway job is killed inside its slot rather than starving the dev stack. Between jobs the supervisor removes every container, network and volume in the slot's engine and empties its work folder; images stay, as cache.
 
 ## What runs
 
 | Daemon (`/Library/LaunchDaemons/`) | Script | Schedule | Does |
 |---|---|---|---|
-| `com.abd.github-runner.colima` | `abd-runner-colima` | KeepAlive | The runner's own Colima VM. Separate from `svc-colima`'s shared engine, so jobs cannot see the dev stack |
-| `com.abd.github-runner.supervise-<n>` | `abd-runner-supervise <n>` | KeepAlive, one per slot | Empties the slot's work folder, mints a just-in-time config through the GitHub App, runs one runner container for one job, repeats |
+| `com.abd.github-runner.supervise-<n>` | `abd-runner-supervise <n>` | KeepAlive, one per slot | Starts the slot's engine if needed, resets the slot, mints a just-in-time config through the GitHub App, runs one runner for one job, repeats |
 | `com.abd.github-runner.heartbeat` | `abd-runner-heartbeat` | every 5 min | If a runner with our labels is online, writes the Unix time to `RUNNER_HEARTBEAT` |
-| `com.abd.github-runner.prune` | `abd-runner-prune` | daily 05:00 | Removes stopped containers, dangling images and week-old build cache; all unused images only above `PRUNE_AT_PERCENT` disk use (never the runner image) |
+| `com.abd.github-runner.prune` | `abd-runner-prune` | daily 05:00 | Inside each slot's engine: dangling images and week-old build cache, every image above `PRUNE_AT_PERCENT` disk use. On the shared engine only our labelled stopped containers and superseded runner images; never a whole-engine prune |
 
 `lib.sh` holds settings, the App JWT and the API helper. `install.sh` installs and removes the daemons.
 
@@ -22,15 +34,15 @@ Follows the machine conventions in Tulox's `docs/runbooks/setup/dev-server-setup
 | `/Users/svc-ghrunner/abd-runner/` | root, 755 | The scripts, copied by `install.sh`. Root-owned so the account cannot change its own code |
 | `/Users/svc-ghrunner/etc/abd-runner.env` | svc-ghrunner, 600 | Settings (from `abd-runner.env.example`) |
 | `/Users/svc-ghrunner/etc/github-app.pem` | svc-ghrunner, 400 | GitHub App private key |
-| `/Users/svc-ghrunner/vm-share/` | svc-ghrunner, 755, empty | The only host folder mounted into the VM (read-only) |
 | `/Users/svc-ghrunner/src/abd-cloud-containers/` | svc-ghrunner | Copy of the image repository, for building the runner image |
-| `/Users/svc-ghrunner/.colima/` | svc-ghrunner | The VM; its Docker socket is `.colima/default/docker.sock` |
 | `/Users/svc-ghrunner/Library/Logs/abd-runner/` | svc-ghrunner | One log per daemon |
-| Inside the VM: `/srv/abd-runner/work/<n>`, volume `abd-runner-cache` | | Work folder per slot (emptied before each job); shared Composer, npm and tool cache |
+| On the shared engine: image `abd/github-runner:host`; volumes `abd-runner-cache`, `abd-runner-docker-<n>`, `abd-runner-work-<n>`, `abd-runner-sock-<n>` | | The runner image; the shared Composer, npm and tool cache; per slot, its engine's data, its work folder (`/srv/abd-runner/work/<n>`) and its engine's socket |
+
+Everything of ours on the shared engine carries the label `com.abd.github-runner`.
 
 ## Install
 
-Run as `abd-admin` over ssh unless a step says otherwise. Prerequisites: the base setup is done, and Homebrew has `colima`, `docker`, `docker-buildx`, `jq`, `git`, `gh` and `make`.
+Run as `abd-admin` over ssh unless a step says otherwise. Prerequisites: the base setup and `svc-colima`'s shared engine (Tulox `dev-server-setup/colima/`) are in place, and Homebrew has `docker`, `docker-buildx`, `jq`, `git`, `gh` and `make`.
 
 ### 0. GitHub access and checkouts
 
@@ -53,19 +65,17 @@ sudo sysadminctl -addUser svc-ghrunner -fullName "GitHub Runner Service" -passwo
 sudo dscl . create /Users/svc-ghrunner IsHidden 1
 ```
 
-Record the UID and password in the password manager. Do not add it to `docker-users` (it has its own engine) or to sshd `AllowUsers` (administer it with `sudo -u svc-ghrunner -H`).
+Record the UID and password in the password manager. Do not add it to sshd `AllowUsers` (administer it with `sudo -u svc-ghrunner -H`).
 
 ### 2. Docker CLI plugins for the account
 
-The Homebrew `docker-buildx` plugin lives outside the CLI's default search path. Colima also writes to `~/.docker/config.json` (the `colima` context), so merge the setting in rather than overwrite the file; safe to rerun at any point:
+The Homebrew `docker-buildx` plugin lives outside the CLI's default search path. Merge the setting into `~/.docker/config.json` rather than overwrite the file; safe to rerun at any point:
 
 ```bash
 sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; mkdir -p ~/.docker; f=~/.docker/config.json;
   [ -s "$f" ] || echo "{}" > "$f";
   jq ".cliPluginsExtraDirs = [\"/opt/homebrew/lib/docker/cli-plugins\"]" "$f" > "$f.new" && mv "$f.new" "$f"'
 ```
-
-Check after step 7: `docker buildx version` as `svc-ghrunner` must print a version, or step 8 fails with `unknown flag: --load`.
 
 ### 3. GitHub App (organisation settings, Developer settings, GitHub Apps, New)
 
@@ -76,7 +86,7 @@ Check after step 7: `docker buildx version` as `svc-ghrunner` must print a versi
 
 ### 4. Runner group (organisation settings, Actions, Runner groups, New)
 
-- Name `abd-dev-001`. Repository access: **Selected repositories**, starting with `abd-cloud-containers`; add `tulox` when its work package is picked up. Leave public repositories off.
+- Name `abd-dev-001`. Repository access: **Selected repositories**, private repositories only. Leave public repositories off: a self-hosted runner would let any fork PR run code on the Mac mini.
 - Note the group ID: `gh api orgs/AnalysisByDesign/actions/runner-groups --jq '.runner_groups[] | [.id, .name] | @tsv'` (needs `admin:org` on your `gh` token).
 
 ### 5. App key
@@ -98,30 +108,39 @@ sudo install -o svc-ghrunner -g staff -m 600 abd-runner.env.example /Users/svc-g
 sudo -u svc-ghrunner -H vi /Users/svc-ghrunner/etc/abd-runner.env
 ```
 
-Fill in `GH_APP_ID`, `GH_APP_INSTALLATION_ID` and `RUNNER_GROUP_ID`. Check `RUNNER_COUNT` and the `COLIMA_*` sizing against section 12.
+Fill in `GH_APP_ID`, `GH_APP_INSTALLATION_ID` and `RUNNER_GROUP_ID`. Check `RUNNER_COUNT` and the caps against Sizing.
 
-### 7. First Colima start, by hand
+### 7. Access to the shared engine
 
-As for `svc-colima`: create the VM while you watch, before daemonising it.
+`svc-ghrunner` joins `docker-users`, the group `com.abd.colima-sock` gives the shared engine's socket to, as `svc-tulox` does:
 
 ```bash
-sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; mkdir -p ~/vm-share;
-  colima start --cpu 4 --memory 6 --disk 100 --vm-type vz --mount ~/vm-share'
-sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; docker info --format "{{.ServerVersion}}";
-  colima ssh -- ls /Users/svc-ghrunner'   # expect only vm-share: the home folder is not mounted
+sudo dseditgroup -o edit -a svc-ghrunner -t user docker-users
+sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH;
+  export DOCKER_HOST=unix:///Users/svc-colima/.colima/default/docker.sock;
+  docker info --format "{{.ServerVersion}} {{.MemTotal}}"; docker buildx version'
 ```
 
-If vz will not boot, use `--vm-type qemu` and set `COLIMA_VM_TYPE=qemu` in the settings. Leave the VM running for step 8.
+Both must answer. Then raise the shared VM's memory for the slots (Sizing): in `/Users/svc-colima/bin/colima-daemon.sh` change `--memory 6` to `--memory 9`, and restart the engine at a moment that suits the dev stack:
+
+```bash
+sudo sed -i '' 's/--memory 6 /--memory 9 /' /Users/svc-colima/bin/colima-daemon.sh
+sudo launchctl kickstart -k system/com.abd.colima
+# then, once docker info answers for 30 seconds:
+sudo launchctl kickstart -k system/com.tulox.dev-stack
+```
 
 ### 8. Runner image
 
-Built from `main` of `abd-cloud-containers`, as `svc-ghrunner`, on the runner's engine. Tagged `host` by hand, so no pull request can change the runner it runs on.
+Built from `main` of `abd-cloud-containers`, as `svc-ghrunner`, on the shared engine. Tagged `host` by hand, so no pull request can change the runner it runs on.
 
 ```bash
 cd ~/Projects/abd-cloud-containers && git switch main && git pull
 sudo rsync -a --delete ./ /Users/svc-ghrunner/src/abd-cloud-containers/
 sudo chown -R svc-ghrunner:staff /Users/svc-ghrunner/src
-sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; cd ~/src/abd-cloud-containers &&
+sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH;
+  export DOCKER_HOST=unix:///Users/svc-colima/.colima/default/docker.sock;
+  cd ~/src/abd-cloud-containers &&
   make build IMAGE=base && make build IMAGE=php PHP=8.5 TARGET=dev &&
   make build IMAGE=github-runner && make test IMAGE=github-runner &&
   docker tag abd/github-runner:$(sed -n "s/^ARG RUNNER_VERSION=//p" images/github-runner/Dockerfile) abd/github-runner:host'
@@ -132,23 +151,24 @@ Once WP-02 has ECR, pull the pushed image by digest and tag that instead.
 ### 9. Install the daemons
 
 ```bash
-sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; colima stop'
 cd ~/Projects/abd-cloud/scripts/abd-runner
 sudo ./install.sh
 ls -l@ /Library/LaunchDaemons/com.abd.github-runner.*   # no @: no quarantine flag
 ```
 
+`install.sh` refuses to run until `svc-ghrunner` is in `docker-users` (step 7).
+
 ### 10. Verify
 
 ```bash
-sudo launchctl print system/com.abd.github-runner.supervise-1 | grep -E 'state|last exit'
-tail -f /Users/svc-ghrunner/Library/Logs/abd-runner/supervise-1.log   # "slot 1: runner N registered, waiting for a job"
+tail -f /Users/svc-ghrunner/Library/Logs/abd-runner/supervise-1.log   # "starting abd-runner-dind-1", then "slot 1: runner N registered"
 tail /Users/svc-ghrunner/Library/Logs/abd-runner/heartbeat.log       # "heartbeat <time> (2 runner(s) online)"
+sudo -u svc-ghrunner -H bash -lc 'export DOCKER_HOST=unix:///Users/svc-colima/.colima/default/docker.sock PATH=/opt/homebrew/bin:$PATH;
+  docker ps --filter label=com.abd.github-runner --format "{{.Names}} {{.Status}}"'   # 2 engines, 2 runners
 gh api orgs/AnalysisByDesign/actions/runners --jq '.runners[] | [.name, .status, .busy] | @tsv'
-gh api orgs/AnalysisByDesign/actions/variables/RUNNER_HEARTBEAT --jq .value
 ```
 
-Then run `abd-cloud-containers`' build workflow by hand: its `select` job should report the heartbeat age and choose the self-hosted labels, and the jobs should run on `abd-abd-dev-001-<slot>-<time>` runners (the `abd-` prefix plus the hostname).
+Then run `abd-cloud-containers`' build workflow by hand: its `select` job should choose the self-hosted labels, and the jobs should run on `abd-abd-dev-001-<slot>-<time>` runners. While it runs, `docker ps` on the shared engine still shows only our four containers: the job's own containers are inside the slots.
 
 ### 11. Reboot test
 
@@ -158,34 +178,56 @@ sudo reboot
 gh api orgs/AnalysisByDesign/actions/runners --jq '.runners[] | [.name, .status] | @tsv'
 ```
 
-Both slots online confirms the VM, the supervisors and the key all work headless.
+Both slots online and dev.tulox.uk up confirms the engine, the slots and the key all work headless, side by side.
 
-### 12. Sizing
+## Sizing
 
-`abd-dev-001` has 16 GB, shared with `svc-colima`'s VM (`--memory 6`) and mflux running natively. Each slot can run a full job: an image build, or a MySQL service plus a Pest run. Start with `COLIMA_CPU=4`, `COLIMA_MEMORY=6` and `RUNNER_COUNT=2`, and watch `memory_pressure` and swap (`sysctl vm.swapusage`) during a Tulox Pest run while mflux is generating. If it swaps, lower `RUNNER_COUNT` to 1 or the memory, rather than starving the dev stack. CPU and memory apply when the VM restarts; disk only grows.
+`abd-dev-001` has 16 GB: the shared Colima VM, mflux running natively, and macOS. The VM holds the dev stack and the slots, so it is raised from 6 GB to **9 GB** for two slots (step 7), against the 12 GB two VMs used.
+
+| Per slot | Cap | Holds |
+|---|---|---|
+| `DIND_MEMORY`, `DIND_CPUS` | 2 GB, 2 | MySQL and other `services:`, image builds |
+| `RUNNER_MEMORY`, `RUNNER_CPUS` | 1.5 GB, 2 | The job's own steps: PHP and Pest, Node |
+
+The caps are ceilings, not reservations; a Pest shard typically uses well under them. Watch `memory_pressure` and swap (`sysctl vm.swapusage`) during a Tulox Pest run while mflux is generating. If the Mac mini swaps, lower `RUNNER_COUNT` to 1 (and the VM to 7.5 GB) rather than starving the dev stack. A job that exceeds its slot's cap is killed inside the slot (exit 137), never anything outside it.
 
 ## Operate
 
 ```bash
-sudo launchctl kickstart -k system/com.abd.github-runner.colima        # restart the VM
-sudo launchctl kickstart -k system/com.abd.github-runner.supervise-1   # replace slot 1's runner
+sudo launchctl kickstart -k system/com.abd.github-runner.supervise-1   # replace slot 1's runner (and its engine if stopped)
 sudo ./install.sh                     # after changing RUNNER_COUNT or updating the scripts
-sudo ./install.sh remove              # stop and remove all the daemons (files kept)
-sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; docker volume rm abd-runner-cache'   # clear the shared cache (daemons stopped)
+sudo ./install.sh remove              # stop and remove all the daemons; each slot's engine stops with it (volumes kept)
+# reset a slot completely (daemons removed): its engine's data and work folder
+sudo -u svc-ghrunner -H bash -lc 'export DOCKER_HOST=unix:///Users/svc-colima/.colima/default/docker.sock PATH=/opt/homebrew/bin:$PATH;
+  docker volume rm abd-runner-docker-1 abd-runner-work-1 abd-runner-sock-1'
 ```
 
-- **Fall back to hosted runners**: stop the daemons, or delete `RUNNER_HEARTBEAT`. Workflows switch once the heartbeat is 15 minutes old; `workflow_dispatch` with `runner: hosted` forces it for one run.
+- **Fall back to hosted runners**: stop the daemons, or delete `RUNNER_HEARTBEAT`. Workflows switch once the heartbeat is 15 minutes old.
 - **Upgrade the runner**: GitHub stops sending jobs to runners more than 30 days behind the latest release. Bump it in `abd-cloud-containers`, merge, then repeat step 8. Each slot picks up the new `host` image with its next job.
+- **Upgrade the slot engine**: change `DIND_IMAGE`, then `sudo launchctl kickstart -k` each supervisor while its slot is idle; the engine restarts on the new image with its cache volume intact.
 - **Rotate the App key**: generate a new key in the App, repeat step 5, delete the old key in the App.
 
 ## Backups
 
 - `etc/abd-runner.env` and `etc/github-app.pem` (the key also goes in the password manager).
-- Excluded: the VM, the cache volume and the image (all rebuildable).
+- Excluded: the image and every volume (all rebuildable).
 
 ## Security
 
-- Jobs are root on the runner's VM through the Docker socket. Acceptable for private repositories owned by one person; the runner group admits selected private repositories only, never public ones or forks.
-- The VM mounts only the empty `~/vm-share`, so jobs cannot reach `~/etc`. Colima mounts the whole home folder when no mount is given; keep the `--mount` in `abd-runner-colima`.
+- **Isolation is against accidents, not hostile code.** A job reaches only its slot's engine, so `docker ps`, `rm` and `prune` inside a job cannot reach the dev stack or the other slot. The slot's engine is privileged, though, so deliberately malicious code could break out to the shared VM, and from there to the dev stack. Acceptable because the runner group admits selected private repositories only, all pushed by one person, never public ones or forks.
+- The shared VM mounts `svc-colima`'s home folder (Colima's default). `svc-ghrunner`'s home, with `~/etc`, is not mounted into any VM, so jobs cannot reach the App key.
 - The App key is read only by `openssl` when minting a token. Runner containers get a single-use config, unset before the runner starts.
-- Runners run with `--network host` on the VM, so ports published by jobs answer on `127.0.0.1` inside the job, as on a hosted runner. Slots share that network: jobs that can run at the same time must publish a random host port (`ports: [3306]`, then `${{ job.services.mysql.ports['3306'] }}`), never a fixed one.
+- Nothing listens on TCP: each slot's engine has a Unix socket only, readable by the runner's group.
+
+## From the separate-VM layout (before 2026-11-11)
+
+The first install gave the runners a Colima VM of their own, which with `svc-colima`'s VM and mflux exhausted the Mac mini's memory and kept the dev engine restarting. To move:
+
+```bash
+cd ~/Projects/abd-cloud/scripts/abd-runner && sudo ./install.sh remove   # if not already done
+sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; colima delete -f'   # the old VM and its 100 GB disk
+sudo rm -rf /Users/svc-ghrunner/.colima /Users/svc-ghrunner/vm-share
+cd ~/Projects/abd-cloud && git switch main && git pull
+```
+
+Then steps 6 (the settings file changed: refresh it from the example and fill in the three IDs again), 7, 8, 9, 10 and 11.

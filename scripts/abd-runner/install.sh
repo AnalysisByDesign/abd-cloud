@@ -13,8 +13,10 @@
 #   ~/abd-runner/             these scripts, root-owned (the account cannot edit them)
 #   ~/etc/abd-runner.env      settings, 600 (create before installing)
 #   ~/etc/github-app.pem      App private key, 400 (create before installing)
-#   ~/vm-share/               empty; the only host folder the VM mounts
 #   ~/Library/Logs/abd-runner/
+#
+# The runners use svc-colima's shared engine, through the docker-users
+# group; each slot runs jobs in its own engine inside it (supervise).
 set -euo pipefail
 
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo" >&2; exit 1; }
@@ -44,20 +46,25 @@ for f in "${env_file}" "${home}/etc/github-app.pem"; do
     [ -f "${f}" ] || { echo "missing ${f} (README, steps 5 and 6)" >&2; exit 1; }
 done
 RUNNER_COUNT="$(HOME="${home}" bash -c '. "$1"; echo "${RUNNER_COUNT:-1}"' _ "${env_file}")"
+if ! dseditgroup -o checkmember -m "${user}" docker-users >/dev/null 2>&1; then
+    echo "${user} is not in docker-users, so it cannot reach the shared engine (README, step 7)" >&2
+    exit 1
+fi
 
 install -d -o root -g wheel -m 755 "${bin}"
-for f in lib.sh abd-runner-colima abd-runner-supervise abd-runner-heartbeat abd-runner-prune; do
+rm -f "${bin}/abd-runner-colima"   # from the separate-VM layout, before 2026-11-11
+for f in lib.sh abd-runner-supervise abd-runner-heartbeat abd-runner-prune; do
     install -o root -g wheel -m 755 "${src}/${f}" "${bin}/${f}"
 done
 install -d -o "${user}" -g staff -m 700 "${home}/etc"
-install -d -o "${user}" -g staff -m 755 "${home}/vm-share" "${home}/Library/Logs" "${logs}"
+install -d -o "${user}" -g staff -m 755 "${home}/Library/Logs" "${logs}"
 chown "${user}:staff" "${env_file}" "${home}/etc/github-app.pem"
 chmod 600 "${env_file}"
 chmod 400 "${home}/etc/github-app.pem"
 
 keepalive="<key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>30</integer>"
 # name|program and arguments|schedule-xml
-jobs=("colima|abd-runner-colima|${keepalive}")
+jobs=()
 for slot in $(seq 1 "${RUNNER_COUNT}"); do
     jobs+=("supervise-${slot}|abd-runner-supervise ${slot}|${keepalive}")
 done
