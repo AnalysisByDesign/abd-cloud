@@ -64,3 +64,34 @@ A new ECS cluster beside the current host, behind the same ALB, so sites move ac
 
 - The hello service is reachable through the existing ALB on a test hostname, survives a host instance refresh with no failed requests, and a deliberately broken deployment is rolled back automatically by the circuit breaker.
 - Every existing caller of the extended modules plans with no diff.
+
+## Rulings
+
+Recorded 2026-11-11, against the questions in `docs/discovery/wp-04.md`. Answered in batches; questions without a ruling are still open.
+
+1. **Cluster and hosts layout**:
+   - The cluster grows `compute/ecs-cluster` and reuses the `app.ecs` target (empty state), so it is named `abd-wordpress-cluster`. `prevent` is removed from its `sequence/prod.csv` row.
+   - The hosts are a new params target, `wordpress-vpc/ecs.hosts`, on `compute/ec2-asg` with `enable_load_balancer = false` and `name = "ecs-hosts"`, so the ASG is `abd-wordpress-ecs-hosts`.
+   - The cluster template owns the capacity providers and the cluster's provider association and default strategy, finding each host ASG by name. Sequence: the cluster first, then the hosts, then a second cluster apply whenever a host ASG is added.
+2. **Modules**: extend `asg`, `launch-template`, `ecs/cluster`, `ecs/service`, `ecs/task` and `monitoring/cloudwatch/group`, each backward compatible. Retire the `ecs-fargate` template and its empty 2019 state file.
+3. **Host AMI**: the ECS-optimised AL2023 arm64 AMI through `resolve:ssm:` in the launch template, resolved at each launch. The hosts are a **new ASG** (ruling 1), separate from the current `abd-wordpress-ec2-asg`, which keeps serving the sites untouched until each one moves.
+4. **Host size**: `t4g.small` for WP-04 (accepted above the £5 guardrail for the overlap). For WP-05, two `t4g.small` (which the regional RI fully covers once the old host is retired) may be preferred to one `t4g.medium` if the measured memory footprint allows; decided in WP-05.
+5. **Service structure**: one reusable template, `tf-templates/compute/ecs-service`, with one params target per service (`wordpress-vpc/svc.<name>`). Terraform owns the target group, listener rule, service, log group, task role and the task definition's shape.
+6. **Deployment ownership**: Terraform registers the task definition but ignores `task_definition` on the service. CI takes the family's latest revision, swaps only the image digest, registers it and updates the service.
+7. **Rollouts**: each image repository calls a reusable rollout workflow kept in `abd-cloud-containers`. A merge to `main` deploys **immediately** after its build and smoke test; only the nightly rebuilds are rolled out at 04:00. CI gets a deploy role through a new `ecs_deploy_roles` map in `security/github-deploy`.
+8. **Valkey**: one task in `awsvpc` mode with a Cloud Map private DNS A record. Built in the Tulox package; WP-04 makes the network mode configurable per task.
+9. **Secrets**: ECS `secrets` from SSM Parameter Store, with each service's execution permissions scoped to its own prefix.
+10. **Logs**: one log group per service, `/ecs/abd-wordpress/<service>`, kept 14 days.
+11. **Monitoring**: no Container Insights for now, behind a variable so it can be switched on later. Alarms on each service target group's `HealthyHostCount`, plus an EventBridge rule sending ECS deployment-failure and task-stopped events to `abd-alerts`.
+12. **Test hostname and priorities**: `hello.abd-wp.uk` on the existing `*.abd-wp.uk` certificate. Listener rule priorities are explicit per service, in bands (100s WordPress, 200s Tulox, 900s tests).
+13. **Weekly host refresh**: Wednesdays at 03:00 (Europe/London), with managed scaling, managed termination protection and managed draining, `scale_in_protected_instances = Refresh`, and launch before terminate (100/110).
+
+14. **Mail relay**: a small postfix relay service on ECS, reached by a Cloud Map private DNS name, for anything without its own SMTP settings (the system, cron, any app pointed at a local relay). The IONOS relay login stays in one SSM parameter. WordPress sites keep sending straight to IONOS through WP Mail SMTP. This brings the Cloud Map namespace (ruling 8's pattern) forward into WP-04.
+15. **Postfix image**: built in `abd-cloud-containers` as `images/postfix/` on `abd/base`, pushed as `abd/postfix` (one new entry in the registry params). Layout within that repository is Dave's call, per its working agreement.
+16. **Cloud Map namespace**: private DNS namespace `abd-wordpress.internal`, so the relay is `smtp.abd-wordpress.internal` and Valkey later `valkey.abd-wordpress.internal`.
+
+Notes from the same session:
+- **ALB**: keep the existing ALB and add listener rules and target groups to it; running two is ruled out on cost. The existing ALB belongs to the old host's `app.wordpress` target, so it would be destroyed with it. At transition (step 7) a new ALB, under the new naming, is enabled in the `ecs.hosts` build while the old one still runs; state manipulation lets the new one build alongside, and every listener rule, certificate and DNS record moves across to it. The old ALB is then taken out of the `app.wordpress` state (or otherwise detached by state manipulation) before that target is destroyed. Two ALBs run only for the changeover; a short outage is acceptable. The `alb` module's built-in target group registers the ASG's instances on port 80, so it will need to become optional (or the default action a fixed response) before ECS hosts can own the ALB. `hosted-sites` finds the ALB by name (`trg_lb_name`), so it can be repointed by a variable.
+- **First move (WP-05)**: one quiet site first, built and tested, then traffic repointed by its listener rule (or DNS).
+- **Mail, cron and mortgage.daverix.ai** need building. Mail is needed early, because sites deliver mail over SMTP.
+- The reboot bug on the current host is not worth fixing; it goes away with the move to ECS.
