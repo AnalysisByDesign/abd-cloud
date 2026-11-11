@@ -6,7 +6,7 @@ module "autoscaling-group" {
 
   # Required variables
   name       = format("%s-%s", local.vpc_name, var.name)
-  subnet_ids = data.aws_subnet.asg[*].id
+  subnet_ids = var.asg_subnet_tier == "public" ? data.aws_subnet.lb[*].id : data.aws_subnet.asg[*].id
 
   # Optional variables
   launch_template_id      = module.launch_template.id
@@ -18,8 +18,8 @@ module "autoscaling-group" {
   default_cooldown          = var.asg_default_cooldown
   health_check_grace_period = var.asg_health_check_grace_period
   capacity_timeout          = var.asg_capacity_timeout
-  target_group_arns         = [module.load_balancer.target_group_arn]
-  health_check_type         = "ELB"
+  target_group_arns         = var.enable_load_balancer ? [module.load_balancer[0].target_group_arn] : []
+  health_check_type         = var.enable_load_balancer ? "ELB" : "EC2"
   force_delete              = var.asg_force_delete
   termination_policies      = var.asg_termination_policies
   delete_timeout            = var.asg_delete_timeout
@@ -29,6 +29,8 @@ module "autoscaling-group" {
   instance_refresh_max_healthy_percentage = var.asg_instance_refresh_max_healthy_percentage
   instance_refresh_instance_warmup        = var.asg_instance_refresh_instance_warmup
   instance_refresh_triggers               = var.asg_instance_refresh_triggers
+
+  initial_lifecycle_hooks = var.asg_initial_lifecycle_hooks
 
   tag_map = [
     { key = "Name", value = format("%s-%s", local.vpc_name, var.name), propagate_at_launch = true },

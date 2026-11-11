@@ -44,6 +44,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="module_dns_load_balancer"></a> [dns\_load\_balancer](#module\_dns\_load\_balancer) | ../../../../abd-cloud-modules/network/dns/alias-record | n/a |
 | <a name="module_ec2-alb-sgr"></a> [ec2-alb-sgr](#module\_ec2-alb-sgr) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
 | <a name="module_ec2-all-traffic-out"></a> [ec2-all-traffic-out](#module\_ec2-all-traffic-out) | ../../../../abd-cloud-modules/security/security-group-rule-cidr | n/a |
+| <a name="module_ec2-cidr-in"></a> [ec2-cidr-in](#module\_ec2-cidr-in) | ../../../../abd-cloud-modules/security/security-group-rule-cidr | n/a |
 | <a name="module_ec2-efs-sgr"></a> [ec2-efs-sgr](#module\_ec2-efs-sgr) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
 | <a name="module_ec2-rds-sgr"></a> [ec2-rds-sgr](#module\_ec2-rds-sgr) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
 | <a name="module_ec2-sg"></a> [ec2-sg](#module\_ec2-sg) | ../../../../abd-cloud-modules/security/security-group | n/a |
@@ -95,14 +96,18 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_asg_force_delete"></a> [asg\_force\_delete](#input\_asg\_force\_delete) | Force delete of autoscaling group if instances not terminating | `string` | `"false"` | no |
 | <a name="input_asg_health_check_grace_period"></a> [asg\_health\_check\_grace\_period](#input\_asg\_health\_check\_grace\_period) | Maximum | `string` | `"240"` | no |
 | <a name="input_asg_iam_profile_name"></a> [asg\_iam\_profile\_name](#input\_asg\_iam\_profile\_name) | IAM instance profile to use for EC2 instances | `string` | `""` | no |
+| <a name="input_asg_ingress_cidr_blocks"></a> [asg\_ingress\_cidr\_blocks](#input\_asg\_ingress\_cidr\_blocks) | CIDR blocks allowed all inbound traffic to the instances (empty for none) | `list(string)` | `[]` | no |
+| <a name="input_asg_initial_lifecycle_hooks"></a> [asg\_initial\_lifecycle\_hooks](#input\_asg\_initial\_lifecycle\_hooks) | Lifecycle hooks to create with the ASG (see the asg module's initial\_lifecycle\_hooks) | <pre>list(object({<br/>    name                    = string<br/>    lifecycle_transition    = string<br/>    default_result          = optional(string, "ABANDON")<br/>    heartbeat_timeout       = optional(number, 300)<br/>    notification_metadata   = optional(string)<br/>    notification_target_arn = optional(string)<br/>    role_arn                = optional(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_asg_instance_refresh_instance_warmup"></a> [asg\_instance\_refresh\_instance\_warmup](#input\_asg\_instance\_refresh\_instance\_warmup) | Seconds to wait after a new instance comes in service before moving on during an instance refresh | `number` | `null` | no |
-| <a name="input_asg_instance_refresh_max_healthy_percentage"></a> [asg\_instance\_refresh\_max\_healthy\_percentage](#input\_asg\_instance\_refresh\_max\_healthy\_percentage) | Maximum percentage of instances that must remain healthy during an instance refresh | `number` | `110` | no |
+| <a name="input_asg_instance_refresh_max_healthy_percentage"></a> [asg\_instance\_refresh\_max\_healthy\_percentage](#input\_asg\_instance\_refresh\_max\_healthy\_percentage) | Maximum percentage of the desired capacity in service during an instance refresh. Above 100 (with a min of 100) launches replacements before terminating the old instances | `number` | `110` | no |
 | <a name="input_asg_instance_refresh_min_healthy_percentage"></a> [asg\_instance\_refresh\_min\_healthy\_percentage](#input\_asg\_instance\_refresh\_min\_healthy\_percentage) | Minimum percentage of instances that must remain healthy during an instance refresh | `number` | `100` | no |
 | <a name="input_asg_instance_refresh_triggers"></a> [asg\_instance\_refresh\_triggers](#input\_asg\_instance\_refresh\_triggers) | List of property name changes to trigger a refresh | `list(string)` | `[]` | no |
 | <a name="input_asg_max_size"></a> [asg\_max\_size](#input\_asg\_max\_size) | Maximum size of the autoscaling group | `string` | `"1"` | no |
 | <a name="input_asg_min_size"></a> [asg\_min\_size](#input\_asg\_min\_size) | Minimum size of the autoscaling group | `string` | `"0"` | no |
+| <a name="input_asg_require_public_ip"></a> [asg\_require\_public\_ip](#input\_asg\_require\_public\_ip) | Auto-assign a public IP to instances (needs asg\_subnet\_tier = public) | `bool` | `false` | no |
 | <a name="input_asg_ssh_key_name"></a> [asg\_ssh\_key\_name](#input\_asg\_ssh\_key\_name) | Name of SSH key to upload | `string` | n/a | yes |
 | <a name="input_asg_ssh_public_key_file"></a> [asg\_ssh\_public\_key\_file](#input\_asg\_ssh\_public\_key\_file) | Physical file location of public key part to upload | `string` | n/a | yes |
+| <a name="input_asg_subnet_tier"></a> [asg\_subnet\_tier](#input\_asg\_subnet\_tier) | Which subnets the ASG launches instances into: private\_app or public | `string` | `"private_app"` | no |
 | <a name="input_asg_termination_policies"></a> [asg\_termination\_policies](#input\_asg\_termination\_policies) | Termination policies to apply to instances | `list(string)` | <pre>[<br/>  "default"<br/>]</pre> | no |
 | <a name="input_common_tag_component"></a> [common\_tag\_component](#input\_common\_tag\_component) | n/a | `string` | n/a | yes |
 | <a name="input_common_tag_environment"></a> [common\_tag\_environment](#input\_common\_tag\_environment) | n/a | `string` | n/a | yes |
@@ -111,7 +116,9 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_common_tag_subsystem"></a> [common\_tag\_subsystem](#input\_common\_tag\_subsystem) | n/a | `string` | n/a | yes |
 | <a name="input_ec2_policy_template"></a> [ec2\_policy\_template](#input\_ec2\_policy\_template) | IAM Policy template file | `string` | `"s3-access-policy.tpl.json"` | no |
 | <a name="input_ec2_policy_template_folder"></a> [ec2\_policy\_template\_folder](#input\_ec2\_policy\_template\_folder) | Folder containing policy templates to apply to the instance roles | `string` | `"./files"` | no |
-| <a name="input_efs_security_group"></a> [efs\_security\_group](#input\_efs\_security\_group) | The name of the EFS security group | `string` | `""` | no |
+| <a name="input_efs_security_group"></a> [efs\_security\_group](#input\_efs\_security\_group) | The name of the EFS security group (empty for no EFS access rules) | `string` | `""` | no |
+| <a name="input_enable_load_balancer"></a> [enable\_load\_balancer](#input\_enable\_load\_balancer) | Create the ALB, its SSL certificate, DNS alias record and security groups, and use ELB health checks | `bool` | `true` | no |
+| <a name="input_extra_template_vars"></a> [extra\_template\_vars](#input\_extra\_template\_vars) | Additional variables passed to the user data and IAM policy templates | `map(string)` | `{}` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_name"></a> [name](#input\_name) | The name prefix of the various resources | `string` | n/a | yes |
 | <a name="input_private_app_subnets"></a> [private\_app\_subnets](#input\_private\_app\_subnets) | A list of private subnets to be used for app resource within this deployment | `list(string)` | n/a | yes |
@@ -125,7 +132,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_queue_name"></a> [queue\_name](#input\_queue\_name) | Queue name | `string` | `""` | no |
 | <a name="input_queue_receive_wait_time_seconds"></a> [queue\_receive\_wait\_time\_seconds](#input\_queue\_receive\_wait\_time\_seconds) | Receive wait time (seconds) | `number` | `0` | no |
 | <a name="input_r53_name"></a> [r53\_name](#input\_r53\_name) | The name for the route53 entry | `string` | `""` | no |
-| <a name="input_rds_security_group"></a> [rds\_security\_group](#input\_rds\_security\_group) | The name of the RDS security group | `string` | n/a | yes |
+| <a name="input_rds_security_group"></a> [rds\_security\_group](#input\_rds\_security\_group) | The name of the RDS security group (empty for no RDS access rules) | `string` | `""` | no |
 | <a name="input_s3_kms_key_arn"></a> [s3\_kms\_key\_arn](#input\_s3\_kms\_key\_arn) | ARN of the KMS key used to encrypt the S3 bucket | `string` | `""` | no |
 | <a name="input_s3_name"></a> [s3\_name](#input\_s3\_name) | The name of the S3 bucket for storage | `string` | `""` | no |
 | <a name="input_ses_identity_arns"></a> [ses\_identity\_arns](#input\_ses\_identity\_arns) | SES identity ARNs (verified email addresses and/or domains) that this instance role may send from via ses:SendEmail / ses:SendRawEmail | `list(string)` | `[]` | no |

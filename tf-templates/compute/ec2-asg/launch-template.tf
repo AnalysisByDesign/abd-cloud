@@ -13,7 +13,7 @@ module "launch_template" {
   # Optional variables
   ec2_instance_type = var.asg_ec2_instance_type
   ssh_key_name      = format("%s-%s", local.vpc_name, var.asg_ssh_key_name)
-  require_public_ip = false
+  require_public_ip = var.asg_require_public_ip
   iam_profile_id    = aws_iam_instance_profile.ec2-asg.name
 
   user_data_script = local.user_data_script
@@ -22,6 +22,6 @@ module "launch_template" {
 locals {
   user_data_script = base64encode(templatefile(
     "${var.user_data_script_folder}/${var.user_data_script}",
-    { env = var.common_tag_environment, name = var.name }
+    merge(var.extra_template_vars, { env = var.common_tag_environment, name = var.name })
   ))
 }
