@@ -2,7 +2,7 @@
 
 **Applies to**: `abd-wordpress` account, VPC `abd-wordpress` (`10.240.0.0/21`, `vpc-00ae5d2141d9f2724`).
 **Params target**: `abd-cloud-params/abd-wordpress/wordpress-vpc/nat-instance` (template `compute/ec2-asg`).
-**Status**: live since 2026-11-11 (cutover 11:00, first refresh drill 11:05 with no egress gap). NAT gateway still in place as the rollback path.
+**Status**: live since 2026-11-11 (cutover 11:00, first refresh drill 11:05 with no egress gap). NAT gateway torn down 2026-11-11 12:38; see "Rollback after teardown".
 
 All commands assume the repo root of `abd-cloud` and the `abd_global` aws-vault profile. CLI commands against the account need the `terraform` role in `800653036500` (or a profile for it).
 
@@ -113,7 +113,7 @@ What can go wrong:
 
 To pause it, set `asg_scheduled_refresh_expression = ""` and apply. That removes the schedule and its role.
 
-## Rollback to the NAT gateway (while it still exists)
+## Rollback to the NAT gateway (only while it still exists, before teardown)
 
 1. Stop new NAT instances from flipping the routes back:
    ```bash
@@ -132,21 +132,66 @@ To pause it, set `asg_scheduled_refresh_expression = ""` and apply. That removes
 
 If the NAT instance dies or fails its status checks, the ASG launches a replacement, which flips the routes when it boots. Private egress is down for the gap, typically a few minutes. This gap is accepted in WP-01. The alarms notify `abd-alerts`. Inbound web traffic through the ALB is unaffected; only outbound calls from private hosts fail during the gap.
 
-## Teardown of the NAT gateway (when you are satisfied)
+## Teardown of the NAT gateway
 
-**Not yet coded, and needs a ruling.** Ruling 5 planned a `removed { lifecycle { destroy = false } }` block for the gateway routes. Terraform rejects a `removed` block while the resource is still declared, and `aws_route.private_nat_gateway` stays declared in the VPC template. The options:
+Ruling 5, as revised on 2026-11-11: remove the gateway's routes from the `wordpress-vpc` state with `state rm`, then switch the gateway off. A `removed` block can't be used while `aws_route.private_nat_gateway` is still declared in the VPC template. The params change is `enable_nat_gateway = false` in `wordpress-vpc/vpc_config.tfvars`.
 
-- **A. `state rm`, then turn the gateway off** (recommended):
-  ```bash
-  aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc state rm \
-    'aws_route.private_nat_gateway[0]' 'aws_route.private_nat_gateway[1]' 'aws_route.private_nat_gateway[2]'
-  ```
-  Then set `enable_nat_gateway = false` in `wordpress-vpc/vpc_config.tfvars`. The plan should show **only** `aws_nat_gateway.this[0]` and `aws_eip.nat[0]` being destroyed, and no routes.
-- **B.** Remove the `aws_route.private_nat_gateway` resource from the VPC template and add the `removed` block. This is declarative, but the template then can no longer create gateway routes for any VPC.
+**The order is critical.** The state still holds `aws_route.private_nat_gateway[0..2]`, and AWS now has those routes pointing at the NAT instance. If you switch the gateway off before the `state rm`, Terraform deletes the three 0.0.0.0/0 routes (`DeleteRoute` matches on destination, not target), which cuts all private egress.
 
-**Never** set `enable_nat_gateway = false` while the routes are still in state: Terraform would delete the `0.0.0.0/0` routes the NAT instance owns (`DeleteRoute` matches on destination, not target) and cut private egress.
+1. **Take a copy of the state.** The `abd-tf-state` bucket isn't versioned, so this is the only undo for a mistaken `state rm`:
+   ```bash
+   aws-vault exec abd_global -- aws s3 cp s3://abd-tf-state/abd-wordpress/abd-wordpress/vpc.tfstate ./vpc.tfstate.pre-nat-teardown
+   ```
+2. **Remove the routes from state.** AWS isn't touched:
+   ```bash
+   aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc state rm \
+     'aws_route.private_nat_gateway[0]' 'aws_route.private_nat_gateway[1]' 'aws_route.private_nat_gateway[2]'
+   ```
+   Expect `Successfully removed 3 resource instance(s).`
+3. **Plan, with the params PR merged** (`enable_nat_gateway = false`):
+   ```bash
+   aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc plan
+   ```
+   Expect exactly:
+   - destroy `aws_nat_gateway.this[0]` and `aws_eip.nat[0]` (99.80.147.236, `eipalloc-056334a2d36ca5957`);
+   - update in place `module.db-param-group[0].aws_db_parameter_group.this`, which is the known noise (see "Known noise");
+   - `Plan: 0 to add, 1 to change, 2 to destroy.`
 
-After teardown: the EIP `99.80.147.236` is released (ruling 6), and the rollback above no longer applies. To roll back after that, re-enable the gateway, then flip the routes back by hand.
+   **If any `aws_route` appears, stop.** The `state rm` didn't take.
+4. **Apply** the same target. Deleting the NAT gateway takes a minute or two.
+5. **Verify.** The three private route tables still point at the NAT instance, `checkip` from the WordPress host still returns the instance's IP, and a plan of `wordpress-vpc` shows only the known noise.
+
+After the teardown, the NAT gateway rollback section above no longer applies, and 99.80.147.236 is gone for good.
+
+### Rollback after teardown (bring back a NAT gateway)
+
+Setting `enable_nat_gateway = true` and applying **isn't enough on its own**. Terraform would create the gateway and a new EIP (a new IP; 99.80.147.236 can't be recovered), then fail on `CreateRoute` with `RouteAlreadyExists`, because the NAT instance's 0.0.0.0/0 routes are already there. The apply would fail partway, with the gateway created but no routes moved.
+
+The way to do it without an egress gap:
+1. Set `enable_nat_gateway = true`, then create only the gateway and its EIP:
+   ```bash
+   aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc apply \
+     -target='aws_eip.nat[0]' -target='aws_nat_gateway.this[0]'
+   ```
+2. Point each private route table at the new gateway. This is instant and egress keeps flowing:
+   ```bash
+   for rt in rtb-079fc1e15410aaefd rtb-0fcb9110b1adaed65 rtb-033f8912f07f637cc; do
+     aws ec2 replace-route --route-table-id $rt --destination-cidr-block 0.0.0.0/0 --nat-gateway-id <new nat-id>
+   done
+   ```
+3. Stop the NAT instance taking the routes back. Set the ASG to 0, and stop the weekly schedule (or set `asg_scheduled_refresh_expression = ""` and apply the NAT target):
+   ```bash
+   aws autoscaling update-auto-scaling-group --auto-scaling-group-name abd-wordpress-nat --min-size 0 --desired-capacity 0
+   ```
+4. Hand the routes back to the VPC state. Indexes follow the AZ order: `[0]` is eu-west-1a, `[1]` is 1b, `[2]` is 1c.
+   ```bash
+   aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc import 'aws_route.private_nat_gateway[0]' rtb-079fc1e15410aaefd_0.0.0.0/0
+   aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc import 'aws_route.private_nat_gateway[1]' rtb-0fcb9110b1adaed65_0.0.0.0/0
+   aws-vault exec abd_global -- ./tf-run.sh ../abd-cloud-params/abd-wordpress/wordpress-vpc import 'aws_route.private_nat_gateway[2]' rtb-033f8912f07f637cc_0.0.0.0/0
+   ```
+5. Plan `wordpress-vpc`. It should show only the known noise.
+
+In an emergency where a short gap is acceptable, there's a quicker way. Set the ASG to 0, delete the three 0.0.0.0/0 routes, then apply `wordpress-vpc` with `enable_nat_gateway = true`. Egress is down until the gateway is available, typically 1 to 3 minutes.
 
 ## Scaling out (one NAT ASG per AZ)
 
