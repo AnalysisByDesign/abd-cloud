@@ -11,6 +11,17 @@ variable "deploy_roles" {
   }))
 }
 
+variable "ecr_push_roles" {
+  description = "GitHub Actions ECR push roles to create, keyed by a short name. Each entry lets one GitHub repository (on one branch) push to the ECR repositories under its own prefixes."
+  type = map(object({
+    github_repo         = string                   # Org/Repo permitted to assume the role (e.g. AnalysisByDesign/abd-cloud-containers)
+    github_branch       = optional(string, "main") # Branch permitted to assume the role
+    role_name           = string                   # Name of the IAM role created for GitHub Actions pushes
+    repository_prefixes = list(string)             # ECR namespaces the role may push to (e.g. ["abd"] for abd/*)
+  }))
+  default = {}
+}
+
 variable "instance_tag_key" {
   description = "EC2 instance tag key used to scope SSM SendCommand access"
   type        = string
