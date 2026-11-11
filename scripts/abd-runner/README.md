@@ -36,7 +36,7 @@ Memory and CPU are capped per container (`DIND_*`, `RUNNER_*`). The engine's cap
 | `/Users/svc-ghrunner/etc/github-app.pem` | svc-ghrunner, 400 | GitHub App private key |
 | `/Users/svc-ghrunner/src/abd-cloud-containers/` | svc-ghrunner | Copy of the image repository, for building the runner image |
 | `/Users/svc-ghrunner/Library/Logs/abd-runner/` | svc-ghrunner | One log per daemon |
-| On the shared engine: image `abd/github-runner:host`; volumes `abd-runner-cache`, `abd-runner-docker-<n>`, `abd-runner-work-<n>`, `abd-runner-sock-<n>` | | The runner image; the shared Composer, npm and tool cache; per slot, its engine's data, its work folder (`/srv/abd-runner/work/<n>`) and its engine's socket |
+| On the shared engine: image `abd/github-runner:host`; volumes `abd-runner-cache`, `abd-runner-docker-<n>`, `abd-runner-work-<n>`, `abd-runner-sock-<n>` | | The runner image; the shared Composer, npm and tool cache; per slot, its engine's data, its work folder (`/home/runner/work`, the hosted runners' path, in every slot) and its engine's socket |
 
 Everything of ours on the shared engine carries the label `com.abd.github-runner`.
 
