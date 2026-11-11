@@ -66,10 +66,16 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_cloudwatch_metric_alarm.no_in_service_instances](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.status_check_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_instance_profile.ec2-asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
+| [aws_iam_role.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.attach_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.attach_ssm_core](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_scheduler_schedule.instance_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/scheduler_schedule) | resource |
 | [aws_ami.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_iam_policy_document.instance_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.scheduled_refresh_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_route53_zone.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_route_table.managed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route_table) | data source |
 | [aws_security_group.efs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
@@ -111,6 +117,8 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_asg_max_size"></a> [asg\_max\_size](#input\_asg\_max\_size) | Maximum size of the autoscaling group | `string` | `"1"` | no |
 | <a name="input_asg_min_size"></a> [asg\_min\_size](#input\_asg\_min\_size) | Minimum size of the autoscaling group | `string` | `"0"` | no |
 | <a name="input_asg_require_public_ip"></a> [asg\_require\_public\_ip](#input\_asg\_require\_public\_ip) | Auto-assign a public IP to instances (needs asg\_subnet\_tier = public) | `bool` | `false` | no |
+| <a name="input_asg_scheduled_refresh_expression"></a> [asg\_scheduled\_refresh\_expression](#input\_asg\_scheduled\_refresh\_expression) | EventBridge Scheduler expression for a recurring instance refresh, e.g. cron(0 4 ? * TUE *) (empty for none) | `string` | `""` | no |
+| <a name="input_asg_scheduled_refresh_timezone"></a> [asg\_scheduled\_refresh\_timezone](#input\_asg\_scheduled\_refresh\_timezone) | Time zone for asg\_scheduled\_refresh\_expression | `string` | `"Europe/London"` | no |
 | <a name="input_asg_ssh_key_name"></a> [asg\_ssh\_key\_name](#input\_asg\_ssh\_key\_name) | Name of SSH key to upload | `string` | n/a | yes |
 | <a name="input_asg_ssh_public_key_file"></a> [asg\_ssh\_public\_key\_file](#input\_asg\_ssh\_public\_key\_file) | Physical file location of public key part to upload | `string` | n/a | yes |
 | <a name="input_asg_subnet_tier"></a> [asg\_subnet\_tier](#input\_asg\_subnet\_tier) | Which subnets the ASG launches instances into: private\_app or public | `string` | `"private_app"` | no |

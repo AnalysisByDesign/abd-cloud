@@ -2,7 +2,7 @@
 
 **Applies to**: `abd-wordpress` account, VPC `abd-wordpress` (`10.240.0.0/21`, `vpc-00ae5d2141d9f2724`).
 **Params target**: `abd-cloud-params/abd-wordpress/wordpress-vpc/nat-instance` (template `compute/ec2-asg`).
-**Status**: prepared 2026-11-11, not yet applied.
+**Status**: live since 2026-11-11 (cutover 11:00, first refresh drill 11:05 with no egress gap). NAT gateway still in place as the rollback path.
 
 All commands assume the repo root of `abd-cloud` and the `abd_global` aws-vault profile. CLI commands against the account need the `terraform` role in `800653036500` (or a profile for it).
 
@@ -95,6 +95,24 @@ while true; do printf '%s ' "$(date +%T)"; curl -s --max-time 3 https://checkip.
 
 Expected: the printed IP changes to the new instance's IP with no `FAIL` lines, or only one or two.
 
+## Weekly scheduled refresh
+
+EventBridge Scheduler schedule `abd-wordpress-nat-instance-refresh` runs **Tuesdays at 04:00 Europe/London** (`asg_scheduled_refresh_expression` in the tfvars). It calls `StartInstanceRefresh` directly, with the same 100/110/60 preferences as above, using the role `abd-wordpress-nat-instance-refresh`, which can only start a refresh on this ASG. There is no Lambda.
+
+It's a drill. It proves every week that the route flip still works on a fresh instance. It doesn't pick up a newer fck-nat AMI: the launch template keeps the AMI from the last apply. Applying this target is what brings in a newer AMI.
+
+Check the latest run:
+```bash
+aws autoscaling describe-instance-refreshes --auto-scaling-group-name abd-wordpress-nat \
+  --query 'InstanceRefreshes[0].{Start:StartTime,Status:Status,Reason:StatusReason}'
+```
+
+What can go wrong:
+- **A refresh is already running at 04:00**: the call fails. The schedule retries twice within the hour, then gives up until next week.
+- **The new instance fails its boot script**: the script abandons it and puts back any routes it had switched. The refresh then retries or fails, and the old instance stays in service. **Nothing alerts on this yet.** The `no-in-service-instances` alarm stays quiet because the old instance is still InService. Check the refresh status on Tuesday mornings until a refresh-failure alert exists.
+
+To pause it, set `asg_scheduled_refresh_expression = ""` and apply. That removes the schedule and its role.
+
 ## Rollback to the NAT gateway (while it still exists)
 
 1. Stop new NAT instances from flipping the routes back:
@@ -132,12 +150,24 @@ After teardown: the EIP `99.80.147.236` is released (ruling 6), and the rollback
 
 ## Scaling out (one NAT ASG per AZ)
 
-The target is built so that it can be copied:
+**How the AZs reach the instance.** The boot script has no AZ logic of its own and never looks up route tables. It changes exactly the route table IDs that Terraform wrote into its user data (`ROUTE_TABLE_IDS`). Terraform takes those IDs from `managed_route_table_azs` when it plans, and IAM allows `ReplaceRoute` on those tables' ARNs and nothing else. Even a misconfigured instance can't touch another AZ's table. Placement is set separately, by `asg_availability_zones`. Verified on 2026-11-11 with a plan of a hypothetical eu-west-1a-only target: the user data had `ROUTE_TABLE_IDS="rtb-079fc1e15410aaefd"` (`abd-wordpress-private-eu-west-1a`), the IAM policy had only that ARN, and the ASG kept only `subnet-0df907fe45c9267fc` (public, eu-west-1a).
+
+**Steps**
 1. Copy `nat-instance` to one target per AZ, for example `nat-a`, `nat-b` and `nat-c`.
-2. In each copy, set `name` (for example `nat-a`, which gives the ASG `abd-wordpress-nat-a`). Set `managed_route_table_azs` to that AZ alone, and `asg_availability_zones` to the same AZ, so the instance serves its own AZ without cross-AZ data charges.
+2. In each copy, set:
+   - `name`, for example `nat-a`, which gives the ASG `abd-wordpress-nat-a`. The ASG, launch template, security group, alarms, schedule and the `asg_name` template value all derive from it.
+   - `asg_iam_profile_name` and `asg_ssh_key_name`, for example `nat-a`. **These don't derive from `name`.** If they're left as `nat`, the copy's IAM role, policy, instance profile and key pair collide with the original's, and the apply fails.
+   - `managed_route_table_azs = ["eu-west-1a"]` and `asg_availability_zones = ["eu-west-1a"]`, so the instance serves its own AZ without cross-AZ data charges.
+   - The `common_tag_component`, if you want the copies told apart in billing.
 3. Give each copy its own `statefile_basename` in its `nat_config.sh`, and its own sequence entry.
-4. Remove the AZs from the original target, or retire it. **An AZ must never appear in two targets.** If it did, each target's instances would take the routes from the other on every launch. Terraform can't check this across targets.
-Hook names are scoped to each ASG, so the copies can keep `nat-route-flip` and `nat-drain`. The ASG name, route table IDs and ARNs are derived automatically.
+4. **Order matters during the move.** First apply the original target with the AZ you're moving taken out of its `managed_route_table_azs`. Then apply the new target. Otherwise the original's next refresh, including the weekly Tuesday one, takes the route back. Retire the original once all its AZs have moved.
+5. **An AZ must never appear in two targets.** If it did, each target's instances would take the routes from the other on every launch. Terraform can't check this across targets.
+
+Hook names are scoped to each ASG, so the copies can keep `nat-route-flip` and `nat-drain`. Each copy gets its own weekly schedule. They can share the same time, because each switches only its own tables.
+
+**Capacity ceiling.** A route table can have only one `0.0.0.0/0` target, and this VPC has one private route table per AZ. That makes one NAT instance per AZ, **three in all**, the most this layout supports. Load can't be spread across instances within an AZ. Beyond that, the options are:
+- a larger instance type, such as a network-optimised `c7gn`, which is a tfvars change;
+- splitting the private route tables per subnet tier, which is a VPC template change.
 
 Trade-off: an ASG pinned to one AZ can't relaunch elsewhere if that AZ fails. Its private subnets are in the same AZ, though, so they'd be affected anyway.
 

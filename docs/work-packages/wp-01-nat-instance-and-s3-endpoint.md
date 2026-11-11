@@ -83,31 +83,44 @@ Recorded 2026-11-10, against the questions in `docs/discovery/wp-01.md`.
 
 ## Status
 
-**As of 2026-11-11 (end of day). No AWS changes are pending from Claude; everything below is code waiting for review.**
+**As of 2026-11-11, 11:15. Cutover done; the work package stays open until the NAT gateway is torn down.**
 
-Done and applied:
-- abd-cloud-modules #31: ASG max healthy percentage (110) wired, lifecycle hooks, launch template public IP.
-- abd-cloud #57: `ec2-asg` optional load balancer, RDS and EFS access, subnet tier, and moved blocks. `app.wordpress` was applied and plans clean.
-- abd-cloud #58 and abd-cloud-params #26: the `abd-alerts` SNS topic (applied; **no subscription yet**).
-- abd-cloud #59: these documents.
+Merged and applied:
+- abd-cloud-modules #31: ASG max healthy percentage (110), lifecycle hooks, launch template public IP.
+- abd-cloud #57: `ec2-asg` optional load balancer, RDS and EFS access, subnet tier, `moved` blocks.
+- abd-cloud #58 and abd-cloud-params #26: the `abd-alerts` SNS topic. Dave is subscribed (email, confirmed).
+- abd-cloud #56: `tf-run.sh` no longer auto-approves. #59: these documents. #54: `CLAUDE.md`.
+- abd-cloud #60 and abd-cloud-params #27: the `nat-instance` target, `ec2-asg` alarms, route tables by AZ (`managed_route_table_azs`), ASG AZ pinning (`asg_availability_zones`), flip rollback, and the runbook.
+- CI: the `GH_PAT` secret had expired. It was replaced on 2026-11-11 with a fine-grained token (Contents read-only on abd-cloud-params and abd-cloud-modules), and plans run again.
 
-Prepared, committed locally, **not pushed**:
-- abd-cloud `feat/nat-instance`: `ec2-asg` alarms (`enable_alarms`, default off; `app.wordpress` plans clean), the new target in the plan, drift and apply workflows, and the runbook `docs/runbooks/nat-instance.md`.
-- abd-cloud-params `feat/nat-instance`: the `nat-instance` target (config, tfvars, the `nat-route-flip.sh` user data, the IAM policy template) and sequence entry 2100. Plans as 14 to add.
-- abd-cloud-params `chore/rename-app-ecs`: `app-ecs` renamed to `app.ecs` (no state impact; the target is prevented).
+Cutover (Dave applied, 2026-11-11):
+- 11:00:10: the first instance (`i-0d4c28732880821af`, eu-west-1b) launched. At 11:00:41 it switched all three private route tables away from `nat-047a0c1aab3d1fee7` and went InService. Both alarms are OK.
+- Egress verified from the WordPress host: `checkip` returned the instance's IP (3.250.74.214). The sites are working.
 
-Open questions for the next session:
-1. **Naming**: keep `nat-instance`, or rename to follow the `<role>.<name>` convention (for example `nat.wordpress`)? Free to change before the first apply.
-2. **Ruling 5 needs revisiting**: a `removed` block cannot be used while `aws_route.private_nat_gateway` is still declared in the VPC template. Options are in the runbook ("Teardown"); the recommendation is `state rm` through `tf-run.sh`, then `enable_nat_gateway = false`.
-3. **Weekly scheduled refresh** (Settled, and Build item 1 of the WP) is not built yet. Dave is doing manual refreshes first; schedule it once the flip is proven.
+Refresh drill 1 (manual, 100/110/60), 2026-11-11:
+- 11:05:53: refresh started. 11:05:54: the replacement (`i-021977d9d248ed2e2`, eu-west-1c) launched into `Pending:Wait`.
+- 11:06:28 to 11:06:29: the routes switched. A once-a-second `checkip` loop on the WordPress host went from 3.250.74.214 to 108.130.192.137 with **no failed requests**.
+- The old instance went to `Terminating:Wait` after the warmup, drained for 120 seconds, and had terminated by 11:11:05. The refresh was **Successful** at 11:11:18.
+- This meets the "planned refresh with no measurable egress interruption" requirement under Done when.
 
-Added 2026-11-11 (on PRs abd-cloud #60 and abd-cloud-params #27, not yet committed):
-- **Route tables by AZ**: `ec2-asg` takes `managed_route_table_azs`. It resolves each AZ to `<vpc>-private-<az>` at plan time and passes `route_table_ids` (user data) and `route_table_arns` (IAM) to the templates. It also derives `asg_name`. `asg_availability_zones` can pin an ASG to particular AZs. Both default to empty, and `app.wordpress` plans clean. This lets you scale out to one single-instance ASG per AZ (see the runbook, "Scaling out").
-- **Refresh hardening**: the boot script records each table's current target before the flip. If the flip or the hook completion fails, it restores those targets and then abandons the instance. Completing the hook is retried. IAM `ReplaceRoute` and `CreateRoute` are now limited to the exact route table ARNs.
+Done when, checked:
+- [x] Private subnets egress through the NAT instance.
+- [ ] The NAT gateway and its EIP are gone (still the rollback path).
+- [x] The S3 gateway endpoint is in place (it already existed; confirmed in discovery).
+- [x] A planned refresh with no measurable egress interruption (drill 1).
+- [x] Existing callers plan with no diff (`app.wordpress`).
 
-Next steps:
-1. Review, push and merge the three branches above (and abd-cloud #56, so applies ask before running).
-2. Subscribe to `abd-alerts`.
-3. Follow `docs/runbooks/nat-instance.md`: cutover, verification, several manual refreshes, then teardown per the ruling on question 2.
+In progress:
+- **Weekly scheduled refresh** (Settled): branch `feat/nat-weekly-refresh` in both repos. `ec2-asg` gains `asg_scheduled_refresh_expression` and `_timezone` (default off; `app.wordpress` plans clean). The target sets Tuesdays 04:00 Europe/London. EventBridge Scheduler calls `StartInstanceRefresh` directly, with no Lambda. Plans as 3 to add. See the runbook, "Weekly scheduled refresh".
+
+Remaining before WP-01 closes:
+1. A few more refresh drills. Ruling 10 leaves the teardown timing to Dave.
+2. **Ruling 5 revisit**: a `removed` block can't be used while `aws_route.private_nat_gateway` is still declared in the VPC template. Recommended: `state rm` of `aws_route.private_nat_gateway[0..2]` through `tf-run.sh`, then `enable_nat_gateway = false`. See the runbook, "Teardown".
+3. Tear down the NAT gateway. That releases `99.80.147.236`, and the rollback section of the runbook then no longer applies.
+
+Open, not blocking:
+- Naming: keep `nat-instance`, or rename to the `<role>.<name>` convention?
+- No alert fires on a failed instance refresh. A failed weekly drill would leave the old instance in service without telling anyone. A candidate fix is an EventBridge rule on the instance-refresh-failed event that publishes to `abd-alerts`, which needs a topic policy allowing EventBridge.
+- abd-cloud-params #28 (`app-ecs` renamed to `app.ecs`) is still open.
 
 Known unrelated noise: `wordpress-vpc` shows a permanent in-place diff on the RDS parameter group `apply_method`. It predates WP-01.
