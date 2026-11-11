@@ -66,3 +66,24 @@ Recorded 2026-11-11, against the questions in `docs/discovery/wp-02.md`. The ima
 11. **Encryption**: `AES256`, the free default.
 12. **Old repositories**: `abd-wordpress` (one 2019 image) and abd-global `docker-repo` (empty) are left alone, and listed for the step 7 clean-up.
 13. **Done when test**: a dedicated `abd/ci-test` repository with a 1-day expiry, so the real repositories never hold test images.
+
+## Status
+
+**Complete as of 2026-11-11.** Both Done when criteria are met.
+
+Merged and applied:
+- abd-cloud-modules #32: `docker-repository` tag mutability, scan on push, encryption and tags. The account templates plan with no diff.
+- abd-cloud #63 and abd-cloud-params #31: the `compute/container-registry` template and the `abd-wordpress/account-global/container-registry` target. This created `abd/base`, `abd/php`, `abd/laravel`, `abd/wordpress`, `abd/github-runner` and `abd/ci-test`, the `ecr-public` pull-through cache and creation template, and `ecr-pull-abd`. It also added the `github-ecr-push-abd-cloud-containers` push role (`security/github-deploy`, `ecr_push_roles`).
+- abd-cloud #65 and abd-cloud-params #32: support for GitHub's **immutable OIDC subject**. `abd-cloud-containers` sends `repo:AnalysisByDesign@4380764/abd-cloud-containers@1452488510:ref:refs/heads/main`, so the first push build was refused until the role trusted that form. Repositories created from now on are likely to use it too. Find a repository's prefix with `gh api repos/<org>/<repo>/actions/oidc/customization/sub` and set `github_subject_prefix`.
+- `abd-cloud-containers` repository variables set: `ECR_REGISTRY`, `ECR_PUSH_ROLE_ARN`, `AWS_REGION`.
+
+Verified:
+- First push build (run 43035625387): every image and tag pushed, about 2.1 GB in total. Scan on push is working; `abd/base:trixie` shows 9 high, 15 medium and 3 low findings from the Debian base, which is for WP-03 to review.
+- Done when test (`abd-cloud-containers` #3, `ecr-access-test.yml`, run 43043312530): OIDC sign-in, a push to `abd/ci-test` succeeded, and pushes to `ci-denied/test` and `tulox/ci-test` were refused with `AccessDenied`.
+
+Ruling 12 brought forward: abd-cloud-params #33 retires the unused 2019 repositories (`abd-wordpress`, whose only image Dave deleted first, and abd-global `docker-repo`). Applied to both account targets on 2026-11-11, 3 destroyed in each.
+
+For later packages:
+- WP-04: attach `ecr-pull-abd` (output `pull_policy_arn`) to the ECS execution role. Pull official images as `800653036500.dkr.ecr.eu-west-1.amazonaws.com/ecr-public/docker/library/<image>:<tag>`.
+- The Tulox package and WP-05 add their own repositories (`tulox/app`, `abd/wp-<site>`) to the registry params, and their push roles to `ecr_push_roles`.
+- The image generator PoC (`poc-tulox-image-fleet`) is untouched. A later package replaces it with Terraform.
