@@ -29,6 +29,7 @@ jobs:
           - abd-wordpress/account-global/s3/access-log
           - abd-wordpress/account-global/s3/lambda
           - abd-wordpress/wordpress-vpc
+          - abd-wordpress/wordpress-vpc/nat-instance
           - abd-wordpress/wordpress-vpc/vpc-peering
           - abd-wordpress/wordpress-vpc/db.wordpress
           - abd-wordpress/wordpress-vpc/storage/efs

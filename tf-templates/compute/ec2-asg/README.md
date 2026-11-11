@@ -63,6 +63,8 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 
 | Name | Type |
 | ---- | ---- |
+| [aws_cloudwatch_metric_alarm.no_in_service_instances](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.status_check_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_instance_profile.ec2-asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role_policy_attachment.attach_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.attach_ssm_core](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -71,6 +73,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_route53_zone.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_security_group.efs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_security_group.rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
+| [aws_sns_topic.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
 | [aws_subnet.asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 | [aws_subnet.lb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
@@ -85,6 +88,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_alb_health_check_path"></a> [alb\_health\_check\_path](#input\_alb\_health\_check\_path) | The path to test for the health-check | `string` | `"/"` | no |
 | <a name="input_alb_health_check_status"></a> [alb\_health\_check\_status](#input\_alb\_health\_check\_status) | The return code for the health-check | `string` | `"200,301,302"` | no |
 | <a name="input_alb_ingress_cidr"></a> [alb\_ingress\_cidr](#input\_alb\_ingress\_cidr) | The ingress CIDR range for access to the load balancer | `string` | `"0.0.0.0/0"` | no |
+| <a name="input_alerts_topic_name"></a> [alerts\_topic\_name](#input\_alerts\_topic\_name) | Name of the SNS topic the alarms notify (set account-wide by the account template params) | `string` | `""` | no |
 | <a name="input_asg_ami_image_glob"></a> [asg\_ami\_image\_glob](#input\_asg\_ami\_image\_glob) | The EC2 AMI image name to search for | `string` | n/a | yes |
 | <a name="input_asg_ami_image_owner"></a> [asg\_ami\_image\_owner](#input\_asg\_ami\_image\_owner) | The EC2 AMI image owner | `string` | n/a | yes |
 | <a name="input_asg_capacity_timeout"></a> [asg\_capacity\_timeout](#input\_asg\_capacity\_timeout) | Maximum | `string` | `"600s"` | no |
@@ -117,6 +121,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_ec2_policy_template"></a> [ec2\_policy\_template](#input\_ec2\_policy\_template) | IAM Policy template file | `string` | `"s3-access-policy.tpl.json"` | no |
 | <a name="input_ec2_policy_template_folder"></a> [ec2\_policy\_template\_folder](#input\_ec2\_policy\_template\_folder) | Folder containing policy templates to apply to the instance roles | `string` | `"./files"` | no |
 | <a name="input_efs_security_group"></a> [efs\_security\_group](#input\_efs\_security\_group) | The name of the EFS security group (empty for no EFS access rules) | `string` | `""` | no |
+| <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Create CloudWatch alarms for no InService instances and failed status checks | `bool` | `false` | no |
 | <a name="input_enable_load_balancer"></a> [enable\_load\_balancer](#input\_enable\_load\_balancer) | Create the ALB, its SSL certificate, DNS alias record and security groups, and use ELB health checks | `bool` | `true` | no |
 | <a name="input_extra_template_vars"></a> [extra\_template\_vars](#input\_extra\_template\_vars) | Additional variables passed to the user data and IAM policy templates | `map(string)` | `{}` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |

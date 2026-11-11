@@ -351,3 +351,15 @@ variable "extra_template_vars" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_alarms" {
+  description = "Create CloudWatch alarms for no InService instances and failed status checks"
+  type        = bool
+  default     = false
+}
+
+variable "alerts_topic_name" {
+  description = "Name of the SNS topic the alarms notify (set account-wide by the account template params)"
+  type        = string
+  default     = ""
+}
