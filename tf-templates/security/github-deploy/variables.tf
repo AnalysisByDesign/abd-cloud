@@ -18,6 +18,11 @@ variable "ecr_push_roles" {
     github_branch       = optional(string, "main") # Branch permitted to assume the role
     role_name           = string                   # Name of the IAM role created for GitHub Actions pushes
     repository_prefixes = list(string)             # ECR namespaces the role may push to (e.g. ["abd"] for abd/*)
+    # OIDC subject prefix when the repository uses GitHub's immutable subject format
+    # (use_immutable_subject), e.g. repo:AnalysisByDesign@4380764/abd-cloud-containers@1452488510.
+    # See: gh api repos/<org>/<repo>/actions/oidc/customization/sub (sub_claim_prefix).
+    # Empty uses the name-only form, repo:<github_repo>.
+    github_subject_prefix = optional(string, "")
   }))
   default = {}
 }
