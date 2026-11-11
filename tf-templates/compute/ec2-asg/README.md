@@ -71,6 +71,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_ami.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_iam_policy_document.instance_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_route53_zone.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
+| [aws_route_table.managed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route_table) | data source |
 | [aws_security_group.efs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_security_group.rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_sns_topic.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
@@ -91,6 +92,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_alerts_topic_name"></a> [alerts\_topic\_name](#input\_alerts\_topic\_name) | Name of the SNS topic the alarms notify (set account-wide by the account template params) | `string` | `""` | no |
 | <a name="input_asg_ami_image_glob"></a> [asg\_ami\_image\_glob](#input\_asg\_ami\_image\_glob) | The EC2 AMI image name to search for | `string` | n/a | yes |
 | <a name="input_asg_ami_image_owner"></a> [asg\_ami\_image\_owner](#input\_asg\_ami\_image\_owner) | The EC2 AMI image owner | `string` | n/a | yes |
+| <a name="input_asg_availability_zones"></a> [asg\_availability\_zones](#input\_asg\_availability\_zones) | Restrict the ASG to subnets in these AZs (empty for every subnet in the tier) | `list(string)` | `[]` | no |
 | <a name="input_asg_capacity_timeout"></a> [asg\_capacity\_timeout](#input\_asg\_capacity\_timeout) | Maximum | `string` | `"600s"` | no |
 | <a name="input_asg_default_cooldown"></a> [asg\_default\_cooldown](#input\_asg\_default\_cooldown) | Cooldown period before allowing another autoscaling action | `string` | `"120"` | no |
 | <a name="input_asg_delete_timeout"></a> [asg\_delete\_timeout](#input\_asg\_delete\_timeout) | Delete timeout setting | `string` | `"15m"` | no |
@@ -124,6 +126,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Create CloudWatch alarms for no InService instances and failed status checks | `bool` | `false` | no |
 | <a name="input_enable_load_balancer"></a> [enable\_load\_balancer](#input\_enable\_load\_balancer) | Create the ALB, its SSL certificate, DNS alias record and security groups, and use ELB health checks | `bool` | `true` | no |
 | <a name="input_extra_template_vars"></a> [extra\_template\_vars](#input\_extra\_template\_vars) | Additional variables passed to the user data and IAM policy templates | `map(string)` | `{}` | no |
+| <a name="input_managed_route_table_azs"></a> [managed\_route\_table\_azs](#input\_managed\_route\_table\_azs) | AZs whose private route tables (<vpc>-private-<az>) the instances manage; their IDs and ARNs reach the templates as route\_table\_ids and route\_table\_arns | `list(string)` | `[]` | no |
 | <a name="input_management_ingress_locations"></a> [management\_ingress\_locations](#input\_management\_ingress\_locations) | List of CIDR ranges for private ingress to resources | `list(string)` | `[]` | no |
 | <a name="input_name"></a> [name](#input\_name) | The name prefix of the various resources | `string` | n/a | yes |
 | <a name="input_private_app_subnets"></a> [private\_app\_subnets](#input\_private\_app\_subnets) | A list of private subnets to be used for app resource within this deployment | `list(string)` | n/a | yes |

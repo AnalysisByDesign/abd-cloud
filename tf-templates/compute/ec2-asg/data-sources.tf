@@ -12,6 +12,37 @@ data "aws_subnet" "asg" {
   cidr_block = element(var.private_app_subnets, count.index)
 }
 
+locals {
+  asg_tier_subnets = var.asg_subnet_tier == "public" ? data.aws_subnet.lb : data.aws_subnet.asg
+  asg_subnet_ids = [
+    for s in local.asg_tier_subnets : s.id
+    if length(var.asg_availability_zones) == 0 || contains(var.asg_availability_zones, s.availability_zone)
+  ]
+}
+
+# -----------------------------------------------------------------------------
+# Private route tables the instances manage (one per AZ, named by the network/vpc template)
+
+data "aws_route_table" "managed" {
+  for_each = toset(var.managed_route_table_azs)
+  vpc_id   = local.vpc_id
+
+  tags = {
+    Name = format("%s-private-%s", local.vpc_name, each.key)
+  }
+}
+
+locals {
+  managed_route_tables = [for az in var.managed_route_table_azs : data.aws_route_table.managed[az]]
+
+  # Values every user data and IAM policy template can use, alongside extra_template_vars
+  computed_template_vars = {
+    asg_name         = format("%s-%s", local.vpc_name, var.name)
+    route_table_ids  = join(" ", local.managed_route_tables[*].id)
+    route_table_arns = jsonencode(local.managed_route_tables[*].arn)
+  }
+}
+
 # -----------------------------------------------------------------------------
 
 data "aws_ami" "this" {

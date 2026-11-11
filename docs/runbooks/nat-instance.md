@@ -10,19 +10,28 @@ All commands assume the repo root of `abd-cloud` and the `abd_global` aws-vault 
 
 Private subnets send `0.0.0.0/0` to whichever instance last claimed the route. Nothing is pinned: no static ENI and no Elastic IP. The instance has an auto-assigned (floating) public IP.
 
-On boot, each NAT instance runs `nat-instance/files/nat-route-flip.sh` from user data:
+The route tables an ASG manages come from `managed_route_table_azs` in its tfvars. Terraform resolves each AZ to the `abd-wordpress-private-<az>` route table at plan time, then passes the IDs to the user data and the ARNs to the IAM policy. The instance can change only those tables, and the plan shows exactly which ones.
+
+On boot, each NAT instance stays in `Pending:Wait` (the `nat-route-flip` launch hook) while it runs `nat-instance/files/nat-route-flip.sh` from user data:
 
 1. Disables source/destination checking on itself.
 2. Restarts fck-nat (no ENI configured, so it uses the primary interface) and waits for IP forwarding.
 3. Checks its own internet egress.
-4. Replaces `0.0.0.0/0` in every route table tagged `abd-wordpress-private-*` so that it points at itself. This is the **route flip**.
-5. Completes the `nat-route-flip` launch lifecycle hook. Only then does the ASG mark it InService.
+4. Records the current `0.0.0.0/0` target of each managed route table.
+5. Replaces `0.0.0.0/0` in each managed route table so that it points at itself. This is the **route flip**.
+6. Completes the launch hook with `CONTINUE`, retrying up to 5 times. Only then does the ASG mark it InService.
 
-If anything fails before step 4, the script completes the hook with `ABANDON`. The ASG terminates the instance and the routes are untouched. The script logs to `/var/log/nat-route-flip.log`.
+If anything fails, the script completes the hook with `ABANDON` and the ASG terminates the instance. If the flip had started, the script first restores the targets recorded in step 4. A flip that fails partway, or a hook that can't be completed, therefore never leaves the routes pointing at an instance that is being thrown away. The script logs to `/var/log/nat-route-flip.log`.
 
-On termination, the `nat-drain` hook holds the old instance for 120 seconds (nothing completes it, so it defaults to `CONTINUE`), so in-flight connections can finish after the routes have moved.
+The flip runs before the hook is completed so that InService always means "is carrying the traffic". If the order were reversed, a failed flip would leave a healthy-looking instance that carries no traffic, and a refresh would then terminate the old instance that still is.
 
-Instance refreshes use min 100 / max 110 healthy, so the replacement launches, flips the routes and goes InService **before** the old instance is terminated.
+**In-place refresh.** Instance refreshes use min 100 / max 110 healthy:
+1. The replacement launches alongside the old instance and sets itself up completely in `Pending:Wait`.
+2. It flips the routes and goes InService.
+3. After the 60-second warmup, the ASG terminates the old instance.
+4. The `nat-drain` hook holds the old instance in `Terminating:Wait` for 120 seconds (nothing completes it, so it defaults to `CONTINUE`), then terminates it.
+
+The old instance carries no new traffic once the routes have moved. **Draining doesn't keep connections open across a NAT swap.** The new instance has a different public IP and no connection-tracking state for flows that already exist. The client's next packet on a long-lived connection (an SMTP session, a long download, a websocket) now leaves through the new IP, and the remote end resets it. Short requests and anything that retries are unaffected. A NAT gateway replacement behaves the same way. The drain is cheap, so it stays.
 
 Alarms notify `abd-alerts`:
 - `abd-wordpress-nat-no-in-service-instances`: no InService instance for 3 minutes.
@@ -121,13 +130,25 @@ If the NAT instance dies or fails its status checks, the ASG launches a replacem
 
 After teardown: the EIP `99.80.147.236` is released (ruling 6), and the rollback above no longer applies. To roll back after that, re-enable the gateway, then flip the routes back by hand.
 
+## Scaling out (one NAT ASG per AZ)
+
+The target is built so that it can be copied:
+1. Copy `nat-instance` to one target per AZ, for example `nat-a`, `nat-b` and `nat-c`.
+2. In each copy, set `name` (for example `nat-a`, which gives the ASG `abd-wordpress-nat-a`). Set `managed_route_table_azs` to that AZ alone, and `asg_availability_zones` to the same AZ, so the instance serves its own AZ without cross-AZ data charges.
+3. Give each copy its own `statefile_basename` in its `nat_config.sh`, and its own sequence entry.
+4. Remove the AZs from the original target, or retire it. **An AZ must never appear in two targets.** If it did, each target's instances would take the routes from the other on every launch. Terraform can't check this across targets.
+Hook names are scoped to each ASG, so the copies can keep `nat-route-flip` and `nat-drain`. The ASG name, route table IDs and ARNs are derived automatically.
+
+Trade-off: an ASG pinned to one AZ can't relaunch elsewhere if that AZ fails. Its private subnets are in the same AZ, though, so they'd be affected anyway.
+
 ## Troubleshooting
 
 - **The instance cycles between `Pending:Wait` and `Terminating`**: the script is abandoning it. Connect with SSM Session Manager while it's in `Pending:Wait` (up to 300 seconds) and read `/var/log/nat-route-flip.log` and `journalctl -u fck-nat`. Things to check, none of which could be confirmed without a launch:
   - fck-nat uses the primary interface when `/etc/fck-nat.conf` is empty.
   - The AWS CLI is present (the script installs it with `dnf` if not).
-  - The IAM tag conditions allow `ModifyInstanceAttribute` and `ReplaceRoute` (look for `UnauthorizedOperation` in the log).
-- **The routes didn't move**: check the log for the `describe-route-tables` result, and that the private route tables still carry `Name` tags `abd-wordpress-private-*`.
+  - IAM allows `ModifyInstanceAttribute` (tag condition) and `ReplaceRoute` (exact route table ARNs). Look for `UnauthorizedOperation` in the log.
+- **The routes didn't move**: the log lists the route table IDs it was given and the target it found on each. Compare them with `route_table_ids` in the plan.
+- **The routes went back to their old target**: the flip or the hook failed and the script rolled back. The cause is in the log, just above the `restoring` lines.
 
 ## Known noise
 

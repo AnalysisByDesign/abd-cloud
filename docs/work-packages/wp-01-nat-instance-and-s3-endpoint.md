@@ -101,6 +101,10 @@ Open questions for the next session:
 2. **Ruling 5 needs revisiting**: a `removed` block cannot be used while `aws_route.private_nat_gateway` is still declared in the VPC template. Options are in the runbook ("Teardown"); the recommendation is `state rm` through `tf-run.sh`, then `enable_nat_gateway = false`.
 3. **Weekly scheduled refresh** (Settled, and Build item 1 of the WP) is not built yet. Dave is doing manual refreshes first; schedule it once the flip is proven.
 
+Added 2026-11-11 (on PRs abd-cloud #60 and abd-cloud-params #27, not yet committed):
+- **Route tables by AZ**: `ec2-asg` takes `managed_route_table_azs`. It resolves each AZ to `<vpc>-private-<az>` at plan time and passes `route_table_ids` (user data) and `route_table_arns` (IAM) to the templates. It also derives `asg_name`. `asg_availability_zones` can pin an ASG to particular AZs. Both default to empty, and `app.wordpress` plans clean. This lets you scale out to one single-instance ASG per AZ (see the runbook, "Scaling out").
+- **Refresh hardening**: the boot script records each table's current target before the flip. If the flip or the hook completion fails, it restores those targets and then abandons the instance. Completing the hook is retried. IAM `ReplaceRoute` and `CreateRoute` are now limited to the exact route table ARNs.
+
 Next steps:
 1. Review, push and merge the three branches above (and abd-cloud #56, so applies ask before running).
 2. Subscribe to `abd-alerts`.

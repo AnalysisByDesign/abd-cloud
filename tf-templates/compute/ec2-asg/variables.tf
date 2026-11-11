@@ -326,6 +326,18 @@ variable "asg_require_public_ip" {
   default     = false
 }
 
+variable "asg_availability_zones" {
+  description = "Restrict the ASG to subnets in these AZs (empty for every subnet in the tier)"
+  type        = list(string)
+  default     = []
+}
+
+variable "managed_route_table_azs" {
+  description = "AZs whose private route tables (<vpc>-private-<az>) the instances manage; their IDs and ARNs reach the templates as route_table_ids and route_table_arns"
+  type        = list(string)
+  default     = []
+}
+
 variable "asg_initial_lifecycle_hooks" {
   description = "Lifecycle hooks to create with the ASG (see the asg module's initial_lifecycle_hooks)"
   type = list(object({
