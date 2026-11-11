@@ -260,6 +260,35 @@ jobs:
       - run: abd-cloud/tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc apply
 
   # -------------------------------------------------------------------------
+  # Priority 2100 — NAT instance (requires the wordpress VPC)
+  # -------------------------------------------------------------------------
+  apply-wordpress-nat-instance:
+    name: Apply abd-wordpress/wordpress-vpc/nat-instance
+    needs: [apply-wordpress-vpc]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: abd-cloud }
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-params
+          path: abd-cloud-params
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/checkout@v4
+        with:
+          repository: AnalysisByDesign/abd-cloud-modules
+          path: abd-cloud-modules
+          token: ${{ secrets.GH_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_MANAGEMENT_ACCOUNT_ID }}:role/github-actions-terraform
+          aws-region: eu-west-1
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "~1.15", terraform_wrapper: false }
+      - run: abd-cloud/tf-run.sh $GITHUB_WORKSPACE/abd-cloud-params/abd-wordpress/wordpress-vpc/nat-instance apply
+
+  # -------------------------------------------------------------------------
   # Priority 2500 — VPC Peering (requires both VPCs)
   # -------------------------------------------------------------------------
   apply-vpc-peering:

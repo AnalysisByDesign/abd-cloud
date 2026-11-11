@@ -80,3 +80,34 @@ Recorded 2026-11-10, against the questions in `docs/discovery/wp-01.md`.
 9. **Endpoints**: S3 only. DynamoDB is not used here.
 10. **NAT gateway teardown**: no fixed hold period. Dave tears it down manually once satisfied, after several manual instance refreshes of the NAT instance have confirmed the flip works.
 11. **Alerting**: create an SNS topic named `abd-alerts` in the `tf-templates/account` template, behind a variable that defaults to no topic (so `abd-global` plans with no diff), and enable it for `abd-wordpress`. Dave subscribes to it manually. (Ruled 2026-11-11.)
+
+## Status
+
+**As of 2026-11-11 (end of day). No AWS changes are pending from Claude; everything below is code waiting for review.**
+
+Done and applied:
+- abd-cloud-modules #31: ASG max healthy percentage (110) wired, lifecycle hooks, launch template public IP.
+- abd-cloud #57: `ec2-asg` optional load balancer, RDS and EFS access, subnet tier, and moved blocks. `app.wordpress` was applied and plans clean.
+- abd-cloud #58 and abd-cloud-params #26: the `abd-alerts` SNS topic (applied; **no subscription yet**).
+- abd-cloud #59: these documents.
+
+Prepared, committed locally, **not pushed**:
+- abd-cloud `feat/nat-instance`: `ec2-asg` alarms (`enable_alarms`, default off; `app.wordpress` plans clean), the new target in the plan, drift and apply workflows, and the runbook `docs/runbooks/nat-instance.md`.
+- abd-cloud-params `feat/nat-instance`: the `nat-instance` target (config, tfvars, the `nat-route-flip.sh` user data, the IAM policy template) and sequence entry 2100. Plans as 14 to add.
+- abd-cloud-params `chore/rename-app-ecs`: `app-ecs` renamed to `app.ecs` (no state impact; the target is prevented).
+
+Open questions for the next session:
+1. **Naming**: keep `nat-instance`, or rename to follow the `<role>.<name>` convention (for example `nat.wordpress`)? Free to change before the first apply.
+2. **Ruling 5 needs revisiting**: a `removed` block cannot be used while `aws_route.private_nat_gateway` is still declared in the VPC template. Options are in the runbook ("Teardown"); the recommendation is `state rm` through `tf-run.sh`, then `enable_nat_gateway = false`.
+3. **Weekly scheduled refresh** (Settled, and Build item 1 of the WP) is not built yet. Dave is doing manual refreshes first; schedule it once the flip is proven.
+
+Added 2026-11-11 (on PRs abd-cloud #60 and abd-cloud-params #27, not yet committed):
+- **Route tables by AZ**: `ec2-asg` takes `managed_route_table_azs`. It resolves each AZ to `<vpc>-private-<az>` at plan time and passes `route_table_ids` (user data) and `route_table_arns` (IAM) to the templates. It also derives `asg_name`. `asg_availability_zones` can pin an ASG to particular AZs. Both default to empty, and `app.wordpress` plans clean. This lets you scale out to one single-instance ASG per AZ (see the runbook, "Scaling out").
+- **Refresh hardening**: the boot script records each table's current target before the flip. If the flip or the hook completion fails, it restores those targets and then abandons the instance. Completing the hook is retried. IAM `ReplaceRoute` and `CreateRoute` are now limited to the exact route table ARNs.
+
+Next steps:
+1. Review, push and merge the three branches above (and abd-cloud #56, so applies ask before running).
+2. Subscribe to `abd-alerts`.
+3. Follow `docs/runbooks/nat-instance.md`: cutover, verification, several manual refreshes, then teardown per the ruling on question 2.
+
+Known unrelated noise: `wordpress-vpc` shows a permanent in-place diff on the RDS parameter group `apply_method`. It predates WP-01.

@@ -22,6 +22,6 @@ module "launch_template" {
 locals {
   user_data_script = base64encode(templatefile(
     "${var.user_data_script_folder}/${var.user_data_script}",
-    merge(var.extra_template_vars, { env = var.common_tag_environment, name = var.name })
+    merge(var.extra_template_vars, local.computed_template_vars, { env = var.common_tag_environment, name = var.name })
   ))
 }

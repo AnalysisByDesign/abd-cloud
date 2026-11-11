@@ -6,7 +6,7 @@ module "autoscaling-group" {
 
   # Required variables
   name       = format("%s-%s", local.vpc_name, var.name)
-  subnet_ids = var.asg_subnet_tier == "public" ? data.aws_subnet.lb[*].id : data.aws_subnet.asg[*].id
+  subnet_ids = local.asg_subnet_ids
 
   # Optional variables
   launch_template_id      = module.launch_template.id
