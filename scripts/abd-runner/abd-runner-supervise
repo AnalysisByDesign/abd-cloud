@@ -1,29 +1,46 @@
 #!/usr/bin/env bash
 # Keeps one single-use runner waiting in slot N: register just in time, run
-# one job, repeat. launchd runs one supervisor per slot (KeepAlive), as
-# svc-ghrunner.
+# one job, reset the slot, repeat. launchd runs one supervisor per slot
+# (KeepAlive), as svc-ghrunner.
 #   abd-runner-supervise <slot>
 #
-# Each slot has its own container (abd-runner-<slot>) and work folder
-# (${WORK_ROOT}/<slot>). All slots share the cache volume, mounted at
-# /cache, so Composer, npm and the tool cache (setup-node and similar)
-# survive from job to job.
+# Each slot is two containers on the shared engine (svc-colima's Colima):
 #
-# The runner shares the VM's network (--network host) so ports that jobs
-# publish on the host engine are reachable on 127.0.0.1, as on a hosted
-# runner. Slots share that network too: jobs that can run at the same time
-# must not publish the same fixed host port.
+#   abd-runner-dind-<n>  a private Docker engine (docker:dind, privileged).
+#                        Jobs' containers, services, networks, volumes and
+#                        image builds live in it and nowhere else, so a job
+#                        cannot see or touch the dev stack or another slot.
+#                        Its /var/lib/docker is a volume, so image layers
+#                        stay cached between jobs.
+#   abd-runner-<n>       the runner (abd/github-runner), talking only to its
+#                        slot's engine through a socket in a shared volume,
+#                        and sharing that engine's network, so ports that
+#                        jobs publish answer on 127.0.0.1 as on a hosted
+#                        runner.
+#
+# The work folder is a volume mounted at the same path in both, so bind
+# mounts made by jobs resolve in the slot's engine. All slots share the
+# cache volume (Composer, npm, the tool cache), mounted in the runner only.
+# Memory and CPU are capped per container; the engine's cap covers every
+# container a job starts in it.
 set -euo pipefail
 # shellcheck source=lib.sh
 . "$(dirname "$0")/lib.sh"
 
 slot="${1:?usage: abd-runner-supervise <slot>}"
 name="${CONTAINER_NAME}-${slot}"
+dind="${CONTAINER_NAME}-dind-${slot}"
 work="${WORK_ROOT}/${slot}"
+label="com.abd.github-runner=${slot}"
+vol_docker="${CONTAINER_NAME}-docker-${slot}"
+vol_work="${CONTAINER_NAME}-work-${slot}"
+vol_sock="${CONTAINER_NAME}-sock-${slot}"
+sock_dir=/var/run/dind
+slot_docker="unix://${sock_dir}/docker.sock"
 runner_id=""
 
 cleanup() {
-    docker rm -f "${name}" >/dev/null 2>&1 || true
+    docker rm -f "${name}" "${dind}" >/dev/null 2>&1 || true
     if [ -n "${runner_id}" ]; then
         gh_api "$(gh_token)" DELETE "${GH_SCOPE}/actions/runners/${runner_id}" >/dev/null 2>&1 || true
     fi
@@ -31,8 +48,49 @@ cleanup() {
 }
 trap cleanup INT TERM
 
-# At boot Colima restarts dockerd while starting; let it settle before
-# registering anything.
+# Runs a shell command inside the slot's engine container, with its docker
+# CLI pointed at the slot's own engine.
+in_dind() { docker exec -e DOCKER_HOST="${slot_docker}" "${dind}" sh -c "$1"; }
+
+# Starts the slot's engine if it is not running, and waits for it to answer.
+ensure_dind() {
+    if [ "$(docker container inspect -f '{{.State.Running}}' "${dind}" 2>/dev/null)" = true ]; then
+        return 0
+    fi
+    docker rm -f "${dind}" >/dev/null 2>&1 || true
+    log "slot ${slot}: starting ${dind} (${DIND_IMAGE})"
+    # --group 10001: the socket belongs to the runner's abd group.
+    # DOCKER_TLS_CERTDIR empty: no TCP listener at all, the socket only.
+    docker run -d --name "${dind}" --label "${label}" --privileged \
+        --memory "${DIND_MEMORY}" --memory-swap "${DIND_MEMORY}" --cpus "${DIND_CPUS}" \
+        -e DOCKER_TLS_CERTDIR= \
+        -v "${vol_docker}:/var/lib/docker" \
+        -v "${vol_work}:${work}" \
+        -v "${vol_sock}:${sock_dir}" \
+        "${DIND_IMAGE}" --host="${slot_docker}" --group=10001 >/dev/null
+    local _
+    for _ in $(seq 1 30); do
+        if in_dind 'docker info >/dev/null 2>&1'; then
+            return 0
+        fi
+        sleep 2
+    done
+    log "slot ${slot}: ${dind} did not answer within 60s"
+    return 1
+}
+
+# Leaves the slot as a new job expects it: nothing running in its engine,
+# no networks or volumes left by the last job (images stay, as cache), and
+# an empty work folder owned by the runner's user.
+reset_slot() {
+    in_dind "
+        ids=\$(docker ps -aq); [ -z \"\${ids}\" ] || docker rm -f \${ids} >/dev/null
+        docker network prune -f >/dev/null
+        docker volume prune -af >/dev/null
+        find '${work}' -mindepth 1 -delete && chown 10001:10001 '${work}'"
+}
+
+# At boot Colima restarts dockerd while starting; let it settle first.
 wait_for_engine
 
 while true; do
@@ -51,20 +109,22 @@ while true; do
     fi
     docker rm -f "${name}" >/dev/null 2>&1 || true
 
-    # Fresh, empty work folder owned by abd, at the same path in the VM.
-    # Cache directories exist and belong to abd; their contents are kept.
-    if ! docker run --rm --user 0 --entrypoint sh \
-            -v "${work}:${work}" -v "${CACHE_VOLUME}:/cache" "${RUNNER_IMAGE}" -c "
-                find '${work}' -mindepth 1 -delete && chown 10001:10001 '${work}' &&
-                mkdir -p /cache/composer /cache/npm /cache/toolcache &&
-                chown 10001:10001 /cache /cache/composer /cache/npm /cache/toolcache"; then
-        log "slot ${slot}: could not prepare ${work} with ${RUNNER_IMAGE}; retrying in 60s"
+    if ! ensure_dind || ! reset_slot; then
+        log "slot ${slot}: could not prepare the slot's engine; retrying in 60s"
+        docker rm -f "${dind}" >/dev/null 2>&1 || true
         sleep 60
         continue
     fi
 
-    sock_gid="$(docker run --rm --entrypoint stat -v "${DOCKER_SOCK}:${DOCKER_SOCK}" \
-        "${RUNNER_IMAGE}" -c %g "${DOCKER_SOCK}")" || { sleep 60; continue; }
+    # Cache directories exist and belong to the runner; contents are kept.
+    if ! docker run --rm --user 0 --entrypoint sh --label "${label}" \
+            -v "${CACHE_VOLUME}:/cache" "${RUNNER_IMAGE}" -c "
+                mkdir -p /cache/composer /cache/npm /cache/toolcache &&
+                chown 10001:10001 /cache /cache/composer /cache/npm /cache/toolcache"; then
+        log "slot ${slot}: could not prepare ${CACHE_VOLUME} with ${RUNNER_IMAGE}; retrying in 60s"
+        sleep 60
+        continue
+    fi
 
     body="$(jq -nc \
         --arg name "abd-$(hostname -s)-${slot}-$(date +%s)" \
@@ -81,15 +141,17 @@ while true; do
     log "slot ${slot}: runner ${runner_id} registered, waiting for a job"
 
     ACTIONS_RUNNER_JITCONFIG="$(jq -r .encoded_jit_config <<<"${resp}")" \
-        docker run --rm --name "${name}" \
-            --network host \
+        docker run --rm --name "${name}" --label "${label}" \
+            --network "container:${dind}" \
+            --memory "${RUNNER_MEMORY}" --memory-swap "${RUNNER_MEMORY}" --cpus "${RUNNER_CPUS}" \
             -e ACTIONS_RUNNER_JITCONFIG \
+            -e DOCKER_HOST="${slot_docker}" \
             -e COMPOSER_CACHE_DIR=/cache/composer \
             -e npm_config_cache=/cache/npm \
             -e RUNNER_TOOL_CACHE=/cache/toolcache \
             -e AGENT_TOOLSDIRECTORY=/cache/toolcache \
-            -v "${DOCKER_SOCK}:${DOCKER_SOCK}" --group-add "${sock_gid}" \
-            -v "${work}:${work}" \
+            -v "${vol_sock}:${sock_dir}" \
+            -v "${vol_work}:${work}" \
             -v "${CACHE_VOLUME}:/cache" \
             "${RUNNER_IMAGE}" &
     # Waiting in the background lets the TERM trap run immediately.

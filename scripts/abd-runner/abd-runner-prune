@@ -1,26 +1,41 @@
 #!/usr/bin/env bash
-# Daily (launchd): keep Colima's disk in check without throwing away the
-# image cache that makes jobs fast.
+# Daily (launchd): keep the disk in check without throwing away the image
+# cache that makes jobs fast.
 #
-# Always: stopped containers, dangling images, unused volumes, build cache
-# older than a week. Only when the engine's disk is above PRUNE_AT_PERCENT:
-# every image no container uses, except the runner image. (Docker's "until"
-# filter is image creation time, not last use, so an age filter would drop
-# images such as mysql that jobs pull every day.)
+# The shared engine also runs the dev stack, so this never prunes it as a
+# whole. It touches only what carries the com.abd.github-runner label (our
+# stopped containers) and superseded runner images, and does the rest
+# inside each slot's private engine.
+#
+# Per slot, always: dangling images and build cache older than a week. Only
+# when the disk holding the slot's engine is above PRUNE_AT_PERCENT: every
+# image in that engine. (Docker's "until" filter is image creation time,
+# not last use, so an age filter would drop images such as mysql that jobs
+# pull every day.)
 set -euo pipefail
 # shellcheck source=lib.sh
 . "$(dirname "$0")/lib.sh"
 : "${PRUNE_AT_PERCENT:=75}"
 
-docker container prune -f --filter until=24h
-docker image prune -f
-docker volume prune -f   # anonymous volumes only; the named cache volume is kept
-docker builder prune -f --filter until=168h
+slot_docker=unix:///var/run/dind/docker.sock
 
-used="$(docker run --rm --entrypoint df -v /var/lib/docker:/d:ro "${RUNNER_IMAGE}" -P /d |
-    awk 'NR == 2 { sub("%", "", $5); print $5 }')"
-log "engine disk ${used}% used (threshold ${PRUNE_AT_PERCENT}%)"
-if [ "${used}" -ge "${PRUNE_AT_PERCENT}" ]; then
-    docker image prune -a -f --filter 'label!=org.opencontainers.image.title=abd/github-runner'
-fi
-docker system df
+# Shared engine: our stopped containers, and untagged runner images left
+# behind when the host tag moved.
+docker container prune -f --filter label=com.abd.github-runner
+docker image prune -f --filter label=org.opencontainers.image.title=abd/github-runner
+
+for slot in $(seq 1 "${RUNNER_COUNT}"); do
+    dind="${CONTAINER_NAME}-dind-${slot}"
+    if [ "$(docker container inspect -f '{{.State.Running}}' "${dind}" 2>/dev/null)" != true ]; then
+        log "slot ${slot}: ${dind} not running; skipped"
+        continue
+    fi
+    in_dind() { docker exec -e DOCKER_HOST="${slot_docker}" "${dind}" sh -c "$1"; }
+    in_dind 'docker image prune -f >/dev/null; docker builder prune -f --filter until=168h >/dev/null'
+    used="$(in_dind 'df -P /var/lib/docker' | awk 'NR == 2 { sub("%", "", $5); print $5 }')"
+    log "slot ${slot}: disk ${used}% used (threshold ${PRUNE_AT_PERCENT}%)"
+    if [ "${used}" -ge "${PRUNE_AT_PERCENT}" ]; then
+        in_dind 'docker image prune -a -f; docker builder prune -a -f'
+    fi
+    in_dind 'docker system df'
+done
