@@ -27,7 +27,9 @@ data "aws_iam_policy_document" "ecr_push_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${each.value.github_repo}:ref:refs/heads/${each.value.github_branch}"]
+      values = [format("%s:ref:refs/heads/%s",
+        each.value.github_subject_prefix != "" ? each.value.github_subject_prefix : "repo:${each.value.github_repo}",
+      each.value.github_branch)]
     }
   }
 }
