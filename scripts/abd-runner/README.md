@@ -148,7 +148,7 @@ gh api orgs/AnalysisByDesign/actions/runners --jq '.runners[] | [.name, .status,
 gh api orgs/AnalysisByDesign/actions/variables/RUNNER_HEARTBEAT --jq .value
 ```
 
-Then run `abd-cloud-containers`' build workflow by hand: its `select` job should report the heartbeat age and choose the self-hosted labels, and the jobs should run on `abd-dev-001-...` runners.
+Then run `abd-cloud-containers`' build workflow by hand: its `select` job should report the heartbeat age and choose the self-hosted labels, and the jobs should run on `abd-abd-dev-001-<slot>-<time>` runners (the `abd-` prefix plus the hostname).
 
 ### 11. Reboot test
 
