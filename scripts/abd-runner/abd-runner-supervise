@@ -30,7 +30,10 @@ set -euo pipefail
 slot="${1:?usage: abd-runner-supervise <slot>}"
 name="${CONTAINER_NAME}-${slot}"
 dind="${CONTAINER_NAME}-dind-${slot}"
-work="${WORK_ROOT}/${slot}"
+# The same path in every slot (each has its own volume and engine), and the
+# same as on GitHub-hosted runners: absolute paths that jobs record, such as
+# those in coverage files, then match whichever runner reads them.
+work="${WORK_ROOT}"
 label="com.abd.github-runner=${slot}"
 vol_docker="${CONTAINER_NAME}-docker-${slot}"
 vol_work="${CONTAINER_NAME}-work-${slot}"
