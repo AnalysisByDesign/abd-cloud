@@ -2,7 +2,7 @@
 
 **Created**: 2026-11-10
 **Source**: Planning session with Dave, 2026-11-10 (text, then voice on the dog walk).
-**Status**: Planned, not started.
+**Status**: In progress. WP-01, WP-02 and WP-03 complete (2026-11-11); WP-04 under way.
 
 ## How to use this set
 
@@ -79,13 +79,13 @@ CI: GitHub Actions -> ECR (OIDC); nightly rebuilds; 04:00 rollouts
 
 ## Facts to verify in discovery, not assume
 
-- **Production host**: recorded as a `t3.small` (unlimited) shared by Tulox and the WordPress sites. If correct, production is **amd64** while both Macs are **arm64**, so every image must be built multi-arch.
-- **Reserved instance**: whether one exists, plus its family, size, scope (regional or zonal), class (standard or convertible) and end date. It shapes the instance type and the Graviton timing.
+- **Production host**: confirmed in WP-03 discovery (2026-11-10) as a `t4g.medium` (Graviton, **arm64**) in the `abd-wordpress` ASG, from the arm64 `abd-wp-php83-*` AMI (`abd-cloud-params/abd-wordpress/wordpress-vpc/app.wordpress/app_config.tfvars`). It is shared by Tulox, nine WordPress sites and `mortgage.daverix.ai`. Production therefore matches both Macs (arm64). Images are built for `linux/arm64` only (WP-03 ruling 24). The earlier record of a `t3.small` (amd64) was wrong.
+- **Reserved instance**: whether one exists, plus its family, size, scope (regional or zonal), class (standard or convertible) and end date. It shapes the instance type. An RI in the `t3` family would not cover the current `t4g` host.
   ```bash
   aws ec2 describe-reserved-instances --filters Name=state,Values=active \
     --query 'ReservedInstances[].{Type:InstanceType,Scope:Scope,Class:OfferingClass,End:End,Count:InstanceCount}'
   ```
-- **Memory headroom**: 2 GiB is unlikely to hold five or six WordPress tasks plus Tulox web, worker, scheduler, Reverb and Valkey. A `t3.medium` is probably needed, and a regional `t3` RI covers half of one. Measure the current resident memory per site before sizing.
+- **Memory headroom**: the current `t4g.medium` (4 GiB) has to hold nine WordPress tasks (some can be disabled in ECS), `mortgage.daverix.ai`, Tulox web, worker, scheduler and Reverb, and Valkey. Measure the current resident memory per site before sizing.
 - **Region**: eu-west-1.
 - **Current NAT**: the number of NAT gateways (one per AZ or a single one), and whether any third party allow-lists the NAT's Elastic IP.
 
