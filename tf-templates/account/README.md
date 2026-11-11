@@ -57,6 +57,7 @@ This template must be applied before any other template in the account, as other
 | [aws_iam_role_policy_attachment.github_actions_terraform](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_service_linked_role.es](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_service_linked_role) | resource |
 | [aws_route53_record.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_sns_topic.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_iam_policy_document.newrelic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.rds_enhanced](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -73,6 +74,8 @@ This template must be applied before any other template in the account, as other
 | <a name="input_acct_auth"></a> [acct\_auth](#input\_acct\_auth) | Authentication account number | `string` | n/a | yes |
 | <a name="input_acct_target"></a> [acct\_target](#input\_acct\_target) | Target AWS account to build infrastructure into | `string` | n/a | yes |
 | <a name="input_acct_target_role"></a> [acct\_target\_role](#input\_acct\_target\_role) | Role in target account to assume when building infrastructure | `string` | `"terraform"` | no |
+| <a name="input_alerts_tags"></a> [alerts\_tags](#input\_alerts\_tags) | Additional tags for the alerts topic | `map(string)` | <pre>{<br/>  "Component": "alerts"<br/>}</pre> | no |
+| <a name="input_alerts_topic_name"></a> [alerts\_topic\_name](#input\_alerts\_topic\_name) | Name of the account-wide SNS topic for alarm notifications (empty for no topic) | `string` | `""` | no |
 | <a name="input_allow_users_to_change_password"></a> [allow\_users\_to\_change\_password](#input\_allow\_users\_to\_change\_password) | n/a | `bool` | `true` | no |
 | <a name="input_cloudwatch_loggroup_names"></a> [cloudwatch\_loggroup\_names](#input\_cloudwatch\_loggroup\_names) | Log group names for cloudwatch | `list(string)` | <pre>[<br/>  "infra",<br/>  "web",<br/>  "app"<br/>]</pre> | no |
 | <a name="input_cloudwatch_tags"></a> [cloudwatch\_tags](#input\_cloudwatch\_tags) | Additional tags for CloudWatch | `map(string)` | <pre>{<br/>  "Component": "cloudwatch"<br/>}</pre> | no |
@@ -115,6 +118,7 @@ This template must be applied before any other template in the account, as other
 
 | Name | Description |
 | ---- | ----------- |
+| <a name="output_alerts_topic_arn"></a> [alerts\_topic\_arn](#output\_alerts\_topic\_arn) | The ARN of the alerts SNS topic (null when not created) |
 | <a name="output_delegate_set_id"></a> [delegate\_set\_id](#output\_delegate\_set\_id) | The ID of the delegate set |
 | <a name="output_delegate_set_name_servers"></a> [delegate\_set\_name\_servers](#output\_delegate\_set\_name\_servers) | The Name Servers of the delegate set |
 | <a name="output_docker_registry_id"></a> [docker\_registry\_id](#output\_docker\_registry\_id) | n/a |

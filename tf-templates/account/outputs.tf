@@ -47,3 +47,8 @@ output "docker_registry_id" {
 output "docker_repository_name" {
   value = module.docker_repository.repository_name
 }
+
+output "alerts_topic_arn" {
+  description = "The ARN of the alerts SNS topic (null when not created)"
+  value       = one(aws_sns_topic.alerts[*].arn)
+}

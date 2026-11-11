@@ -217,6 +217,25 @@ variable "github_repos" {
 }
 
 # ============================================================================================
+#                                      Alerting
+# ============================================================================================
+
+variable "alerts_topic_name" {
+  description = "Name of the account-wide SNS topic for alarm notifications (empty for no topic)"
+  type        = string
+  default     = ""
+}
+
+variable "alerts_tags" {
+  description = "Additional tags for the alerts topic"
+  type        = map(string)
+
+  default = {
+    "Component" = "alerts"
+  }
+}
+
+# ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================
 
