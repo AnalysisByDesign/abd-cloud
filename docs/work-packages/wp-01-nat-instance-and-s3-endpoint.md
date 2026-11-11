@@ -80,6 +80,7 @@ Recorded 2026-11-10, against the questions in `docs/discovery/wp-01.md`.
 9. **Endpoints**: S3 only. DynamoDB is not used here.
 10. **NAT gateway teardown**: no fixed hold period. Dave tears it down manually once satisfied, after several manual instance refreshes of the NAT instance have confirmed the flip works.
 11. **Alerting**: create an SNS topic named `abd-alerts` in the `tf-templates/account` template, behind a variable that defaults to no topic (so `abd-global` plans with no diff), and enable it for `abd-wordpress`. Dave subscribes to it manually. (Ruled 2026-11-11.)
+12. **Target name**: keep `abd-wordpress/wordpress-vpc/nat-instance`. The params repo already mixes naming styles, so it isn't renamed to `<role>.<name>`. (Ruled 2026-11-11.)
 
 ## Status
 
@@ -121,7 +122,6 @@ Teardown (Dave applied, 2026-11-11), per revised ruling 5:
 Rollback from here is the runbook's "Rollback after teardown" section. It is not a plain flip of `enable_nat_gateway` back to `true`.
 
 Follow-ups (outside WP-01):
-- Naming: keep `nat-instance`, or rename to the `<role>.<name>` convention?
 - No alert fires on a failed instance refresh. A failed weekly drill would leave the old instance in service without telling anyone. A candidate fix is an EventBridge rule on the instance-refresh-failed event that publishes to `abd-alerts`, which needs a topic policy allowing EventBridge.
 - Further refresh drills happen through the weekly schedule; check the Tuesday results until a refresh-failure alert exists.
 - The `abd-tf-state` bucket isn't versioned. Turning versioning on would make state operations like this one recoverable without a manual copy.
