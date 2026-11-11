@@ -9,6 +9,8 @@
 module "alb-sg" {
   source = "../../../../abd-cloud-modules/security/security-group"
 
+  count = var.enable_load_balancer ? 1 : 0
+
   name        = format("%s-%s-alb", local.vpc_name, var.name)
   description = format("%s-%s-alb", local.vpc_name, var.name)
   common_tags = local.common_tags
@@ -18,7 +20,9 @@ module "alb-sg" {
 module "alb-sgr-http-in" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
-  security_group_id = module.alb-sg.id
+  count = var.enable_load_balancer ? 1 : 0
+
+  security_group_id = module.alb-sg[0].id
   description       = "HTTP inbound"
   type              = "ingress"
   protocol          = "tcp"
@@ -29,7 +33,9 @@ module "alb-sgr-http-in" {
 module "alb-sgr-https-in" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
 
-  security_group_id = module.alb-sg.id
+  count = var.enable_load_balancer ? 1 : 0
+
+  security_group_id = module.alb-sg[0].id
   description       = "HTTPS inbound"
   type              = "ingress"
   protocol          = "tcp"
@@ -53,7 +59,9 @@ module "ec2-sg" {
 module "alb-ec2-sgr" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
-  security_group_id        = module.alb-sg.id
+  count = var.enable_load_balancer ? 1 : 0
+
+  security_group_id        = module.alb-sg[0].id
   description              = "HTTP ALB to EC2"
   type                     = "egress"
   protocol                 = "tcp"
@@ -64,12 +72,14 @@ module "alb-ec2-sgr" {
 module "ec2-alb-sgr" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
+  count = var.enable_load_balancer ? 1 : 0
+
   security_group_id        = module.ec2-sg.id
   description              = "HTTP ALB to EC2"
   type                     = "ingress"
   protocol                 = "tcp"
   single_port              = "80"
-  source_security_group_id = module.alb-sg.id
+  source_security_group_id = module.alb-sg[0].id
 }
 
 module "ec2-all-traffic-out" {
@@ -87,18 +97,22 @@ module "ec2-all-traffic-out" {
 module "ec2-rds-sgr" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
+  count = var.rds_security_group == "" ? 0 : 1
+
   security_group_id        = module.ec2-sg.id
   description              = "MySQL EC2 to Aurora"
   type                     = "egress"
   protocol                 = "tcp"
   single_port              = "3306"
-  source_security_group_id = data.aws_security_group.rds.id
+  source_security_group_id = data.aws_security_group.rds[0].id
 }
 
 module "rds-ec2-sgr" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
-  security_group_id        = data.aws_security_group.rds.id
+  count = var.rds_security_group == "" ? 0 : 1
+
+  security_group_id        = data.aws_security_group.rds[0].id
   description              = "MySQL EC2 to Aurora"
   type                     = "ingress"
   protocol                 = "tcp"
@@ -109,21 +123,43 @@ module "rds-ec2-sgr" {
 module "ec2-efs-sgr" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
+  count = var.efs_security_group == "" ? 0 : 1
+
   security_group_id        = module.ec2-sg.id
   description              = "EC2 to EFS"
   type                     = "egress"
   protocol                 = "tcp"
   single_port              = "2049"
-  source_security_group_id = data.aws_security_group.efs.id
+  source_security_group_id = data.aws_security_group.efs[0].id
 }
 
 module "efs-ec2-sgr" {
   source = "../../../../abd-cloud-modules/security/security-group-rule-link"
 
-  security_group_id        = data.aws_security_group.efs.id
+  count = var.efs_security_group == "" ? 0 : 1
+
+  security_group_id        = data.aws_security_group.efs[0].id
   description              = "EC2 to EFS"
   type                     = "ingress"
   protocol                 = "tcp"
   single_port              = "2049"
   source_security_group_id = module.ec2-sg.id
+}
+
+# --------------------------------------------------------------------------------------------
+# Optional inbound CIDR access to the instances (e.g. a NAT instance accepting VPC traffic)
+# --------------------------------------------------------------------------------------------
+
+module "ec2-cidr-in" {
+  source = "../../../../abd-cloud-modules/security/security-group-rule-cidr"
+
+  count = length(var.asg_ingress_cidr_blocks) > 0 ? 1 : 0
+
+  security_group_id = module.ec2-sg.id
+  description       = "Inbound from CIDR"
+  type              = "ingress"
+  protocol          = "all"
+  from_port         = "0"
+  to_port           = "65535"
+  cidr_blocks       = var.asg_ingress_cidr_blocks
 }

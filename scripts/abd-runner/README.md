@@ -30,7 +30,21 @@ Follows the machine conventions in Tulox's `docs/runbooks/setup/dev-server-setup
 
 ## Install
 
-Run as `abd-admin` over ssh unless a step says otherwise. Prerequisites: the base setup is done, and Homebrew has `colima`, `docker`, `docker-buildx`, `jq`, `git` and `make`.
+Run as `abd-admin` over ssh unless a step says otherwise. Prerequisites: the base setup is done, and Homebrew has `colima`, `docker`, `docker-buildx`, `jq`, `git`, `gh` and `make`.
+
+### 0. GitHub access and checkouts
+
+GitHub has no password auth on the Mac mini; `abd-admin` signs in with `gh` (device flow: open the URL on the laptop and enter the code). `setup-git` makes `gh` the credential helper, so plain `git pull` works too.
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+gh auth setup-git
+mkdir -p ~/Projects
+gh repo clone AnalysisByDesign/abd-cloud ~/Projects/abd-cloud
+gh repo clone AnalysisByDesign/abd-cloud-containers ~/Projects/abd-cloud-containers
+```
+
+Only `abd-admin` holds a GitHub token. `svc-ghrunner` never gets one: it receives code through `sudo install` (step 9) and `sudo rsync` (step 8).
 
 ### 1. Service account
 
@@ -43,11 +57,15 @@ Record the UID and password in the password manager. Do not add it to `docker-us
 
 ### 2. Docker CLI plugins for the account
 
-The Homebrew `docker-buildx` plugin lives outside the CLI's default search path:
+The Homebrew `docker-buildx` plugin lives outside the CLI's default search path. Colima also writes to `~/.docker/config.json` (the `colima` context), so merge the setting in rather than overwrite the file; safe to rerun at any point:
 
 ```bash
-sudo -u svc-ghrunner -H bash -c 'mkdir -p ~/.docker && echo "{\"cliPluginsExtraDirs\": [\"/opt/homebrew/lib/docker/cli-plugins\"]}" > ~/.docker/config.json'
+sudo -u svc-ghrunner -H bash -lc 'export PATH=/opt/homebrew/bin:$PATH; mkdir -p ~/.docker; f=~/.docker/config.json;
+  [ -s "$f" ] || echo "{}" > "$f";
+  jq ".cliPluginsExtraDirs = [\"/opt/homebrew/lib/docker/cli-plugins\"]" "$f" > "$f.new" && mv "$f.new" "$f"'
 ```
+
+Check after step 7: `docker buildx version` as `svc-ghrunner` must print a version, or step 8 fails with `unknown flag: --load`.
 
 ### 3. GitHub App (organisation settings, Developer settings, GitHub Apps, New)
 
@@ -130,7 +148,7 @@ gh api orgs/AnalysisByDesign/actions/runners --jq '.runners[] | [.name, .status,
 gh api orgs/AnalysisByDesign/actions/variables/RUNNER_HEARTBEAT --jq .value
 ```
 
-Then run `abd-cloud-containers`' build workflow by hand: its `select` job should report the heartbeat age and choose the self-hosted labels, and the jobs should run on `abd-dev-001-...` runners.
+Then run `abd-cloud-containers`' build workflow by hand: its `select` job should report the heartbeat age and choose the self-hosted labels, and the jobs should run on `abd-abd-dev-001-<slot>-<time>` runners (the `abd-` prefix plus the hostname).
 
 ### 11. Reboot test
 
