@@ -10,12 +10,13 @@ variable "name" {
 }
 
 variable "rds_security_group" {
-  description = "The name of the RDS security group"
+  description = "The name of the RDS security group (empty for no RDS access rules)"
   type        = string
+  default     = ""
 }
 
 variable "efs_security_group" {
-  description = "The name of the EFS security group"
+  description = "The name of the EFS security group (empty for no EFS access rules)"
   type        = string
   default     = ""
 }
@@ -297,3 +298,56 @@ variable "queue_receive_wait_time_seconds" {
 # ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================
+
+# ============================================================================================
+#                                  Optional Features
+# ============================================================================================
+
+variable "enable_load_balancer" {
+  description = "Create the ALB, its SSL certificate, DNS alias record and security groups, and use ELB health checks"
+  type        = bool
+  default     = true
+}
+
+variable "asg_subnet_tier" {
+  description = "Which subnets the ASG launches instances into: private_app or public"
+  type        = string
+  default     = "private_app"
+
+  validation {
+    condition     = contains(["private_app", "public"], var.asg_subnet_tier)
+    error_message = "asg_subnet_tier must be private_app or public."
+  }
+}
+
+variable "asg_require_public_ip" {
+  description = "Auto-assign a public IP to instances (needs asg_subnet_tier = public)"
+  type        = bool
+  default     = false
+}
+
+variable "asg_initial_lifecycle_hooks" {
+  description = "Lifecycle hooks to create with the ASG (see the asg module's initial_lifecycle_hooks)"
+  type = list(object({
+    name                    = string
+    lifecycle_transition    = string
+    default_result          = optional(string, "ABANDON")
+    heartbeat_timeout       = optional(number, 300)
+    notification_metadata   = optional(string)
+    notification_target_arn = optional(string)
+    role_arn                = optional(string)
+  }))
+  default = []
+}
+
+variable "asg_ingress_cidr_blocks" {
+  description = "CIDR blocks allowed all inbound traffic to the instances (empty for none)"
+  type        = list(string)
+  default     = []
+}
+
+variable "extra_template_vars" {
+  description = "Additional variables passed to the user data and IAM policy templates"
+  type        = map(string)
+  default     = {}
+}

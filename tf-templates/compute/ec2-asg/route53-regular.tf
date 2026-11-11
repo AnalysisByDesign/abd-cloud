@@ -12,9 +12,11 @@
 module "dns_load_balancer" {
   source = "../../../../abd-cloud-modules/network/dns/alias-record"
 
-  zone_id                      = data.aws_route53_zone.public.zone_id
+  count = var.enable_load_balancer ? 1 : 0
+
+  zone_id                      = data.aws_route53_zone.public[0].zone_id
   name                         = ""
-  alias_name                   = module.load_balancer.alb_dns_name
-  alias_zone_id                = module.load_balancer.alb_zone_id
+  alias_name                   = module.load_balancer[0].alb_dns_name
+  alias_zone_id                = module.load_balancer[0].alb_zone_id
   alias_evaluate_target_health = false
 }
