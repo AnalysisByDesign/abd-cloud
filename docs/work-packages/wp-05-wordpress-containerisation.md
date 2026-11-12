@@ -67,12 +67,15 @@ Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. 
 2. **Manifest format**: the current JSON, unchanged, snapshotted into Git. The exporter's extra fields are ignored at build.
 3. **Manifests until cutover**: the hourly export keeps running on the old host as a drift report, writing beside the live manifest rather than over the Git copy; differences are folded in. It stops for a site at that site's cutover.
 4. **Premium plugins and themes**: versioned zips in a private S3 prefix (`<name>/<version>.zip`), fetched at build through the CI role's OIDC. Nothing licensed in Git.
-5. **`wp-config.php`**: split into per-constant SSM parameters, injected as ECS `secrets`; the image carries one environment-driven `wp-config.php` with container paths and `X-Forwarded-Proto` handling. Claude lists the current constants per site by reading the nine parameters through `asm-exec`, printing names and allow-listed non-secret values only.
+5. **`wp-config.php`**: split into per-constant SSM parameters, injected as ECS `secrets`; the image carries one environment-driven `wp-config.php` with container paths and `X-Forwarded-Proto` handling. The current constants are listed site by site as each one comes up: Dave runs a script that prints every name but values only for an allow-list of non-secret settings (no `asm-exec` or Secrets Manager skill on this machine; Dave, 2026-11-12).
 6. **Mail**: unchanged. WP Mail SMTP is installed on every site through the manifests and sends straight to IONOS; its `WPMS_*` settings move to SSM with the rest of `wp-config.php`. The bake-time copy under `/usr/share/wp-stack/mu-plugins/` is unused.
 7. **WP-Cron**: `DISABLE_WP_CRON`, plus an EventBridge scheduled ECS task per site running due events.
 8. **Uploads**: a new directory per site owned by 10001, behind the site's access point, filled by `rsync` at cutover. The old tree stays untouched for rollback to the old host.
 9. **PHP**: 8.3 for the move, like for like; 8.5 per site afterwards.
 10. **daverix.uk**: an ALB redirect rule (301 to `https://daverix.ai`), no image or task. Its parameter and manifest retire with the old host.
-11. **rixinteriors.co.uk**: out of scope. It redirects to Facebook from outside this stack. Its hosted zone, `wp-config.php` parameter, manifest and docroot are tidied when the old host retires.
-12. **Pilot**: one of analysisbydesign.co.uk, blacklit.uk or amyegillin.uk, chosen on traffic.
+11. **rixinteriors.co.uk and abd.training**: out of scope. rixinteriors.co.uk redirects to Facebook from outside this stack; abd.training has an empty manifest. Their hosted zones, `wp-config.php` parameters, manifests and docroots are tidied when the old host retires.
+12. **Pilots**: blacklit.uk first (typical stack, all wordpress.org), then amyegillin.uk (tests the premium path). Traffic is too low on either to matter.
 13. **FPM**: `pm = ondemand`, `max_children` 10 per site. Sites already have their own database users (to be confirmed by the `wp-config.php` read), so no database change.
+14. **Writable paths**: the W3TC page cache on tmpfs; `w3tc-config` on EFS in the site's access point beside uploads. Nothing else in the manifests writes outside `uploads/`.
+15. **daverix.ai**: takes its configuration from daverix.uk's (`wp-config.php`, including the WP Mail SMTP settings, and W3TC config); they are the same site. daverix.ai's own manifest has neither plugin today.
+16. **Premium items**: `pipdig-cultureshock` (amyegillin.uk) is paid for, and possibly one other, to be found by the first builds. Either may be refactored out later.
