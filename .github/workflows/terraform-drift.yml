@@ -41,6 +41,7 @@ jobs:
           - abd-wordpress/wordpress-vpc/app.training
           - abd-wordpress/wordpress-vpc/app.ecs
           - abd-wordpress/wordpress-vpc/ecs.hosts
+          - abd-wordpress/wordpress-vpc/svc.hello
           - abd-wordpress/wordpress-vpc/hosted-sites/amyegillin.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/analysisbydesign.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/baltihot.co.uk
