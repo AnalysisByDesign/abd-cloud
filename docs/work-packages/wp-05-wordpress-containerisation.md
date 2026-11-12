@@ -58,3 +58,21 @@ Five or six WordPress sites currently share one Packer-baked AMI that updates co
 - Every WordPress site serves from ECS, and has survived a nightly rollout and a weekly host refresh.
 - No WordPress code changes on a running container, and the image is the only source of plugins and themes.
 - The old host serves no WordPress traffic.
+
+## Rulings
+
+Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. Questions without a ruling are still open.
+
+1. **Where images and manifests live**: `abd-cloud-containers`, beside the base images, using its build and its push role (`abd/*`). Directory layout and image naming are still Dave's to set.
+2. **Manifest format**: the current JSON, unchanged, snapshotted into Git. The exporter's extra fields are ignored at build.
+3. **Manifests until cutover**: the hourly export keeps running on the old host as a drift report, writing beside the live manifest rather than over the Git copy; differences are folded in. It stops for a site at that site's cutover.
+4. **Premium plugins and themes**: versioned zips in a private S3 prefix (`<name>/<version>.zip`), fetched at build through the CI role's OIDC. Nothing licensed in Git.
+5. **`wp-config.php`**: split into per-constant SSM parameters, injected as ECS `secrets`; the image carries one environment-driven `wp-config.php` with container paths and `X-Forwarded-Proto` handling. Claude lists the current constants per site by reading the nine parameters through `asm-exec`, printing names and allow-listed non-secret values only.
+6. **Mail**: unchanged. WP Mail SMTP is installed on every site through the manifests and sends straight to IONOS; its `WPMS_*` settings move to SSM with the rest of `wp-config.php`. The bake-time copy under `/usr/share/wp-stack/mu-plugins/` is unused.
+7. **WP-Cron**: `DISABLE_WP_CRON`, plus an EventBridge scheduled ECS task per site running due events.
+8. **Uploads**: a new directory per site owned by 10001, behind the site's access point, filled by `rsync` at cutover. The old tree stays untouched for rollback to the old host.
+9. **PHP**: 8.3 for the move, like for like; 8.5 per site afterwards.
+10. **daverix.uk**: an ALB redirect rule (301 to `https://daverix.ai`), no image or task. Its parameter and manifest retire with the old host.
+11. **rixinteriors.co.uk**: out of scope. It redirects to Facebook from outside this stack. Its hosted zone, `wp-config.php` parameter, manifest and docroot are tidied when the old host retires.
+12. **Pilot**: one of analysisbydesign.co.uk, blacklit.uk or amyegillin.uk, chosen on traffic.
+13. **FPM**: `pm = ondemand`, `max_children` 10 per site. Sites already have their own database users (to be confirmed by the `wp-config.php` read), so no database change.
