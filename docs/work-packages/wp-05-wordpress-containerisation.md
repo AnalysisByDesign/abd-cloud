@@ -79,3 +79,10 @@ Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. 
 14. **Writable paths**: the W3TC page cache on tmpfs; `w3tc-config` on EFS in the site's access point beside uploads. Nothing else in the manifests writes outside `uploads/`.
 15. **daverix.ai**: takes its configuration from daverix.uk's (`wp-config.php`, including the WP Mail SMTP settings, and W3TC config); they are the same site. daverix.ai's own manifest has neither plugin today.
 16. **Premium items**: `pipdig-cultureshock` (amyegillin.uk) is paid for, and possibly one other, to be found by the first builds. Either may be refactored out later.
+17. **Hosts** (WP-04 ruling 4): start on one `t4g.small`, then scale up to a `t4g.medium` or out to two `t4g.small` as the sites need.
+18. **Layout in `abd-cloud-containers`**: one shared `images/wordpress-site/` (Dockerfile `FROM abd/wordpress:<php>` with a `SITE` build argument, `rootfs/` for `wp-config.php` and mu-plugins, `test.sh`); each site is data only under `sites/<domain>/` (`manifest.json`, plus `premium.json` and overrides where needed).
+19. **ECR names**: `abd/wp-<site>`, dots as dashes (`abd/wp-blacklit-uk`), inside the existing push role's `abd/*` scope.
+20. **Tags**: as the base images, an immutable `<php>-<yyyy.mm.dd>` plus a floating `<php>`. Deploys pin the digest.
+21. **Workflow**: a new `sites.yml`: changed sites on pull requests and `main`, every site nightly after `build.yml`'s nightly, then the 04:00 rollout through WP-04's reusable deploy workflow.
+22. **Makefile**: `make build-site SITE=<domain> [PHP=<ver>]`, `make test-site SITE=<domain>`, and `build-sites` / `test-sites` for all; the `IMAGE` targets are unchanged.
+23. **Premium zips**: `s3://abd-wordpress-html/premium/<name>/<version>.zip`; the push role gets read on that prefix only.
