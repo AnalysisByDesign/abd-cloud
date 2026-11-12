@@ -65,9 +65,13 @@ resource "aws_lb_listener_rule" "this" {
   }
 }
 
-# Alias records for the host names, when this target owns their DNS (e.g. test hostnames)
+# Alias records for the host names in dns_zone_name, when this target owns their DNS (e.g.
+# test and preview hostnames). Host names in other zones (a site's own domain at cutover,
+# WP-05 ruling 27) keep the records their hosted-sites target manages.
 resource "aws_route53_record" "this" {
-  for_each = local.load_balanced && var.dns_zone_name != "" ? toset(var.hostnames) : toset([])
+  for_each = local.load_balanced && var.dns_zone_name != "" ? toset([
+    for h in var.hostnames : h if h == var.dns_zone_name || endswith(h, ".${var.dns_zone_name}")
+  ]) : toset([])
 
   zone_id = data.aws_route53_zone.public[0].zone_id
   name    = each.value

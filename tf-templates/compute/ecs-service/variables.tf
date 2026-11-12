@@ -21,6 +21,7 @@ variable "containers" {
     environment variable to an SSM parameter name (e.g. /abd-wordpress/hello/token); the
     execution role can read exactly those parameters. mount_points refer to efs_access_points
     keys. Logs go to the service's log group with the container name as the stream prefix.
+    tmpfs mounts are in memory, mode 1777, and count against the container's memory.
   EOT
   type = list(object({
     name                     = string
@@ -41,6 +42,10 @@ variable "containers" {
       source_volume  = string
       container_path = string
       read_only      = optional(bool, false)
+    })), [])
+    tmpfs = optional(list(object({
+      container_path = string
+      size_mib       = number
     })), [])
     health_check = optional(object({
       command      = list(string)
@@ -275,4 +280,15 @@ variable "private_app_subnets" {
   description = "awsvpc only: the private app subnet CIDRs the tasks run in (set by the VPC params)"
   type        = list(string)
   default     = []
+}
+
+variable "scheduled_tasks" {
+  description = "One-off tasks EventBridge Scheduler runs on a schedule, keyed by a short name (e.g. wp-cron). Each runs the service's task definition family (its latest ACTIVE revision) with one container's command overridden (any other containers start as usual). schedule is an EventBridge Scheduler expression, e.g. rate(5 minutes)"
+  type = map(object({
+    schedule  = string
+    container = string
+    command   = list(string)
+    timezone  = optional(string, "Europe/London")
+  }))
+  default = {}
 }
