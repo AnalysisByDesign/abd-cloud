@@ -23,6 +23,10 @@ variable "ecr_push_roles" {
     # See: gh api repos/<org>/<repo>/actions/oidc/customization/sub (sub_claim_prefix).
     # Empty uses the name-only form, repo:<github_repo>.
     github_subject_prefix = optional(string, "")
+    # S3 objects the role may read during builds, as "<bucket>/<prefix>" (e.g. premium
+    # WordPress items, abd-wordpress-html/premium/), and the KMS keys that encrypt them.
+    s3_read_prefixes     = optional(list(string), [])
+    kms_decrypt_key_arns = optional(list(string), [])
   }))
   default = {}
 }

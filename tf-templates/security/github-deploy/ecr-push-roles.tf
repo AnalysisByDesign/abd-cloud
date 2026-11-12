@@ -4,7 +4,8 @@
 # Trusted through the same OIDC provider as the deploy roles, for one branch of
 # one repository. Each role can push only to its own namespaces
 # (repository/<prefix>/*), so an images repository cannot overwrite another
-# repository's images.
+# repository's images. Optionally, read access to named S3 prefixes for build
+# inputs (s3_read_prefixes, kms_decrypt_key_arns).
 
 data "aws_iam_policy_document" "ecr_push_trust" {
   for_each = var.ecr_push_roles
@@ -63,6 +64,33 @@ data "aws_iam_policy_document" "ecr_push_permissions" {
       for prefix in each.value.repository_prefixes :
       "arn:aws:ecr:${var.target_region}:${var.acct_target}:repository/${prefix}/*"
     ]
+  }
+
+  # Build inputs from S3 (read only), when the repository has any
+  dynamic "statement" {
+    for_each = length(each.value.s3_read_prefixes) > 0 ? [1] : []
+    content {
+      sid       = "ReadBuildInputs"
+      effect    = "Allow"
+      actions   = ["s3:GetObject"]
+      resources = [for p in each.value.s3_read_prefixes : "arn:aws:s3:::${p}*"]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(each.value.kms_decrypt_key_arns) > 0 ? [1] : []
+    content {
+      sid       = "DecryptBuildInputs"
+      effect    = "Allow"
+      actions   = ["kms:Decrypt"]
+      resources = each.value.kms_decrypt_key_arns
+
+      condition {
+        test     = "StringEquals"
+        variable = "kms:ViaService"
+        values   = ["s3.${var.target_region}.amazonaws.com"]
+      }
+    }
   }
 }
 
