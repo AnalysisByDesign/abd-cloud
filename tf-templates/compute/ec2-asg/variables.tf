@@ -67,13 +67,15 @@ variable "alb_ingress_cidr" {
 # Required -----------------------------------------------------------------------------------
 
 variable "asg_ami_image_glob" {
-  description = "The EC2 AMI image name to search for"
+  description = "The EC2 AMI image name to search for (not needed with asg_ami_ssm_parameter)"
   type        = string
+  default     = ""
 }
 
 variable "asg_ami_image_owner" {
-  description = "The EC2 AMI image owner"
+  description = "The EC2 AMI image owner (not needed with asg_ami_ssm_parameter)"
   type        = string
+  default     = ""
 }
 
 # Optional -----------------------------------------------------------------------------------
@@ -386,4 +388,49 @@ variable "alerts_topic_name" {
   description = "Name of the SNS topic the alarms notify (set account-wide by the account template params)"
   type        = string
   default     = ""
+}
+
+# --------------------------------------------------------------------------------------------
+# ECS hosts and instance options (WP-04)
+# --------------------------------------------------------------------------------------------
+
+variable "asg_ami_ssm_parameter" {
+  description = "SSM parameter holding the AMI ID, resolved by EC2 at each launch (resolve:ssm:), e.g. /aws/service/ecs/optimized-ami/amazon-linux-2023/arm64/recommended/image_id. Empty to find the AMI by asg_ami_image_glob and asg_ami_image_owner"
+  type        = string
+  default     = ""
+}
+
+variable "ecs_cluster_name" {
+  description = "ECS cluster the instances join (empty for none). Attaches the ECS instance policy, tags the ASG AmazonECSManaged, protects new instances from scale in, leaves desired capacity to ECS managed scaling, and makes instance refreshes replace protected instances. Reaches the user data template as ecs_cluster_name"
+  type        = string
+  default     = ""
+}
+
+variable "asg_cpu_credits" {
+  description = "CPU credit option for burstable instance types (standard or unlimited); null leaves it out"
+  type        = string
+  default     = "unlimited"
+}
+
+variable "asg_metadata_http_tokens" {
+  description = "IMDS token setting (required or optional); null, with a null hop limit, keeps the AMI's defaults"
+  type        = string
+  default     = null
+}
+
+variable "asg_metadata_http_put_response_hop_limit" {
+  description = "IMDS PUT response hop limit; 1 stops containers on a bridge network reaching the instance role"
+  type        = number
+  default     = null
+}
+
+variable "asg_ingress_security_groups" {
+  description = "Security groups (by name, without the VPC prefix) allowed in to the instances on a port range, e.g. the ALB to ECS dynamic host ports. Each creates the egress rule on the source and the ingress rule on the instances"
+  type = list(object({
+    security_group_name = string
+    from_port           = number
+    to_port             = number
+    description         = string
+  }))
+  default = []
 }

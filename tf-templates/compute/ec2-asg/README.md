@@ -51,6 +51,8 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="module_ec2_asg_policy"></a> [ec2\_asg\_policy](#module\_ec2\_asg\_policy) | ../../../../abd-cloud-modules/security/iam-policy | n/a |
 | <a name="module_ec2_asg_role"></a> [ec2\_asg\_role](#module\_ec2\_asg\_role) | ../../../../abd-cloud-modules/security/iam-role | n/a |
 | <a name="module_efs-ec2-sgr"></a> [efs-ec2-sgr](#module\_efs-ec2-sgr) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
+| <a name="module_ingress-sg-in"></a> [ingress-sg-in](#module\_ingress-sg-in) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
+| <a name="module_ingress-sg-out"></a> [ingress-sg-out](#module\_ingress-sg-out) | ../../../../abd-cloud-modules/security/security-group-rule-link | n/a |
 | <a name="module_launch_template"></a> [launch\_template](#module\_launch\_template) | ../../../../abd-cloud-modules/compute/launch-template | n/a |
 | <a name="module_load_balancer"></a> [load\_balancer](#module\_load\_balancer) | ../../../../abd-cloud-modules/compute/alb | n/a |
 | <a name="module_queue"></a> [queue](#module\_queue) | ../../../../abd-cloud-modules/integrate/queue | n/a |
@@ -68,6 +70,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_iam_instance_profile.ec2-asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.attach_ecs_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.attach_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.attach_ssm_core](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_scheduler_schedule.instance_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/scheduler_schedule) | resource |
@@ -79,6 +82,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_route53_zone.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_route_table.managed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route_table) | data source |
 | [aws_security_group.efs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
+| [aws_security_group.ingress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_security_group.rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_sns_topic.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
 | [aws_subnet.asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
@@ -96,10 +100,12 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_alb_health_check_status"></a> [alb\_health\_check\_status](#input\_alb\_health\_check\_status) | The return code for the health-check | `string` | `"200,301,302"` | no |
 | <a name="input_alb_ingress_cidr"></a> [alb\_ingress\_cidr](#input\_alb\_ingress\_cidr) | The ingress CIDR range for access to the load balancer | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_alerts_topic_name"></a> [alerts\_topic\_name](#input\_alerts\_topic\_name) | Name of the SNS topic the alarms notify (set account-wide by the account template params) | `string` | `""` | no |
-| <a name="input_asg_ami_image_glob"></a> [asg\_ami\_image\_glob](#input\_asg\_ami\_image\_glob) | The EC2 AMI image name to search for | `string` | n/a | yes |
-| <a name="input_asg_ami_image_owner"></a> [asg\_ami\_image\_owner](#input\_asg\_ami\_image\_owner) | The EC2 AMI image owner | `string` | n/a | yes |
+| <a name="input_asg_ami_image_glob"></a> [asg\_ami\_image\_glob](#input\_asg\_ami\_image\_glob) | The EC2 AMI image name to search for (not needed with asg\_ami\_ssm\_parameter) | `string` | `""` | no |
+| <a name="input_asg_ami_image_owner"></a> [asg\_ami\_image\_owner](#input\_asg\_ami\_image\_owner) | The EC2 AMI image owner (not needed with asg\_ami\_ssm\_parameter) | `string` | `""` | no |
+| <a name="input_asg_ami_ssm_parameter"></a> [asg\_ami\_ssm\_parameter](#input\_asg\_ami\_ssm\_parameter) | SSM parameter holding the AMI ID, resolved by EC2 at each launch (resolve:ssm:), e.g. /aws/service/ecs/optimized-ami/amazon-linux-2023/arm64/recommended/image\_id. Empty to find the AMI by asg\_ami\_image\_glob and asg\_ami\_image\_owner | `string` | `""` | no |
 | <a name="input_asg_availability_zones"></a> [asg\_availability\_zones](#input\_asg\_availability\_zones) | Restrict the ASG to subnets in these AZs (empty for every subnet in the tier) | `list(string)` | `[]` | no |
 | <a name="input_asg_capacity_timeout"></a> [asg\_capacity\_timeout](#input\_asg\_capacity\_timeout) | Maximum | `string` | `"600s"` | no |
+| <a name="input_asg_cpu_credits"></a> [asg\_cpu\_credits](#input\_asg\_cpu\_credits) | CPU credit option for burstable instance types (standard or unlimited); null leaves it out | `string` | `"unlimited"` | no |
 | <a name="input_asg_default_cooldown"></a> [asg\_default\_cooldown](#input\_asg\_default\_cooldown) | Cooldown period before allowing another autoscaling action | `string` | `"120"` | no |
 | <a name="input_asg_delete_timeout"></a> [asg\_delete\_timeout](#input\_asg\_delete\_timeout) | Delete timeout setting | `string` | `"15m"` | no |
 | <a name="input_asg_desired_capacity"></a> [asg\_desired\_capacity](#input\_asg\_desired\_capacity) | Desired size of the autoscaling group | `string` | `"0"` | no |
@@ -109,12 +115,15 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_asg_health_check_grace_period"></a> [asg\_health\_check\_grace\_period](#input\_asg\_health\_check\_grace\_period) | Maximum | `string` | `"240"` | no |
 | <a name="input_asg_iam_profile_name"></a> [asg\_iam\_profile\_name](#input\_asg\_iam\_profile\_name) | IAM instance profile to use for EC2 instances | `string` | `""` | no |
 | <a name="input_asg_ingress_cidr_blocks"></a> [asg\_ingress\_cidr\_blocks](#input\_asg\_ingress\_cidr\_blocks) | CIDR blocks allowed all inbound traffic to the instances (empty for none) | `list(string)` | `[]` | no |
+| <a name="input_asg_ingress_security_groups"></a> [asg\_ingress\_security\_groups](#input\_asg\_ingress\_security\_groups) | Security groups (by name, without the VPC prefix) allowed in to the instances on a port range, e.g. the ALB to ECS dynamic host ports. Each creates the egress rule on the source and the ingress rule on the instances | <pre>list(object({<br/>    security_group_name = string<br/>    from_port           = number<br/>    to_port             = number<br/>    description         = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_asg_initial_lifecycle_hooks"></a> [asg\_initial\_lifecycle\_hooks](#input\_asg\_initial\_lifecycle\_hooks) | Lifecycle hooks to create with the ASG (see the asg module's initial\_lifecycle\_hooks) | <pre>list(object({<br/>    name                    = string<br/>    lifecycle_transition    = string<br/>    default_result          = optional(string, "ABANDON")<br/>    heartbeat_timeout       = optional(number, 300)<br/>    notification_metadata   = optional(string)<br/>    notification_target_arn = optional(string)<br/>    role_arn                = optional(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_asg_instance_refresh_instance_warmup"></a> [asg\_instance\_refresh\_instance\_warmup](#input\_asg\_instance\_refresh\_instance\_warmup) | Seconds to wait after a new instance comes in service before moving on during an instance refresh | `number` | `null` | no |
 | <a name="input_asg_instance_refresh_max_healthy_percentage"></a> [asg\_instance\_refresh\_max\_healthy\_percentage](#input\_asg\_instance\_refresh\_max\_healthy\_percentage) | Maximum percentage of the desired capacity in service during an instance refresh. Above 100 (with a min of 100) launches replacements before terminating the old instances | `number` | `110` | no |
 | <a name="input_asg_instance_refresh_min_healthy_percentage"></a> [asg\_instance\_refresh\_min\_healthy\_percentage](#input\_asg\_instance\_refresh\_min\_healthy\_percentage) | Minimum percentage of instances that must remain healthy during an instance refresh | `number` | `100` | no |
 | <a name="input_asg_instance_refresh_triggers"></a> [asg\_instance\_refresh\_triggers](#input\_asg\_instance\_refresh\_triggers) | List of property name changes to trigger a refresh | `list(string)` | `[]` | no |
 | <a name="input_asg_max_size"></a> [asg\_max\_size](#input\_asg\_max\_size) | Maximum size of the autoscaling group | `string` | `"1"` | no |
+| <a name="input_asg_metadata_http_put_response_hop_limit"></a> [asg\_metadata\_http\_put\_response\_hop\_limit](#input\_asg\_metadata\_http\_put\_response\_hop\_limit) | IMDS PUT response hop limit; 1 stops containers on a bridge network reaching the instance role | `number` | `null` | no |
+| <a name="input_asg_metadata_http_tokens"></a> [asg\_metadata\_http\_tokens](#input\_asg\_metadata\_http\_tokens) | IMDS token setting (required or optional); null, with a null hop limit, keeps the AMI's defaults | `string` | `null` | no |
 | <a name="input_asg_min_size"></a> [asg\_min\_size](#input\_asg\_min\_size) | Minimum size of the autoscaling group | `string` | `"0"` | no |
 | <a name="input_asg_require_public_ip"></a> [asg\_require\_public\_ip](#input\_asg\_require\_public\_ip) | Auto-assign a public IP to instances (needs asg\_subnet\_tier = public) | `bool` | `false` | no |
 | <a name="input_asg_scheduled_refresh_expression"></a> [asg\_scheduled\_refresh\_expression](#input\_asg\_scheduled\_refresh\_expression) | EventBridge Scheduler expression for a recurring instance refresh, e.g. cron(0 4 ? * TUE *) (empty for none) | `string` | `""` | no |
@@ -130,6 +139,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_common_tag_subsystem"></a> [common\_tag\_subsystem](#input\_common\_tag\_subsystem) | n/a | `string` | n/a | yes |
 | <a name="input_ec2_policy_template"></a> [ec2\_policy\_template](#input\_ec2\_policy\_template) | IAM Policy template file | `string` | `"s3-access-policy.tpl.json"` | no |
 | <a name="input_ec2_policy_template_folder"></a> [ec2\_policy\_template\_folder](#input\_ec2\_policy\_template\_folder) | Folder containing policy templates to apply to the instance roles | `string` | `"./files"` | no |
+| <a name="input_ecs_cluster_name"></a> [ecs\_cluster\_name](#input\_ecs\_cluster\_name) | ECS cluster the instances join (empty for none). Attaches the ECS instance policy, tags the ASG AmazonECSManaged, protects new instances from scale in, leaves desired capacity to ECS managed scaling, and makes instance refreshes replace protected instances. Reaches the user data template as ecs\_cluster\_name | `string` | `""` | no |
 | <a name="input_efs_security_group"></a> [efs\_security\_group](#input\_efs\_security\_group) | The name of the EFS security group (empty for no EFS access rules) | `string` | `""` | no |
 | <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Create CloudWatch alarms for no InService instances and failed status checks | `bool` | `false` | no |
 | <a name="input_enable_load_balancer"></a> [enable\_load\_balancer](#input\_enable\_load\_balancer) | Create the ALB, its SSL certificate, DNS alias record and security groups, and use ELB health checks | `bool` | `true` | no |
