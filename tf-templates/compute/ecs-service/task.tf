@@ -85,6 +85,10 @@ locals {
           }
         ]
 
+        linuxParameters = length(c.tmpfs) == 0 ? null : {
+          tmpfs = [for t in c.tmpfs : { containerPath = t.container_path, size = t.size_mib }]
+        }
+
         healthCheck = c.health_check == null ? null : {
           command     = c.health_check.command
           interval    = c.health_check.interval
