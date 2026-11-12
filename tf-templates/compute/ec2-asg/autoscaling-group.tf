@@ -13,7 +13,7 @@ module "autoscaling-group" {
   launch_template_version = module.launch_template.latest_version
 
   min_size                  = var.asg_min_size
-  desired_capacity          = var.asg_desired_capacity
+  desired_capacity          = local.is_ecs_host ? null : var.asg_desired_capacity
   max_size                  = var.asg_max_size
   default_cooldown          = var.asg_default_cooldown
   health_check_grace_period = var.asg_health_check_grace_period
@@ -24,6 +24,11 @@ module "autoscaling-group" {
   termination_policies      = var.asg_termination_policies
   delete_timeout            = var.asg_delete_timeout
 
+  # ECS managed termination protection needs scale-in protection, and a refresh must
+  # then be told to replace protected hosts (managed draining moves their tasks first)
+  protect_from_scale_in                         = local.is_ecs_host
+  instance_refresh_scale_in_protected_instances = local.is_ecs_host ? "Refresh" : null
+
   enable_instance_refresh                 = var.asg_enable_instance_refresh
   instance_refresh_min_healthy_percentage = var.asg_instance_refresh_min_healthy_percentage
   instance_refresh_max_healthy_percentage = var.asg_instance_refresh_max_healthy_percentage
@@ -32,7 +37,7 @@ module "autoscaling-group" {
 
   initial_lifecycle_hooks = var.asg_initial_lifecycle_hooks
 
-  tag_map = [
+  tag_map = concat([
     { key = "Name", value = format("%s-%s", local.vpc_name, var.name), propagate_at_launch = true },
     { key = "Account", value = var.account_name, propagate_at_launch = true },
     { key = "Owner", value = var.common_tag_owner, propagate_at_launch = true },
@@ -41,5 +46,8 @@ module "autoscaling-group" {
     { key = "Component", value = var.common_tag_component, propagate_at_launch = true },
     { key = "Environment", value = var.common_tag_environment, propagate_at_launch = true },
     { key = "Provisioner", value = "terraform", propagate_at_launch = true },
-  ]
+    ],
+    # ECS managed scaling expects this tag; set here so Terraform does not remove it
+    local.is_ecs_host ? [{ key = "AmazonECSManaged", value = "true", propagate_at_launch = true }] : []
+  )
 }

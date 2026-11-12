@@ -30,11 +30,19 @@ resource "aws_scheduler_schedule" "instance_refresh" {
     # Unset (null) preferences are left out so the API applies its own defaults
     input = jsonencode({
       AutoScalingGroupName = module.autoscaling-group.name
-      Preferences = { for k, v in {
-        MinHealthyPercentage = var.asg_instance_refresh_min_healthy_percentage
-        MaxHealthyPercentage = var.asg_instance_refresh_max_healthy_percentage
-        InstanceWarmup       = var.asg_instance_refresh_instance_warmup
-      } : k => v if v != null }
+      # Numeric and string preferences are filtered separately, then merged, so the
+      # numbers stay numbers in the JSON
+      Preferences = merge(
+        { for k, v in {
+          MinHealthyPercentage = var.asg_instance_refresh_min_healthy_percentage
+          MaxHealthyPercentage = var.asg_instance_refresh_max_healthy_percentage
+          InstanceWarmup       = var.asg_instance_refresh_instance_warmup
+        } : k => v if v != null },
+        # ECS hosts are protected from scale in, so the refresh must be told to replace them
+        { for k, v in {
+          ScaleInProtectedInstances = local.is_ecs_host ? "Refresh" : null
+        } : k => v if v != null },
+      )
     })
 
     # A refresh already in progress makes the call fail; retry briefly, never for a day

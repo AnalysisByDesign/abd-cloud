@@ -40,6 +40,12 @@ resource "aws_iam_role_policy_attachment" "attach_ssm_core" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_iam_role_policy_attachment" "attach_ecs_instance" {
+  count      = local.is_ecs_host ? 1 : 0
+  role       = module.ec2_asg_role.names
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
 #resource "aws_iam_role_policy_attachment" "attach_cloudwatch" {
 #  role       = "${module.ec2_asg_role.names}"
 #  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"

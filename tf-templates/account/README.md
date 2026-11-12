@@ -58,7 +58,9 @@ This template must be applied before any other template in the account, as other
 | [aws_iam_service_linked_role.es](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_service_linked_role) | resource |
 | [aws_route53_record.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_sns_topic.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
+| [aws_sns_topic_policy.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_iam_policy_document.alerts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.newrelic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.rds_enhanced](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.remote_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -74,6 +76,7 @@ This template must be applied before any other template in the account, as other
 | <a name="input_acct_auth"></a> [acct\_auth](#input\_acct\_auth) | Authentication account number | `string` | n/a | yes |
 | <a name="input_acct_target"></a> [acct\_target](#input\_acct\_target) | Target AWS account to build infrastructure into | `string` | n/a | yes |
 | <a name="input_acct_target_role"></a> [acct\_target\_role](#input\_acct\_target\_role) | Role in target account to assume when building infrastructure | `string` | `"terraform"` | no |
+| <a name="input_alerts_allow_eventbridge"></a> [alerts\_allow\_eventbridge](#input\_alerts\_allow\_eventbridge) | Give the alerts topic a policy that lets EventBridge rules in this account publish to it | `bool` | `false` | no |
 | <a name="input_alerts_tags"></a> [alerts\_tags](#input\_alerts\_tags) | Additional tags for the alerts topic | `map(string)` | <pre>{<br/>  "Component": "alerts"<br/>}</pre> | no |
 | <a name="input_alerts_topic_name"></a> [alerts\_topic\_name](#input\_alerts\_topic\_name) | Name of the account-wide SNS topic for alarm notifications (empty for no topic) | `string` | `""` | no |
 | <a name="input_allow_users_to_change_password"></a> [allow\_users\_to\_change\_password](#input\_allow\_users\_to\_change\_password) | n/a | `bool` | `true` | no |

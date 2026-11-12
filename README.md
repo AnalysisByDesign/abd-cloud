@@ -48,7 +48,7 @@ aws-vault exec --region=eu-west-1 abd_global -- ./tf-run-all.sh -c -v ../abd-clo
 | Template | Description |
 |----------|-------------|
 | [compute/ec2-asg](tf-templates/compute/ec2-asg/) | EC2 Auto Scaling Group with launch template, ALB, SSL cert, Route53, SQS queue, and IAM instance profile |
-| [compute/ecs-cluster](tf-templates/compute/ecs-cluster/) | ECS cluster for Fargate or EC2 container workloads |
+| [compute/ecs-cluster](tf-templates/compute/ecs-cluster/) | ECS cluster with EC2 capacity providers, a Cloud Map namespace and ECS failure alerts |
 | [compute/ecs-fargate](tf-templates/compute/ecs-fargate/) | ECS Fargate service with ALB, SSL cert, Route53, SQS queue, and task IAM role |
 
 ### Database

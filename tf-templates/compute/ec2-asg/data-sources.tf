@@ -40,12 +40,17 @@ locals {
     asg_name         = format("%s-%s", local.vpc_name, var.name)
     route_table_ids  = join(" ", local.managed_route_tables[*].id)
     route_table_arns = jsonencode(local.managed_route_tables[*].arn)
+    ecs_cluster_name = var.ecs_cluster_name
   }
+
+  ami_id      = var.asg_ami_ssm_parameter != "" ? "resolve:ssm:${var.asg_ami_ssm_parameter}" : data.aws_ami.this[0].id
+  is_ecs_host = var.ecs_cluster_name != ""
 }
 
 # -----------------------------------------------------------------------------
 
 data "aws_ami" "this" {
+  count       = var.asg_ami_ssm_parameter == "" ? 1 : 0
   most_recent = true
 
   filter {
@@ -68,6 +73,11 @@ data "aws_ami" "this" {
 data "aws_security_group" "rds" {
   count = var.rds_security_group == "" ? 0 : 1
   name  = format("%s-%s", local.vpc_name, var.rds_security_group)
+}
+
+data "aws_security_group" "ingress" {
+  for_each = { for r in var.asg_ingress_security_groups : r.security_group_name => r }
+  name     = format("%s-%s", local.vpc_name, each.key)
 }
 
 data "aws_security_group" "efs" {

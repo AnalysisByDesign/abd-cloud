@@ -226,6 +226,12 @@ variable "alerts_topic_name" {
   default     = ""
 }
 
+variable "alerts_allow_eventbridge" {
+  description = "Give the alerts topic a policy that lets EventBridge rules in this account publish to it"
+  type        = bool
+  default     = false
+}
+
 variable "alerts_tags" {
   description = "Additional tags for the alerts topic"
   type        = map(string)

@@ -163,3 +163,35 @@ module "ec2-cidr-in" {
   to_port           = "65535"
   cidr_blocks       = var.asg_ingress_cidr_blocks
 }
+
+# --------------------------------------------------------------------------------------------
+# Optional inbound access from other security groups on a port range (e.g. the ALB to ECS
+# dynamic host ports), as an egress rule on the source paired with an ingress rule here
+# --------------------------------------------------------------------------------------------
+module "ingress-sg-out" {
+  source = "../../../../abd-cloud-modules/security/security-group-rule-link"
+
+  for_each = { for r in var.asg_ingress_security_groups : r.security_group_name => r }
+
+  security_group_id        = data.aws_security_group.ingress[each.key].id
+  description              = each.value.description
+  type                     = "egress"
+  protocol                 = "tcp"
+  from_port                = each.value.from_port
+  to_port                  = each.value.to_port
+  source_security_group_id = module.ec2-sg.id
+}
+
+module "ingress-sg-in" {
+  source = "../../../../abd-cloud-modules/security/security-group-rule-link"
+
+  for_each = { for r in var.asg_ingress_security_groups : r.security_group_name => r }
+
+  security_group_id        = module.ec2-sg.id
+  description              = each.value.description
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = each.value.from_port
+  to_port                  = each.value.to_port
+  source_security_group_id = data.aws_security_group.ingress[each.key].id
+}
