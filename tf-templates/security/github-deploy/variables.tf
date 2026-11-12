@@ -45,3 +45,20 @@ variable "instance_tag_value" {
 # ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================
+
+variable "ecs_deploy_roles" {
+  description = "GitHub Actions ECS deploy roles to create, keyed by a short name. Each entry lets one GitHub repository (on one branch) register task definitions and update its own ECS services."
+  type = map(object({
+    github_repo   = string                   # Org/Repo permitted to assume the role
+    github_branch = optional(string, "main") # Branch permitted to assume the role
+    role_name     = string                   # Name of the IAM role created for GitHub Actions deploys
+    cluster_name  = string                   # ECS cluster the services run in (e.g. abd-wordpress-cluster)
+    services      = list(string)             # Service names the role may update (e.g. ["hello"])
+    # Prefix of the services' execution and task role names (<prefix>-ecs-<service>-execution
+    # and -task, from the ecs-service template); the VPC name, e.g. abd-wordpress
+    role_name_prefix = string
+    # OIDC subject prefix for GitHub's immutable subject format, as for ecr_push_roles
+    github_subject_prefix = optional(string, "")
+  }))
+  default = {}
+}
