@@ -98,3 +98,34 @@ Notes from the same session:
 - **First move (WP-05)**: one quiet site first, built and tested, then traffic repointed by its listener rule (or DNS).
 - **Mail, cron and mortgage.daverix.ai** need building. Mail is needed early, because sites deliver mail over SMTP.
 - The reboot bug on the current host is not worth fixing; it goes away with the move to ECS.
+
+## Status
+
+**Done when met on 2026-11-12.** The mail relay (rulings 14 to 16) is the remaining build item; the spot capacity (scope item 9) is a later phase.
+
+Merged and applied:
+- abd-cloud-modules #33: the six modules extended for ECS. Every existing caller (`abd-global`, `abd-wordpress`, `app.wordpress`, `nat-instance`) planned with no changes.
+- abd-cloud #71 and abd-cloud-params #34: the cluster `abd-wordpress-cluster` (`app.ecs`) with its capacity provider, the `abd-wordpress.internal` namespace and the EventBridge rule to `abd-alerts`; the hosts `abd-wordpress-ecs-hosts` (`ecs.hosts`, `t4g.small`, ECS-optimised AL2023 arm64) with the Wednesday 03:00 refresh. The ECS alert rule passed 7 of 7 test events.
+- abd-cloud #73 and abd-cloud-params #36: the `compute/ecs-service` template, the `svc.hello` target and the `github-ecs-deploy-abd-cloud-containers` role (`security/github-deploy`, `ecs_deploy_roles`).
+- abd-cloud-containers #7: the reusable rollout workflow `deploy.yml`, with repository variable `ECS_DEPLOY_ROLE_ARN`.
+
+Verified:
+- **hello on the existing ALB**: `https://hello.abd-wp.uk` returns 200 through listener priority 900. The task runs in bridge mode on a dynamic host port, its image comes through the `ecr-public` pull-through cache, and its EFS access point mounts with TLS. The target is healthy and the `HealthyHostCount` alarm is OK.
+- **Rollout** (run 43141566890): `nginx:mainline-alpine` registered as `abd-wordpress-hello:2` and completed in about 2.5 minutes. A request loop saw 286 requests, all 200, with the server moving from nginx 1.30.6 to 1.31.1.
+- **Broken deployments**: runs 43141679111 (`nginx:mainline-alpin`, a typo) and 43142285458 (`nginx:does-not-exist`) each registered a revision whose tasks failed with `CannotPullImageManifestError`. After 3 failed tasks the circuit breaker rolled the service back to `:2`, and the workflow failed with "rolled back". Revision `:2` kept serving throughout, and the runs queued behind each other rather than cancelling.
+- **Instance refresh**: started with the scheduler target's own input (100/110, warmup 120, `ScaleInProtectedInstances = Refresh`). The new host launched, ECS drained the old one and started hello on the new host before stopping the old task, and the refresh finished in 6.5 minutes. A request loop saw 367 requests, all 200.
+
+Found while testing:
+- A new service's `HealthyHostCount` alarm goes to ALARM for a few minutes after creation, because the metric has no data yet and missing data counts as breaching. That sends one alert to `abd-alerts` per new service. Accepted: counting missing data as breaching is what catches a target group with no targets.
+- During the refresh, ECS managed scaling raised the hosts to 2 to place hello while the old host drained, and the refresh then kept both. Managed scaling scales the empty host back in once it has been idle for about 15 minutes.
+- A `t4g.small` host has 3 network interfaces and ENI trunking is not available, so each host runs at most 2 awsvpc tasks (the relay, and later Valkey).
+
+Mail relay (rulings 14 to 16), in review:
+- abd-cloud-params: the `abd/postfix` repository, the `svc.smtp` target (awsvpc, `smtp.abd-wordpress.internal:25`, inbound from the private app subnets only, `SASL_PASSWD` from `/abd-wordpress/shared/postfix/sasl_passwd`), `smtp` added to the deploy role, and sequence row 4300.
+- abd-cloud: `svc.smtp` added to the plan and drift workflows.
+- abd-cloud-containers: the `abd/postfix` image, `images/postfix/` on `abd/base`. `svc.smtp` is applied only after its first push.
+
+For later packages:
+- WP-05: each site is a `svc.<site>` target on `compute/ecs-service`, added to `ecs_deploy_roles` `services`, with listener priorities in the 100s. Sites without their own SMTP settings can use `smtp.abd-wordpress.internal:25`.
+- The Tulox package: Valkey as an awsvpc service with `service_discovery_namespace = "abd-wordpress.internal"`, so it is `valkey.abd-wordpress.internal`; listener priorities in the 200s.
+- The ALB transition and the spot capacity follow the notes above and scope item 9.
