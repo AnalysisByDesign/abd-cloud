@@ -8,14 +8,16 @@
 # inside each slot's private engine.
 #
 # Per slot, always: dangling images and build cache older than a week. Only
-# when the disk holding the slot's engine is above PRUNE_AT_PERCENT: every
-# image in that engine. (Docker's "until" filter is image creation time,
-# not last use, so an age filter would drop images such as mysql that jobs
-# pull every day.)
+# when the slot's cache is over SLOT_CACHE_MAX_GB or the Mac has less than
+# HOST_MIN_FREE_GB free: every image in that engine. Then the freed blocks
+# are trimmed back to macOS. (Docker's "until" filter is image creation
+# time, not last use, so an age filter would drop images such as mysql that
+# jobs pull every day. The VM disk's own percentage is no guide: it is a
+# sparse file that can claim more than the Mac has free.) The supervisor
+# makes the same check before every job; this is the daily sweep.
 set -euo pipefail
 # shellcheck source=lib.sh
 . "$(dirname "$0")/lib.sh"
-: "${PRUNE_AT_PERCENT:=75}"
 
 slot_docker=unix:///var/run/dind/docker.sock
 
@@ -32,10 +34,12 @@ for slot in $(seq 1 "${RUNNER_COUNT}"); do
     fi
     in_dind() { docker exec -e DOCKER_HOST="${slot_docker}" "${dind}" sh -c "$1"; }
     in_dind 'docker image prune -f >/dev/null; docker builder prune -f --filter until=168h >/dev/null'
-    used="$(in_dind 'df -P /var/lib/docker' | awk 'NR == 2 { sub("%", "", $5); print $5 }')"
-    log "slot ${slot}: disk ${used}% used (threshold ${PRUNE_AT_PERCENT}%)"
-    if [ "${used}" -ge "${PRUNE_AT_PERCENT}" ]; then
+    used="$(in_dind 'du -sk /var/lib/docker' | awk '{ print int($1 / 1048576) }')"
+    free="$(host_free_gb)"
+    log "slot ${slot}: cache ${used} GB (cap ${SLOT_CACHE_MAX_GB}), Mac ${free} GB free (minimum ${HOST_MIN_FREE_GB})"
+    if [ "${used}" -gt "${SLOT_CACHE_MAX_GB}" ] || [ "${free}" -lt "${HOST_MIN_FREE_GB}" ]; then
         in_dind 'docker image prune -a -f; docker builder prune -a -f'
     fi
+    in_dind 'fstrim -v /var/lib/docker' || log "slot ${slot}: fstrim failed"
     in_dind 'docker system df'
 done

@@ -23,6 +23,12 @@
 # cache volume (Composer, npm, the tool cache), mounted in the runner only.
 # Memory and CPU are capped per container; the engine's cap covers every
 # container a job starts in it.
+#
+# Disk: before each job the slot's image cache is emptied if it exceeds
+# SLOT_CACHE_MAX_GB or the Mac has less than HOST_MIN_FREE_GB free, and the
+# freed blocks are trimmed back to macOS. While the Mac stays below the
+# minimum the slot takes no jobs, so the heartbeat lapses and workflows fall
+# back to hosted runners.
 set -euo pipefail
 # shellcheck source=lib.sh
 . "$(dirname "$0")/lib.sh"
@@ -93,6 +99,34 @@ reset_slot() {
         find '${work}' -mindepth 1 -delete && chown 10001:10001 '${work}'"
 }
 
+# Size of the slot's engine data (image cache, build cache), in whole GB.
+slot_used_gb() { in_dind 'du -sk /var/lib/docker' | awk '{ print int($1 / 1048576) }'; }
+
+# Hands blocks freed inside the VM back to macOS, where the VM's disk file
+# can shrink. The slot's engine is privileged, so it can trim the VM
+# filesystem under its volume. Best effort: logged, never fatal.
+trim_slot() {
+    in_dind 'fstrim -v /var/lib/docker' 2>&1 | sed "s/^/slot ${slot}: /" || log "slot ${slot}: fstrim failed"
+}
+
+# Empties the slot's image and build cache when it is over its cap or the
+# Mac is short of space. Returns non-zero while the Mac is still short.
+check_disk() {
+    local used free
+    used="$(slot_used_gb)"
+    free="$(host_free_gb)"
+    if [ "${used}" -gt "${SLOT_CACHE_MAX_GB}" ] || [ "${free}" -lt "${HOST_MIN_FREE_GB}" ]; then
+        log "slot ${slot}: cache ${used} GB (cap ${SLOT_CACHE_MAX_GB}), Mac ${free} GB free (minimum ${HOST_MIN_FREE_GB}); emptying the cache"
+        in_dind 'docker image prune -af >/dev/null; docker builder prune -af >/dev/null' || true
+        trim_slot
+        free="$(host_free_gb)"
+    fi
+    if [ "${free}" -lt "${HOST_MIN_FREE_GB}" ]; then
+        log "slot ${slot}: Mac has ${free} GB free (minimum ${HOST_MIN_FREE_GB}); taking no jobs"
+        return 1
+    fi
+}
+
 # At boot Colima restarts dockerd while starting; let it settle first.
 wait_for_engine
 
@@ -116,6 +150,11 @@ while true; do
         log "slot ${slot}: could not prepare the slot's engine; retrying in 60s"
         docker rm -f "${dind}" >/dev/null 2>&1 || true
         sleep 60
+        continue
+    fi
+
+    if ! check_disk; then
+        sleep 300
         continue
     fi
 

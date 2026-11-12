@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 # Dead-man switch. Every 5 minutes (launchd): if a runner with our labels is
-# online in GitHub, write the current Unix time to the heartbeat variable.
+# online in GitHub, the shared engine answers and the Mac has at least
+# HOST_MIN_FREE_GB free, write the current Unix time to the heartbeat
+# variable. (A runner can stay registered while its engine fails beneath
+# it; on 2026-11-12 jobs queued on the mini for 20 minutes that way.)
 # Workflows treat a heartbeat older than 15 minutes as "Mac mini down" and
 # fall back to GitHub-hosted runners.
 set -euo pipefail
 # shellcheck source=lib.sh
 . "$(dirname "$0")/lib.sh"
+
+if ! docker info >/dev/null 2>&1; then
+    log "shared engine not answering at ${DOCKER_HOST}; heartbeat not refreshed"
+    exit 0
+fi
+free="$(host_free_gb)"
+if [ "${free}" -lt "${HOST_MIN_FREE_GB}" ]; then
+    log "Mac has ${free} GB free (minimum ${HOST_MIN_FREE_GB}); heartbeat not refreshed"
+    exit 0
+fi
 
 token="$(gh_token)"
 

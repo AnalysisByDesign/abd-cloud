@@ -21,9 +21,9 @@ Memory and CPU are capped per container (`DIND_*`, `RUNNER_*`). The engine's cap
 
 | Daemon (`/Library/LaunchDaemons/`) | Script | Schedule | Does |
 |---|---|---|---|
-| `com.abd.github-runner.supervise-<n>` | `abd-runner-supervise <n>` | KeepAlive, one per slot | Starts the slot's engine if needed, resets the slot, mints a just-in-time config through the GitHub App, runs one runner for one job, repeats |
-| `com.abd.github-runner.heartbeat` | `abd-runner-heartbeat` | every 5 min | If a runner with our labels is online, writes the Unix time to `RUNNER_HEARTBEAT` |
-| `com.abd.github-runner.prune` | `abd-runner-prune` | daily 05:00 | Inside each slot's engine: dangling images and week-old build cache, every image above `PRUNE_AT_PERCENT` disk use. On the shared engine only our labelled stopped containers and superseded runner images; never a whole-engine prune |
+| `com.abd.github-runner.supervise-<n>` | `abd-runner-supervise <n>` | KeepAlive, one per slot | Starts the slot's engine if needed, resets the slot, checks disk (Sizing, Disk), mints a just-in-time config through the GitHub App, runs one runner for one job, repeats |
+| `com.abd.github-runner.heartbeat` | `abd-runner-heartbeat` | every 5 min | If a runner with our labels is online, the shared engine answers and the Mac has `HOST_MIN_FREE_GB` free, writes the Unix time to `RUNNER_HEARTBEAT` |
+| `com.abd.github-runner.prune` | `abd-runner-prune` | daily 05:00 | Inside each slot's engine: dangling images and week-old build cache; every image when the slot's cache is over `SLOT_CACHE_MAX_GB` or the Mac is short of space; then `fstrim`. On the shared engine only our labelled stopped containers and superseded runner images; never a whole-engine prune |
 
 `lib.sh` holds settings, the App JWT and the API helper. `install.sh` installs and removes the daemons.
 
@@ -190,6 +190,19 @@ Both slots online and dev.tulox.uk up confirms the engine, the slots and the key
 | `RUNNER_MEMORY`, `RUNNER_CPUS` | 1.5 GB, 2 | The job's own steps: PHP and Pest, Node |
 
 The caps are ceilings, not reservations; a Pest shard typically uses well under them. Watch `memory_pressure` and swap (`sysctl vm.swapusage`) during a Tulox Pest run while mflux is generating. If the Mac mini swaps, lower `RUNNER_COUNT` to 1 (and the VM to 7.5 GB) rather than starving the dev stack. A job that exceeds its slot's cap is killed inside the slot (exit 137), never anything outside it.
+
+### Disk
+
+The Colima VM's disk is a sparse file on the Mac's data volume (`HOST_DATA_PATH`): it grows as the VM writes and does not shrink on its own. So the VM can believe it has room after macOS has run out, and when the Mac is full the VM sees **I/O errors**, not "disk full". On 2026-11-12 two slots building the image chain at once took the Mac to 100 MB free, broke the shared engine and with it the dev stack, while the runners stayed registered and jobs queued on them.
+
+| Setting | Default | Effect |
+|---|---|---|
+| `SLOT_CACHE_MAX_GB` | 12 | Before each job, a slot whose image and build cache is larger empties it and runs `fstrim`, which hands the freed blocks back to macOS |
+| `HOST_MIN_FREE_GB` | 25 | Below this, a slot empties its cache; if the Mac is still below, it takes no jobs and the heartbeat stops refreshing, so workflows fall back to hosted runners within 15 minutes |
+
+mflux's models (about 80 GB) share the volume; keep at least `HOST_MIN_FREE_GB` plus two slots' caps free beyond them.
+
+To recover a full Mac: stop the supervisors (Operate), then with `DOCKER_HOST` set to the shared engine remove our containers and volumes (`docker rm -f $(docker ps -aq --filter label=com.abd.github-runner)`; `docker volume rm $(docker volume ls -q | grep '^abd-runner-')`), trim (`sudo -u svc-colima -H colima ssh -- sudo fstrim -av`) and restart the dev stack if it broke. The runner image survives; the next jobs build without cache.
 
 ## Operate
 
