@@ -11,11 +11,18 @@ ABD_RUNNER_ENV="${ABD_RUNNER_ENV:-${HOME}/etc/abd-runner.env}"
 : "${CONTAINER_NAME:=abd-runner}" "${CACHE_VOLUME:=abd-runner-cache}"
 : "${DIND_IMAGE:=docker:29.9.2-dind}" "${DIND_MEMORY:=2g}" "${DIND_CPUS:=2}"
 : "${RUNNER_MEMORY:=1536m}" "${RUNNER_CPUS:=2}"
+: "${SLOT_CACHE_MAX_GB:=12}" "${HOST_MIN_FREE_GB:=25}" "${HOST_DATA_PATH:=/System/Volumes/Data}"
 export DOCKER_HOST
 
 GH_API=https://api.github.com
 
 log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
+
+# Free space on the Mac's data volume, in whole GB. The Colima VM's disk is a
+# sparse file on it, so the VM (and every slot inside it) can believe it has
+# room long after macOS has run out; when macOS is full the VM sees I/O
+# errors, not "disk full" (2026-11-12). This is the number that matters.
+host_free_gb() { df -Pk "${HOST_DATA_PATH}" | awk 'NR == 2 { print int($4 / 1048576) }'; }
 
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 
