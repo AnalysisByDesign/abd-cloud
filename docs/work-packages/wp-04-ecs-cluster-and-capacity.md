@@ -96,6 +96,7 @@ Recorded 2026-11-11, against the questions in `docs/discovery/wp-04.md`. Answere
 18. **Postfix tags**: `trixie` and `trixie-<yyyy.mm.dd>`, as `abd/base`. Built with the existing `make build IMAGE=postfix` and `make test IMAGE=postfix`, and included in `build-all` and `test-all` (Dave, 2026-11-12).
 19. **Deploy gate**: a `deploy-smtp` job in `build.yml` rolls a merge to `main` out through `deploy.yml`, behind the repository variable `SMTP_DEPLOY`, set to `true` once `svc.smtp` is applied (Dave, 2026-11-12).
 20. **Nightly rollout**: a new `rollout.yml` in `abd-cloud-containers`, scheduled at 03:00 and 04:00 UTC and gated on London's offset so it runs at 04:00 London. For each enabled service it resolves the floating tag's digest and calls `deploy.yml` only where the running image differs. The WordPress sites join it under WP-05 ruling 21 (Dave, 2026-11-12).
+21. **Two hosts at all times**: `abd-wordpress-ecs-hosts` runs min 2, max 3 `t4g.small`. With the second RI bought, the two regional t4g RIs (4 units) already pay for the old host's `t4g.medium` (2) and two smalls (2), so a single small leaves an RI unit unused. ECS managed scaling may go to a third host for a refresh or a short burst, on demand. This replaces "WP-04 stays at min 1, max 2" in ruling 4; the WP-05 layout once the old host retires is still decided there (Dave, 2026-11-13).
 22. **Relay senders**: the envelope sender of everything the relay sends is its IONOS login, a dedicated no-reply mailbox, from the `sasl_passwd` parameter. Every `From:` header is replaced with the platform the mail comes from, `"abd-cloud" <abd-cloud@analysisbydesign.co.uk>`, set by the service's `MAIL_FROM` (required) and `MAIL_FROM_NAME` (optional). Tested from a local container through IONOS on 2026-11-13: accepted and delivered as `abd-cloud@` (Dave, 2026-11-13).
 
 Notes from the same session:
@@ -106,7 +107,7 @@ Notes from the same session:
 
 ## Status
 
-**Done when met on 2026-11-12.** The mail relay (rulings 14 to 16) is the remaining build item; the spot capacity (scope item 9) is a later phase.
+**Done when met on 2026-11-12; the mail relay live on 2026-11-13.** The spot capacity (scope item 9) is a later phase.
 
 Merged and applied:
 - abd-cloud-modules #33: the six modules extended for ECS. Every existing caller (`abd-global`, `abd-wordpress`, `app.wordpress`, `nat-instance`) planned with no changes.
@@ -125,10 +126,14 @@ Found while testing:
 - During the refresh, ECS managed scaling raised the hosts to 2 to place hello while the old host drained, and the refresh then kept both. Managed scaling scales the empty host back in once it has been idle for about 15 minutes.
 - A `t4g.small` host has 3 network interfaces and ENI trunking is not available, so each host runs at most 2 awsvpc tasks (the relay, and later Valkey).
 
-Mail relay (rulings 14 to 16), in review:
-- abd-cloud-params: the `abd/postfix` repository, the `svc.smtp` target (awsvpc, `smtp.abd-wordpress.internal:25`, inbound from the private app subnets only, `SASL_PASSWD` from `/abd-wordpress/shared/postfix/sasl_passwd`), `smtp` added to the deploy role, and sequence row 4300.
-- abd-cloud: `svc.smtp` added to the plan and drift workflows.
-- abd-cloud-containers: the `abd/postfix` image, `images/postfix/` on `abd/base`. `svc.smtp` is applied only after its first push.
+Mail relay (rulings 14 to 16, 22), live:
+- abd-cloud-params #39, #40: the `abd/postfix` repository and the `svc.smtp` target (awsvpc, `smtp.abd-wordpress.internal:25`, inbound from the private app subnets only, `SASL_PASSWD` from `/abd-wordpress/shared/postfix/sasl_passwd`, `MAIL_FROM` per ruling 22), and `smtp` added to the deploy role. abd-cloud #77: `svc.smtp` in the plan and drift workflows.
+- abd-cloud-containers #11: the `abd/postfix` image (rulings 17 to 20), with `deploy-smtp` gated on `SMTP_DEPLOY=true`.
+- Verified 2026-11-13: `smtp` runs one HEALTHY task (`abd-wordpress-smtp:4`), registered in Cloud Map as `smtp.abd-wordpress.internal`; postfix 3.10.13 started with the relay host from the secret, which stays out of the logs. Ruling 22's sender rewriting was tested through IONOS from a local container.
+- The first rollout failed: the image needs `MAIL_FROM`, which the first `svc.smtp` apply lacked, so the circuit breaker stopped it after 3 tasks. The failed revision already held the new digest, so `rollout.yml` then counted `smtp` as up to date; abd-cloud-containers #13 makes a service up to date only when its primary deployment is also COMPLETED.
+- The `postfix status` health check logs a "mail system is running" line every 30 seconds.
+
+Hosts: ruling 21 raises `abd-wordpress-ecs-hosts` to min 2, max 3, in review in abd-cloud-params #42.
 
 For later packages:
 - WP-05: each site is a `svc.<site>` target on `compute/ecs-service`, added to `ecs_deploy_roles` `services`, with listener priorities in the 100s. Sites without their own SMTP settings can use `smtp.abd-wordpress.internal:25`.
