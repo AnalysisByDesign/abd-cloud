@@ -17,9 +17,9 @@ module "service" {
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_circuit_breaker         = true
 
-  # No launch type: the strategy given here, or the cluster's default strategy
+  # No launch type: the strategy given here, or the cluster's default named explicitly
   launch_type                = null
-  capacity_provider_strategy = var.capacity_provider_strategy
+  capacity_provider_strategy = local.capacity_provider_strategy
   ordered_placement_strategy = local.awsvpc ? [for s in var.ordered_placement_strategy : s if s.type != "binpack"] : var.ordered_placement_strategy
 
   health_check_grace_period_seconds = local.load_balanced ? var.health_check_grace_period_seconds : null
