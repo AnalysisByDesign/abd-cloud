@@ -1,5 +1,12 @@
 # abd-cloud
 
+The Analysis by Design hosting platform on AWS, as Terraform. It runs the WordPress sites (and, later, Tulox and mortgage.daverix.ai), which are moving one at a time from a single hand-built server to containers on ECS: each site is its own image, rebuilt and tested nightly, and run as its own service behind the shared load balancer.
+
+Read next:
+- [docs/architecture.md](docs/architecture.md): a one-page summary and status, then the design for engineers.
+- [docs/ecs-primer.md](docs/ecs-primer.md): how the pieces fit and how to do the everyday jobs, for anyone new to ECS or coming back after a break.
+- [docs/work-packages](docs/work-packages/): the programme, and every decision as a numbered ruling.
+
 Terraform templates for the AbD Cloud infrastructure platform. Templates consume child modules from `abd-cloud-modules` and environment-specific configuration from `abd-cloud-params`, then provision infrastructure into one or more AWS accounts via cross-account role assumption.
 
 ## How It Works
