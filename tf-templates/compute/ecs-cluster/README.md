@@ -7,7 +7,7 @@ Provisions the ECS cluster for EC2-hosted container workloads (WP-04), with its 
 - **ECS cluster** named `<vpc>-<name>` (e.g. `abd-wordpress-cluster`), with Container Insights set by `ecs_insights` (default `disabled`).
 - **Capacity providers**, one per host ASG listed in `capacity_providers`, with managed scaling, managed termination protection and managed draining, plus the cluster's default strategy.
 - **Cloud Map private DNS namespace** (optional, `service_discovery_namespace`) for services in `awsvpc` mode.
-- **EventBridge rule** (optional, `enable_alerts`) sending deployment failures, placement failures and tasks that fail to start or whose essential container exits to the alerts SNS topic. The topic's policy must allow EventBridge (`alerts_allow_eventbridge` in the `account` template).
+- **EventBridge rules** (optional, `enable_alerts`), `<cluster>-ecs-<alert>`, sending failures to the alerts SNS topic as readable text: failed deployments, service errors such as placement failures, tasks that fail to start, and tasks whose essential container exits with a non-zero code. A container that exits 0 (a scheduled task such as wp-cron finishing) is not an alert. The topic's policy must allow EventBridge (`alerts_allow_eventbridge` in the `account` template).
 
 ## Apply order
 

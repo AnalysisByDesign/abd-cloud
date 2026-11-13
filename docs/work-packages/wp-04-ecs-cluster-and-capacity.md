@@ -125,6 +125,7 @@ Verified:
 Found while testing:
 - A new service's `HealthyHostCount` alarm goes to ALARM for a few minutes after creation, because the metric has no data yet and missing data counts as breaching. That sends one alert to `abd-alerts` per new service. Accepted: counting missing data as breaching is what catches a target group with no targets.
 - During the refresh, ECS managed scaling raised the hosts to 2 to place hello while the old host drained, and the refresh then kept both. Managed scaling scales the empty host back in once it has been idle for about 15 minutes.
+- The task alert matched every `EssentialContainerExited` stop, including scheduled tasks that finish normally, so blacklit.uk's wp-cron (every 5 minutes, exit 0) sent an alert every 5 minutes, as the raw event JSON. Fixed 2026-11-13: alerts only on a non-zero exit code, and splits the rule into four (`deployment-failed`, `service-error`, `task-not-started`, `task-exited`), each with an input transformer that formats the email as text.
 - A `t4g.small` host has 3 network interfaces and ENI trunking is not available, so each host runs at most 2 awsvpc tasks (the relay, and later Valkey).
 
 Mail relay (rulings 14 to 16, 22), live:
