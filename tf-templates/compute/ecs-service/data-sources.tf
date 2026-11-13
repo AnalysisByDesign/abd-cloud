@@ -66,6 +66,15 @@ locals {
 
   account_id = data.aws_caller_identity.current.account_id
 
+  # A service created without a strategy has the cluster's default recorded on it by ECS,
+  # and the provider then plans a change it refuses to make without force_new_deployment.
+  # So the cluster's default (the hosts' provider, base 1, weight 1) is named explicitly.
+  capacity_provider_strategy = length(var.capacity_provider_strategy) > 0 ? var.capacity_provider_strategy : [{
+    capacity_provider = format("%s-%s", local.vpc_name, var.default_capacity_provider)
+    weight            = 1
+    base              = 1
+  }]
+
   # SSM parameters any container reads as a secret
   secret_parameter_names = distinct(flatten([for c in var.containers : values(c.secrets)]))
   secret_parameter_arns = [

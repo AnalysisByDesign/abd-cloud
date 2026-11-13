@@ -101,13 +101,19 @@ variable "task_definition_managed_externally" {
 }
 
 variable "capacity_provider_strategy" {
-  description = "Capacity provider strategy; empty uses the cluster's default strategy"
+  description = "Capacity provider strategy; empty runs on default_capacity_provider, matching the cluster's default strategy"
   type = list(object({
     capacity_provider = string
     weight            = optional(number, 1)
     base              = optional(number, 0)
   }))
   default = []
+}
+
+variable "default_capacity_provider" {
+  description = "Capacity provider used when capacity_provider_strategy is empty, without the VPC name prefix (the hosts ASG's name)"
+  type        = string
+  default     = "ecs-hosts"
 }
 
 variable "ordered_placement_strategy" {
