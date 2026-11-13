@@ -98,6 +98,7 @@ Recorded 2026-11-11, against the questions in `docs/discovery/wp-04.md`. Answere
 20. **Nightly rollout**: a new `rollout.yml` in `abd-cloud-containers`, scheduled at 03:00 and 04:00 UTC and gated on London's offset so it runs at 04:00 London. For each enabled service it resolves the floating tag's digest and calls `deploy.yml` only where the running image differs. The WordPress sites join it under WP-05 ruling 21 (Dave, 2026-11-12).
 21. **Two hosts at all times**: `abd-wordpress-ecs-hosts` runs min 2, max 3 `t4g.small`. With the second RI bought, the two regional t4g RIs (4 units) already pay for the old host's `t4g.medium` (2) and two smalls (2), so a single small leaves an RI unit unused. ECS managed scaling may go to a third host for a refresh or a short burst, on demand. This replaces "WP-04 stays at min 1, max 2" in ruling 4; the WP-05 layout once the old host retires is still decided there (Dave, 2026-11-13).
 22. **Relay senders**: the envelope sender of everything the relay sends is its IONOS login, a dedicated no-reply mailbox, from the `sasl_passwd` parameter. Every `From:` header is replaced with the platform the mail comes from, `"abd-cloud" <abd-cloud@analysisbydesign.co.uk>`, set by the service's `MAIL_FROM` (required) and `MAIL_FROM_NAME` (optional). Tested from a local container through IONOS on 2026-11-13: accepted and delivered as `abd-cloud@` (Dave, 2026-11-13).
+23. **Spot capacity deferred**: scope item 9 (the spot ASG and capacity provider, critical tasks pinned to on-demand, and the Friday and Saturday evening scaling) waits until WP-05 has measured real load. The two on-demand hosts are already paid for by the RIs (ruling 21), so spot would only save on burst capacity above them, and sizing it now would be guesswork. WP-04 closes without it (Dave, 2026-11-13).
 
 Notes from the same session:
 - **ALB**: keep the existing ALB and add listener rules and target groups to it; running two is ruled out on cost. The existing ALB belongs to the old host's `app.wordpress` target, so it would be destroyed with it. At transition (step 7) a new ALB, under the new naming, is enabled in the `ecs.hosts` build while the old one still runs; state manipulation lets the new one build alongside, and every listener rule, certificate and DNS record moves across to it. The old ALB is then taken out of the `app.wordpress` state (or otherwise detached by state manipulation) before that target is destroyed. Two ALBs run only for the changeover; a short outage is acceptable. The `alb` module's built-in target group registers the ASG's instances on port 80, so it will need to become optional (or the default action a fixed response) before ECS hosts can own the ALB. `hosted-sites` finds the ALB by name (`trg_lb_name`), so it can be repointed by a variable.
@@ -107,7 +108,7 @@ Notes from the same session:
 
 ## Status
 
-**Done when met on 2026-11-12; the mail relay live on 2026-11-13.** The spot capacity (scope item 9) is a later phase.
+**Done when met on 2026-11-12; the mail relay live on 2026-11-13.** The spot capacity (scope item 9) is deferred to after WP-05 (ruling 23).
 
 Merged and applied:
 - abd-cloud-modules #33: the six modules extended for ECS. Every existing caller (`abd-global`, `abd-wordpress`, `app.wordpress`, `nat-instance`) planned with no changes.
@@ -131,11 +132,11 @@ Mail relay (rulings 14 to 16, 22), live:
 - abd-cloud-containers #11: the `abd/postfix` image (rulings 17 to 20), with `deploy-smtp` gated on `SMTP_DEPLOY=true`.
 - Verified 2026-11-13: `smtp` runs one HEALTHY task (`abd-wordpress-smtp:4`), registered in Cloud Map as `smtp.abd-wordpress.internal`; postfix 3.10.13 started with the relay host from the secret, which stays out of the logs. Ruling 22's sender rewriting was tested through IONOS from a local container.
 - The first rollout failed: the image needs `MAIL_FROM`, which the first `svc.smtp` apply lacked, so the circuit breaker stopped it after 3 tasks. The failed revision already held the new digest, so `rollout.yml` then counted `smtp` as up to date; abd-cloud-containers #13 makes a service up to date only when its primary deployment is also COMPLETED.
-- The `postfix status` health check logs a "mail system is running" line every 30 seconds.
+- The `postfix status` health check logged a "mail system is running" line every 30 seconds. abd-cloud-params #43 replaced it with the same test, silently (`kill -0` on the master's PID file), rolled out as `abd-wordpress-smtp:8` on 2026-11-13.
 
-Hosts: ruling 21 raises `abd-wordpress-ecs-hosts` to min 2, max 3, in review in abd-cloud-params #42.
+Hosts: ruling 21 raised `abd-wordpress-ecs-hosts` to min 2, max 3 (abd-cloud-params #42), applied 2026-11-13: `i-01438166b6c962a22` (eu-west-1a) and `i-0e56b8a8c8587a930` (eu-west-1b), both ACTIVE in the cluster. The first scheduled refresh with two hosts is on 2026-11-18 at 03:00.
 
 For later packages:
 - WP-05: each site is a `svc.<site>` target on `compute/ecs-service`, added to `ecs_deploy_roles` `services`, with listener priorities in the 100s. Sites without their own SMTP settings can use `smtp.abd-wordpress.internal:25`.
 - The Tulox package: Valkey as an awsvpc service with `service_discovery_namespace = "abd-wordpress.internal"`, so it is `valkey.abd-wordpress.internal`; listener priorities in the 200s.
-- The ALB transition and the spot capacity follow the notes above and scope item 9.
+- The ALB transition follows the notes above. The spot capacity (scope item 9) is picked up after WP-05 has measured load (ruling 23).
