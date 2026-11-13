@@ -108,7 +108,7 @@ Notes from the same session:
 
 ## Status
 
-**Done when met on 2026-11-12; the mail relay live on 2026-11-13.** The spot capacity (scope item 9) is deferred to after WP-05 (ruling 23).
+**Complete on 2026-11-13.** Done when met on 2026-11-12; the mail relay live on 2026-11-13. The spot capacity (scope item 9) is deferred to after WP-05 (ruling 23). The first scheduled refresh with two hosts (2026-11-18, 03:00) runs unattended; if it fails, it is fixed then, outside this package (Dave, 2026-11-13).
 
 Merged and applied:
 - abd-cloud-modules #33: the six modules extended for ECS. Every existing caller (`abd-global`, `abd-wordpress`, `app.wordpress`, `nat-instance`) planned with no changes.

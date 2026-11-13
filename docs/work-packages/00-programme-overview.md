@@ -2,7 +2,7 @@
 
 **Created**: 2026-11-10
 **Source**: Planning session with Dave, 2026-11-10 (text, then voice on the dog walk).
-**Status**: In progress. WP-01, WP-02 and WP-03 complete (2026-11-11); WP-04 under way.
+**Status**: In progress. WP-01, WP-02 and WP-03 complete (2026-11-11); WP-04 complete (2026-11-13); WP-05 under way.
 
 ## How to use this set
 
@@ -18,7 +18,7 @@ Give each agent this overview plus its own work package. Each package runs insid
 | Tulox session brief (`docs/sessions/2026-11-10-container-platform-migration.md`) | `tulox` | 6 |
 | `wp-07-spot-github-runners.md` | `abd-cloud` | Parked |
 
-Step 7, retiring the old host, the NAT gateway remnants and the POC ECR repository, closes out WP-04 and WP-05.
+Step 7, retiring the old host, the NAT gateway remnants and the POC ECR repository, closes out the programme. It follows WP-05, and WP-04's status section holds the notes for the ALB transition.
 
 ## Three-phase protocol (applies to every package)
 
