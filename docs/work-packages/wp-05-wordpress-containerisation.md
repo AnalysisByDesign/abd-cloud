@@ -93,3 +93,33 @@ Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. 
 28. **Site secrets process**: a script creates each site's SSM parameters; Terraform only references them by name, so no value reaches state, Git or an image. Moving sites are split from their `wp-config.php` parameter (checked against the service's tfvars first); new sites get generated keys, salts and database password, with the SMTP credentials entered by hand and the database user created on RDS from the printed SQL. SSM over Secrets Manager: standard parameters are free (Dave, 2026-11-12).
 29. **Operator scripts**: in `abd-cloud-containers`, with the site builds, at `images/wordpress-site/bin/`: `wp-site-secrets.py` (`split` and `new`) and `wp-efs-sync.sh` (uploads and W3TC settings into the access point directories before cutover). The second premium item (ruling 16) is `business-owner` (baltihot.co.uk), delisted from wordpress.org (Dave, 2026-11-12).
 30. **Rollout gate**: blacklit.uk then amyegillin.uk move first. No other site gets an ECS service (its `svc.<name>` target applied) until both are working on the container platform. Before amyegillin.uk's pipdig theme is uploaded to `s3://abd-wordpress-html/premium/`, the bucket is confirmed under Terraform (`wordpress-vpc/storage/s3.wordpress`). Until the premium zips are there, the amyegillin.uk and baltihot.co.uk builds fail on `main`; that is expected (Dave, 2026-11-12).
+31. **Rollout gate, amended**: daverix.ai and analysisbydesign.co.uk move alongside amyegillin.uk rather than after it, and baltihot.co.uk moves once Dave has tested its preview himself, as it serves customers (Dave, 2026-11-13). In the event all three moved on 2026-11-13, before amyegillin.uk's image passed its smoke test.
+32. **oranjj.uk skips the preview**: a placeholder with nothing live, so its first `svc.oranjj-uk` apply carries the real domain (Dave, 2026-11-14).
+33. **Theme first-run setup in the smoke test**: a premium theme's entry in `sites/<domain>/premium.json` may carry `smoke`, wp-cli commands the smoke test runs after activating the theme, for one-off setup that the live database has long since done (Dave, 2026-11-14, option (a)).
+34. **Platform documentation**: `docs/architecture.md` and `docs/ecs-primer.md` live in `abd-cloud-containers`; abd-cloud builds the infrastructure, and its README links there (Dave, 2026-11-14).
+
+## Status
+
+**In progress.** All six sites serve from ECS as of 2026-11-14 and roll out nightly through `SITES_DEPLOY`. Still to meet Done when: the first weekly host refresh with the sites on it (2026-11-18, 03:00), and the old host still answers daverix.uk (its redirect to daverix.ai, ruling 10, is not built). Scope items 5 (stop the old host touching moved sites) and 6 (runbook, now largely `abd-cloud-containers/docs/ecs-primer.md`) are open.
+
+| Site | On ECS | Cutover |
+|---|---|---|
+| blacklit.uk | 2026-11-13 | abd-cloud-params #44 |
+| daverix.ai | 2026-11-13 | abd-cloud-params #46 (W3TC settings and wp-config from daverix.uk, ruling 15) |
+| analysisbydesign.co.uk | 2026-11-13 | abd-cloud-params #45 (target group name), #46 |
+| baltihot.co.uk | 2026-11-13 | abd-cloud-params #47, after Dave's own preview test |
+| amyegillin.uk | 2026-11-14 | abd-cloud-params #48, after abd-cloud-containers #17 |
+| oranjj.uk | 2026-11-14 | abd-cloud-params #49, no preview (ruling 32) |
+
+Pipeline:
+- abd-cloud-containers #15: `sites.yml` deploys each pushed site in `SITES_DEPLOY` through `rollout.yml`, and the nightly rollout includes them. Its first run, after the merge on 2026-11-13, rolled out all four sites then live.
+- abd-cloud-containers #17: theme smoke commands (ruling 33), and wp-cli's error printed when a theme or plugin fails to activate.
+- abd-cloud #83: ECS alerts on failures only, as readable text (WP-04 status).
+
+Found while moving:
+- **Target group names are limited to 32 characters**: `abd-wordpress-analysisbydesign-co-uk` is 36, so that service sets `target_group_name = "abd-wp-analysisbydesign-co-uk"` (abd-cloud-params #45).
+- **www on the old host fell through to daverix.uk**: `www.baltihot.co.uk`, `www.amyegillin.uk`, `www.analysisbydesign.co.uk` and `www.oranjj.uk` redirected to daverix.ai: the old host answered them with daverix.uk's install (`X-Redirect-By: WordPress`). On ECS each www redirects to its own site.
+- **pipdig-cultureshock's first-run setup** calls `wp_die()` for anyone not logged in until theme mod `p3_pinterest_theme_set` is set, and deletes the default themes. The live database ran it long ago; the smoke test's empty one had not, so amyegillin.uk failed with "plugin akismet does not activate" until ruling 33.
+- **Mail From names** differed from the live wp-config.php on amyegillin.uk, analysisbydesign.co.uk and baltihot.co.uk; the services now use the live values ("Amy Gillin", "Dave Rix", "Balti Hot"). daverix.ai keeps daverix.uk's `no-reply@daverix.uk`, as its mailbox is daverix.uk's.
+- **Between the cutover apply and the deploy**, the domain redirects to the preview hostname, because the running task still has the preview `WP_HOME`; deploy straight after the apply.
+- Two images on analysisbydesign.co.uk's home page point at `new.analysisbydesign.co.uk`, which has no DNS; broken on the old host too, so left for a content fix.
