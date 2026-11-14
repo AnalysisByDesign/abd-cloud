@@ -17,6 +17,7 @@ Give each agent this overview plus its own work package. Each package runs insid
 | `wp-05-wordpress-containerisation.md` | images repo, `abd-cloud-packer`, `abd-cloud` | 4 and 5 |
 | Tulox session brief (`docs/sessions/2026-11-10-container-platform-migration.md`) | `tulox` | 6 |
 | `wp-07-spot-github-runners.md` | `abd-cloud` | Parked |
+| `wp-08-wordpress-edit-copies.md` | `abd-cloud-containers`, `abd-cloud-params` | Parked; on demand, after WP-05 |
 
 Step 7, retiring the old host, the NAT gateway remnants and the POC ECR repository, closes out the programme. It follows WP-05, and WP-04's status section holds the notes for the ALB transition.
 
