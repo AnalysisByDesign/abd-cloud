@@ -2,7 +2,7 @@
 
 **Created**: 2026-11-10
 **Source**: Planning session with Dave, 2026-11-10 (text, then voice on the dog walk).
-**Status**: In progress. WP-01, WP-02 and WP-03 complete (2026-11-11); WP-04 complete (2026-11-13); WP-05 under way.
+**Status**: In progress. WP-01, WP-02 and WP-03 complete (2026-11-11); WP-04 complete (2026-11-13); WP-05 complete (2026-11-14). Tulox next, then step 7.
 
 ## How to use this set
 

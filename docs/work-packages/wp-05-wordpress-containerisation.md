@@ -98,10 +98,11 @@ Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. 
 33. **Theme first-run setup in the smoke test**: a premium theme's entry in `sites/<domain>/premium.json` may carry `smoke`, wp-cli commands the smoke test runs after activating the theme, for one-off setup that the live database has long since done (Dave, 2026-11-14, option (a)).
 34. **Platform documentation**: `docs/architecture.md` and `docs/ecs-primer.md` live in `abd-cloud-containers`; abd-cloud builds the infrastructure, and its README links there (Dave, 2026-11-14).
 35. **Close-out**: the weekly host refresh is taken as proven by the rollouts already run, so WP-05 does not wait for 2026-11-18. daverix.uk's redirect moves to the ALB through the `hosted-sites` target's `redirect_to` (ruling 10). The old host stays until Tulox has moved; then its ASG is retired and the ECS hosts grow to fill the reserved instance quota (Dave, 2026-11-14).
+36. **Scope item 5 dropped**: the old host keeps its boot-time updates for the moved sites until it is retired, and they go with it. That also keeps its copies current for the runbook's rollback to the old host (Dave, 2026-11-14).
 
 ## Status
 
-**In progress.** All six sites serve from ECS as of 2026-11-14 and roll out nightly through `SITES_DEPLOY`. The weekly host refresh counts as proven (ruling 35). The last Done when item is daverix.uk: its ALB redirect (ruling 10) is abd-cloud #87 and abd-cloud-params #50, and once applied the old host serves no WordPress traffic. Scope items 5 (stop the old host touching moved sites) and 6 (runbook, now largely `abd-cloud-containers/docs/ecs-primer.md`) are open; the old host itself stays until Tulox has moved.
+**Complete on 2026-11-14.** All six sites serve from ECS and roll out nightly through `SITES_DEPLOY`. daverix.uk is an ALB redirect to daverix.ai (abd-cloud #87, abd-cloud-params #50, applied 2026-11-14), so the old host serves no WordPress traffic. The weekly host refresh counts as proven (ruling 35), and scope item 5 is dropped (ruling 36). The runbook (scope item 6) is the `Runbook` section of `abd-cloud-containers/docs/ecs-primer.md` (abd-cloud-containers #19). The old host stays as the sites' fallback until Tulox has moved; then its ASG goes and the ECS hosts grow to fill the reserved instance quota.
 
 | Site | On ECS | Cutover |
 |---|---|---|
@@ -111,6 +112,7 @@ Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. 
 | baltihot.co.uk | 2026-11-13 | abd-cloud-params #47, after Dave's own preview test |
 | amyegillin.uk | 2026-11-14 | abd-cloud-params #48, after abd-cloud-containers #17 |
 | oranjj.uk | 2026-11-14 | abd-cloud-params #49, no preview (ruling 32) |
+| daverix.uk | 2026-11-14 | ALB redirect to daverix.ai, abd-cloud #87 and abd-cloud-params #50 (ruling 10) |
 
 Pipeline:
 - abd-cloud-containers #15: `sites.yml` deploys each pushed site in `SITES_DEPLOY` through `rollout.yml`, and the nightly rollout includes them. Its first run, after the merge on 2026-11-13, rolled out all four sites then live.
