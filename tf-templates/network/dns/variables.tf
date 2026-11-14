@@ -92,6 +92,23 @@ variable "wildcard_dns_enabled" {
   default     = false
 }
 
+variable "redirect_to" {
+  description = "Host name to send this domain to with a 301 from the load balancer (e.g. daverix.ai), keeping the path; empty for none. Needs trg_lb_name and redirect_priority"
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = can(regex("^([a-z0-9-]+\\.)+[a-z]+$", var.redirect_to)) || var.redirect_to == ""
+    error_message = "redirect_to is a bare host name, without a scheme or path."
+  }
+}
+
+variable "redirect_priority" {
+  description = "Listener rule priority for redirect_to, unique on the listener (WordPress band 100s, WP-04 ruling 12)"
+  type        = number
+  default     = null
+}
+
 # =============================================================================
 #                                      Email
 # =============================================================================

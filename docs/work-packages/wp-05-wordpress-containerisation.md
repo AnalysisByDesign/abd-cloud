@@ -97,10 +97,11 @@ Recorded 2026-11-12 (Dave), against the questions in `docs/discovery/wp-05.md`. 
 32. **oranjj.uk skips the preview**: a placeholder with nothing live, so its first `svc.oranjj-uk` apply carries the real domain (Dave, 2026-11-14).
 33. **Theme first-run setup in the smoke test**: a premium theme's entry in `sites/<domain>/premium.json` may carry `smoke`, wp-cli commands the smoke test runs after activating the theme, for one-off setup that the live database has long since done (Dave, 2026-11-14, option (a)).
 34. **Platform documentation**: `docs/architecture.md` and `docs/ecs-primer.md` live in `abd-cloud-containers`; abd-cloud builds the infrastructure, and its README links there (Dave, 2026-11-14).
+35. **Close-out**: the weekly host refresh is taken as proven by the rollouts already run, so WP-05 does not wait for 2026-11-18. daverix.uk's redirect moves to the ALB through the `hosted-sites` target's `redirect_to` (ruling 10). The old host stays until Tulox has moved; then its ASG is retired and the ECS hosts grow to fill the reserved instance quota (Dave, 2026-11-14).
 
 ## Status
 
-**In progress.** All six sites serve from ECS as of 2026-11-14 and roll out nightly through `SITES_DEPLOY`. Still to meet Done when: the first weekly host refresh with the sites on it (2026-11-18, 03:00), and the old host still answers daverix.uk (its redirect to daverix.ai, ruling 10, is not built). Scope items 5 (stop the old host touching moved sites) and 6 (runbook, now largely `abd-cloud-containers/docs/ecs-primer.md`) are open.
+**In progress.** All six sites serve from ECS as of 2026-11-14 and roll out nightly through `SITES_DEPLOY`. The weekly host refresh counts as proven (ruling 35). The last Done when item is daverix.uk: its ALB redirect (ruling 10) is abd-cloud #87 and abd-cloud-params #50, and once applied the old host serves no WordPress traffic. Scope items 5 (stop the old host touching moved sites) and 6 (runbook, now largely `abd-cloud-containers/docs/ecs-primer.md`) are open; the old host itself stays until Tulox has moved.
 
 | Site | On ECS | Cutover |
 |---|---|---|

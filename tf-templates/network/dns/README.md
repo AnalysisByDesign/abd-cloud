@@ -15,6 +15,10 @@ Provisions the complete DNS, SSL, and routing configuration for a single target 
 - The delegation set used must already exist (created by the `account` template). The name servers in the delegation set must be registered with the domain registrar before DNS will resolve.
 - The ACM certificate waits for DNS validation to complete before marking the resource as created, so plan time is short but apply may take several minutes on first run.
 
+## Redirect-only Domains
+
+Setting `redirect_to` (with `redirect_priority`) adds a rule to the load balancer's HTTPS listener that answers the domain with a 301 to that host name, keeping the path and query string. It matches the apex, `subject_alternative_names` and the `abd-wp.uk` subdomain, and needs no target group, task or host. The certificate this template attaches to the listener still serves the HTTPS side. daverix.uk uses it to send everything to daverix.ai (WP-05 ruling 10).
+
 ## Developer Zones
 
 A per-developer development zone is a clone of an existing params directory, no template changes are needed. Setting `dns_challenge_user_name` also creates an IAM user that can complete the ACME DNS-01 challenge (for example with Caddy's caddy-dns/route53 plugin) in that zone and no other.
@@ -60,6 +64,7 @@ See "Adding a Developer DNS Zone" in the `abd-cloud-params` README for the steps
 | [aws_iam_user.dns_challenge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user) | resource |
 | [aws_iam_user_policy.dns_challenge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy) | resource |
 | [aws_lb_listener_certificate.example](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_certificate) | resource |
+| [aws_lb_listener_rule.redirect](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule) | resource |
 | [aws_route53_record.apex](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_iam_policy_document.dns_challenge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -94,6 +99,8 @@ See "Adding a Developer DNS Zone" in the `abd-cloud-params` README for the steps
 | <a name="input_public_sub_domain"></a> [public\_sub\_domain](#input\_public\_sub\_domain) | The public search domain prefix to create a zone for | `string` | `""` | no |
 | <a name="input_public_sub_domains"></a> [public\_sub\_domains](#input\_public\_sub\_domains) | A list of public search domain prefix to create zones for | `list(string)` | `[]` | no |
 | <a name="input_r53_tags"></a> [r53\_tags](#input\_r53\_tags) | Additional tags for the Route53 Entries | `map(string)` | <pre>{<br/>  "Component": "account"<br/>}</pre> | no |
+| <a name="input_redirect_priority"></a> [redirect\_priority](#input\_redirect\_priority) | Listener rule priority for redirect\_to, unique on the listener (WordPress band 100s, WP-04 ruling 12) | `number` | `null` | no |
+| <a name="input_redirect_to"></a> [redirect\_to](#input\_redirect\_to) | Host name to send this domain to with a 301 from the load balancer (e.g. daverix.ai), keeping the path; empty for none. Needs trg\_lb\_name and redirect\_priority | `string` | `""` | no |
 | <a name="input_ssl_cert_enabled"></a> [ssl\_cert\_enabled](#input\_ssl\_cert\_enabled) | Does this site require an SSL cert. (Always false until NameServer change) | `bool` | `true` | no |
 | <a name="input_subject_alternative_names"></a> [subject\_alternative\_names](#input\_subject\_alternative\_names) | Subject alternative names for the SSL cert if required | `list(string)` | `[]` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
