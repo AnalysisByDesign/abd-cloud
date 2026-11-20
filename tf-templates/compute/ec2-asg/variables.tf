@@ -352,6 +352,12 @@ variable "asg_scheduled_refresh_timezone" {
   default     = "Europe/London"
 }
 
+variable "asg_extra_tags" {
+  description = "Extra tags for the ASG, propagated to its instances at launch. For example a tag that deploy tooling selects instances by, which the shared common tags cannot tell apart"
+  type        = map(string)
+  default     = {}
+}
+
 variable "asg_initial_lifecycle_hooks" {
   description = "Lifecycle hooks to create with the ASG (see the asg module's initial_lifecycle_hooks)"
   type = list(object({

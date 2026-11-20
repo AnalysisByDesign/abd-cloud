@@ -111,6 +111,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_asg_desired_capacity"></a> [asg\_desired\_capacity](#input\_asg\_desired\_capacity) | Desired size of the autoscaling group | `string` | `"0"` | no |
 | <a name="input_asg_ec2_instance_type"></a> [asg\_ec2\_instance\_type](#input\_asg\_ec2\_instance\_type) | The EC2 instance type to build | `string` | `"t3.micro"` | no |
 | <a name="input_asg_enable_instance_refresh"></a> [asg\_enable\_instance\_refresh](#input\_asg\_enable\_instance\_refresh) | Automatically trigger a rolling instance refresh when the launch template changes | `bool` | `false` | no |
+| <a name="input_asg_extra_tags"></a> [asg\_extra\_tags](#input\_asg\_extra\_tags) | Extra tags for the ASG, propagated to its instances at launch. For example a tag that deploy tooling selects instances by, which the shared common tags cannot tell apart | `map(string)` | `{}` | no |
 | <a name="input_asg_force_delete"></a> [asg\_force\_delete](#input\_asg\_force\_delete) | Force delete of autoscaling group if instances not terminating | `string` | `"false"` | no |
 | <a name="input_asg_health_check_grace_period"></a> [asg\_health\_check\_grace\_period](#input\_asg\_health\_check\_grace\_period) | Maximum | `string` | `"240"` | no |
 | <a name="input_asg_iam_profile_name"></a> [asg\_iam\_profile\_name](#input\_asg\_iam\_profile\_name) | IAM instance profile to use for EC2 instances | `string` | `""` | no |
