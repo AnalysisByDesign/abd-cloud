@@ -48,6 +48,7 @@ module "autoscaling-group" {
     { key = "Provisioner", value = "terraform", propagate_at_launch = true },
     ],
     # ECS managed scaling expects this tag; set here so Terraform does not remove it
-    local.is_ecs_host ? [{ key = "AmazonECSManaged", value = "true", propagate_at_launch = true }] : []
+    local.is_ecs_host ? [{ key = "AmazonECSManaged", value = "true", propagate_at_launch = true }] : [],
+    [for key, value in var.asg_extra_tags : { key = key, value = value, propagate_at_launch = true }]
   )
 }
