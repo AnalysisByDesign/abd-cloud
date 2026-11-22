@@ -18,8 +18,9 @@ Give each agent this overview plus its own work package. Each package runs insid
 | Tulox session brief (`docs/sessions/2026-11-10-container-platform-migration.md`) | `tulox` | 6 |
 | `wp-07-spot-github-runners.md` | `abd-cloud` | Parked |
 | `wp-08-wordpress-edit-copies.md` | `abd-cloud-containers`, `abd-cloud-params` | Parked; on demand, after WP-05 |
+| `wp-09-retire-old-host.md` | `abd-cloud-params`, `abd-cloud-modules`, `abd-cloud-packer`, `abd-cloud` | 7; blocked until Tulox has moved |
 
-Step 7, retiring the old host, the NAT gateway remnants and the POC ECR repository, closes out the programme. It follows WP-05, and WP-04's status section holds the notes for the ALB transition.
+Step 7, retiring the old host, the NAT gateway remnants and the POC ECR repository, closes out the programme. It is WP-09, blocked until Tulox has moved; its ALB transition builds the new ALB alongside the old one, replacing WP-04's notes.
 
 ## Three-phase protocol (applies to every package)
 
