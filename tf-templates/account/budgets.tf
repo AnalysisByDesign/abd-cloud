@@ -26,12 +26,17 @@ resource "aws_budgets_budget" "ec2_daily" {
     include_refund = false
   }
 
-  notification {
-    comparison_operator       = "GREATER_THAN"
-    threshold                 = 100
-    threshold_type            = "PERCENTAGE"
-    notification_type         = "ACTUAL"
-    subscriber_sns_topic_arns = [aws_sns_topic.alerts[0].arn]
+  # One notification per amount. Each one fires once per day, the first time that day's
+  # spend passes it, so a runaway that lasts several days alerts once a day per amount.
+  dynamic "notification" {
+    for_each = toset(local.budget_ec2_daily_alert_amounts)
+    content {
+      comparison_operator       = "GREATER_THAN"
+      threshold                 = notification.value
+      threshold_type            = "ABSOLUTE_VALUE"
+      notification_type         = "ACTUAL"
+      subscriber_sns_topic_arns = [aws_sns_topic.alerts[0].arn]
+    }
   }
 
   tags = merge(local.common_tags, var.alerts_tags)

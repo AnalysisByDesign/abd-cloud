@@ -252,6 +252,17 @@ variable "budget_ec2_daily_limit" {
   }
 }
 
+variable "budget_ec2_daily_alert_amounts" {
+  description = "Daily EC2 compute spend amounts in USD that each send an alert, e.g. [10, 20] for a second alert if the first is missed (empty to alert at budget_ec2_daily_limit only)"
+  type        = list(number)
+  default     = []
+
+  validation {
+    condition     = length(var.budget_ec2_daily_alert_amounts) <= 10 && alltrue([for a in var.budget_ec2_daily_alert_amounts : a > 0])
+    error_message = "budget_ec2_daily_alert_amounts takes up to 10 positive USD amounts (an AWS Budgets limit per budget)."
+  }
+}
+
 # ============================================================================================
 #                                      End of Variable Declarations
 # ============================================================================================
