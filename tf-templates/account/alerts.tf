@@ -12,11 +12,11 @@ resource "aws_sns_topic" "alerts" {
   tags = merge(local.common_tags, var.alerts_tags)
 }
 
-# EventBridge rules (e.g. ECS deployment failures) can only publish to the topic if its
-# policy allows events.amazonaws.com. Setting a policy replaces the default one, so the
+# EventBridge rules (e.g. ECS deployment failures) and AWS Budgets can only publish to the
+# topic if its policy allows them. Setting a policy replaces the default one, so the
 # account-owner statement is restated here.
 data "aws_iam_policy_document" "alerts" {
-  count = var.alerts_topic_name != "" && var.alerts_allow_eventbridge ? 1 : 0
+  count = local.alerts_policy_enabled ? 1 : 0
 
   statement {
     sid = "AccountOwner"
@@ -38,26 +38,55 @@ data "aws_iam_policy_document" "alerts" {
     }
   }
 
-  statement {
-    sid       = "EventBridgePublish"
-    actions   = ["SNS:Publish"]
-    resources = [aws_sns_topic.alerts[0].arn]
+  dynamic "statement" {
+    for_each = var.alerts_allow_eventbridge ? [1] : []
+    content {
+      sid       = "EventBridgePublish"
+      actions   = ["SNS:Publish"]
+      resources = [aws_sns_topic.alerts[0].arn]
 
-    principals {
-      type        = "Service"
-      identifiers = ["events.amazonaws.com"]
+      principals {
+        type        = "Service"
+        identifiers = ["events.amazonaws.com"]
+      }
+
+      condition {
+        test     = "StringEquals"
+        variable = "aws:SourceAccount"
+        values   = [data.aws_caller_identity.current.account_id]
+      }
     }
+  }
 
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceAccount"
-      values   = [data.aws_caller_identity.current.account_id]
+  dynamic "statement" {
+    for_each = local.budget_ec2_daily_enabled ? [1] : []
+    content {
+      sid       = "BudgetsPublish"
+      actions   = ["SNS:Publish"]
+      resources = [aws_sns_topic.alerts[0].arn]
+
+      principals {
+        type        = "Service"
+        identifiers = ["budgets.amazonaws.com"]
+      }
+
+      condition {
+        test     = "StringEquals"
+        variable = "aws:SourceAccount"
+        values   = [data.aws_caller_identity.current.account_id]
+      }
+
+      condition {
+        test     = "ArnLike"
+        variable = "aws:SourceArn"
+        values   = ["arn:aws:budgets::${data.aws_caller_identity.current.account_id}:*"]
+      }
     }
   }
 }
 
 resource "aws_sns_topic_policy" "alerts" {
-  count = var.alerts_topic_name != "" && var.alerts_allow_eventbridge ? 1 : 0
+  count = local.alerts_policy_enabled ? 1 : 0
 
   arn    = aws_sns_topic.alerts[0].arn
   policy = data.aws_iam_policy_document.alerts[0].json

@@ -51,6 +51,7 @@ This template must be applied before any other template in the account, as other
 
 | Name | Type |
 | ---- | ---- |
+| [aws_budgets_budget.ec2_daily](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/budgets_budget) | resource |
 | [aws_iam_account_password_policy.strict](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_account_password_policy) | resource |
 | [aws_iam_openid_connect_provider.github](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_role.github_actions_terraform](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -80,6 +81,7 @@ This template must be applied before any other template in the account, as other
 | <a name="input_alerts_tags"></a> [alerts\_tags](#input\_alerts\_tags) | Additional tags for the alerts topic | `map(string)` | <pre>{<br/>  "Component": "alerts"<br/>}</pre> | no |
 | <a name="input_alerts_topic_name"></a> [alerts\_topic\_name](#input\_alerts\_topic\_name) | Name of the account-wide SNS topic for alarm notifications (empty for no topic) | `string` | `""` | no |
 | <a name="input_allow_users_to_change_password"></a> [allow\_users\_to\_change\_password](#input\_allow\_users\_to\_change\_password) | n/a | `bool` | `true` | no |
+| <a name="input_budget_ec2_daily_limit"></a> [budget\_ec2\_daily\_limit](#input\_budget\_ec2\_daily\_limit) | Daily EC2 compute spend in USD that sends an alert to the alerts topic when exceeded (0 for no budget) | `number` | `0` | no |
 | <a name="input_cloudwatch_loggroup_names"></a> [cloudwatch\_loggroup\_names](#input\_cloudwatch\_loggroup\_names) | Log group names for cloudwatch | `list(string)` | <pre>[<br/>  "infra",<br/>  "web",<br/>  "app"<br/>]</pre> | no |
 | <a name="input_cloudwatch_tags"></a> [cloudwatch\_tags](#input\_cloudwatch\_tags) | Additional tags for CloudWatch | `map(string)` | <pre>{<br/>  "Component": "cloudwatch"<br/>}</pre> | no |
 | <a name="input_common_tag_component"></a> [common\_tag\_component](#input\_common\_tag\_component) | n/a | `string` | n/a | yes |
