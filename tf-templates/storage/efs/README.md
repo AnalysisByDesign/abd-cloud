@@ -8,6 +8,7 @@ Provisions an EFS file system with mount targets in each private subnet, a Route
 - **Mount targets** — One per subnet (typically one per AZ), allowing instances in those subnets to mount the file system
 - **Security groups** — EFS security group accepting NFS (port 2049) from the application tier security group
 - **Route53 record** — CNAME in the private hosted zone pointing to the EFS file system's DNS name for stable, human-readable access
+- **Backup policy** (optional, `enable_backup_policy`): the AWS Backup default plan for EFS, daily backups kept 35 days. A policy already set by hand is adopted on apply, without an import.
 
 ## Notes
 
@@ -39,6 +40,7 @@ Provisions an EFS file system with mount targets in each private subnet, a Route
 
 | Name | Type |
 | ---- | ---- |
+| [aws_efs_backup_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_backup_policy) | resource |
 | [aws_route53_zone.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_subnet.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
@@ -56,6 +58,7 @@ Provisions an EFS file system with mount targets in each private subnet, a Route
 | <a name="input_common_tag_project"></a> [common\_tag\_project](#input\_common\_tag\_project) | n/a | `string` | n/a | yes |
 | <a name="input_common_tag_subsystem"></a> [common\_tag\_subsystem](#input\_common\_tag\_subsystem) | n/a | `string` | n/a | yes |
 | <a name="input_efs_tags"></a> [efs\_tags](#input\_efs\_tags) | Additional tags for the EFS volume | `map(string)` | <pre>{<br/>  "Component": "storage"<br/>}</pre> | no |
+| <a name="input_enable_backup_policy"></a> [enable\_backup\_policy](#input\_enable\_backup\_policy) | Turn on automatic backups (the AWS Backup default plan for EFS: daily, kept 35 days) | `bool` | `false` | no |
 | <a name="input_encrypted"></a> [encrypted](#input\_encrypted) | Create an encrypted data volume | `bool` | `true` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | Create an encrypted data volume | `string` | `""` | no |
 | <a name="input_lifecycle_policy_transition_to_archive"></a> [lifecycle\_policy\_transition\_to\_archive](#input\_lifecycle\_policy\_transition\_to\_archive) | How long until files transition to Archive storage (e.g. AFTER\_90\_DAYS) | `string` | `null` | no |
