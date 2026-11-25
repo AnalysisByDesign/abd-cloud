@@ -30,6 +30,19 @@ resource "aws_iam_role" "execution" {
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 
   tags = local.common_tags
+
+  # Input checks that span variables, here because module blocks cannot carry preconditions
+  lifecycle {
+    precondition {
+      condition     = !local.fargate || (local.awsvpc && var.task_cpu != null && var.task_memory != null)
+      error_message = "launch_type FARGATE needs network_mode awsvpc, task_cpu and task_memory."
+    }
+
+    precondition {
+      condition     = var.create_service || (!local.load_balanced && !local.service_discovery)
+      error_message = "create_service = false cannot have hostnames or service discovery: both need a service."
+    }
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "execution_ecr_pull" {
@@ -75,7 +88,7 @@ resource "aws_iam_role" "task" {
 }
 
 data "aws_iam_policy_document" "task" {
-  count = length(var.efs_access_points) > 0 || var.enable_execute_command ? 1 : 0
+  count = length(var.efs_access_points) > 0 || var.enable_execute_command || length(var.task_role_policy_statements) > 0 ? 1 : 0
 
   dynamic "statement" {
     for_each = var.efs_access_points
@@ -106,6 +119,24 @@ data "aws_iam_policy_document" "task" {
         "ssmmessages:OpenDataChannel",
       ]
       resources = ["*"]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.task_role_policy_statements
+    content {
+      sid       = statement.value.sid
+      actions   = statement.value.actions
+      resources = statement.value.resources
+
+      dynamic "condition" {
+        for_each = statement.value.conditions
+        content {
+          test     = condition.value.test
+          variable = condition.value.variable
+          values   = condition.value.values
+        }
+      }
     }
   }
 }

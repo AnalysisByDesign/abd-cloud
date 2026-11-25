@@ -59,6 +59,35 @@ variable "containers" {
 
 # Optional -----------------------------------------------------------------------------------
 
+variable "create_service" {
+  description = "Create the long-running ECS service. false registers the task definition, roles and logs only, for a task that only runs on a schedule (scheduled_tasks) or by hand"
+  type        = bool
+  default     = true
+}
+
+variable "launch_type" {
+  description = "EC2 (the cluster's hosts, the default) or FARGATE. FARGATE needs network_mode awsvpc and task_cpu/task_memory, and ignores the capacity provider and placement settings"
+  type        = string
+  default     = "EC2"
+
+  validation {
+    condition     = contains(["EC2", "FARGATE"], var.launch_type)
+    error_message = "launch_type must be EC2 or FARGATE."
+  }
+}
+
+variable "task_cpu" {
+  description = "FARGATE only: task CPU units (e.g. 256, 512, 1024). Ignored on EC2, where containers set their own"
+  type        = number
+  default     = null
+}
+
+variable "task_memory" {
+  description = "FARGATE only: task memory in MiB, valid for task_cpu. Ignored on EC2, where containers set their own"
+  type        = number
+  default     = null
+}
+
 variable "network_mode" {
   description = "bridge (dynamic host ports, the default) or awsvpc (one ENI per task, needed for a Cloud Map A record)"
   type        = string
@@ -138,6 +167,21 @@ variable "task_role_policy_arns" {
   description = "Managed policies to attach to the task role (what the containers can call in AWS)"
   type        = list(string)
   default     = []
+}
+
+variable "task_role_policy_statements" {
+  description = "Inline statements for the task role, for permissions specific to this task (e.g. read-only API calls). Each statement allows actions on resources, optionally under conditions"
+  type = list(object({
+    sid       = string
+    actions   = list(string)
+    resources = list(string)
+    conditions = optional(list(object({
+      test     = string
+      variable = string
+      values   = list(string)
+    })), [])
+  }))
+  default = []
 }
 
 variable "ecr_pull_policy_name" {
@@ -289,12 +333,26 @@ variable "private_app_subnets" {
 }
 
 variable "scheduled_tasks" {
-  description = "One-off tasks EventBridge Scheduler runs on a schedule, keyed by a short name (e.g. wp-cron). Each runs the service's task definition family (its latest ACTIVE revision) with one container's command overridden (any other containers start as usual). schedule is an EventBridge Scheduler expression, e.g. rate(5 minutes)"
+  description = <<-EOT
+    One-off tasks EventBridge Scheduler runs on a schedule, keyed by a short name (e.g. wp-cron).
+    Each runs the task definition family (its latest ACTIVE revision). With container and
+    command set, that container's command is overridden (any other containers start as
+    usual); without them the task runs as defined. schedule is an EventBridge Scheduler
+    expression, e.g. rate(5 minutes) or cron(0 6 * * ? *). retry_attempts and
+    maximum_event_age_seconds are the scheduler's retry policy when it cannot start the task.
+  EOT
   type = map(object({
-    schedule  = string
-    container = string
-    command   = list(string)
-    timezone  = optional(string, "Europe/London")
+    schedule                  = string
+    container                 = optional(string)
+    command                   = optional(list(string))
+    timezone                  = optional(string, "Europe/London")
+    retry_attempts            = optional(number, 0)
+    maximum_event_age_seconds = optional(number, 86400)
   }))
   default = {}
+
+  validation {
+    condition     = alltrue([for t in values(var.scheduled_tasks) : (t.container == null) == (t.command == null)])
+    error_message = "scheduled_tasks: set both container and command, or neither."
+  }
 }

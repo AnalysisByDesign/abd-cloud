@@ -115,10 +115,10 @@ module "task" {
 
   family                   = local.full_name
   container_definitions    = jsonencode(local.container_definitions)
-  requires_compatibilities = "EC2"
+  requires_compatibilities = var.launch_type
   network_mode             = var.network_mode
-  cpu                      = null
-  memory                   = null
+  cpu                      = local.fargate ? tostring(var.task_cpu) : null
+  memory                   = local.fargate ? tostring(var.task_memory) : null
   cpu_architecture         = var.cpu_architecture
   execution_role_arn       = aws_iam_role.execution.arn
   task_role_arn            = aws_iam_role.task.arn

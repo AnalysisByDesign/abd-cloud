@@ -56,6 +56,7 @@ data "aws_sns_topic" "alerts" {
 locals {
   full_name = format("%s-%s", local.vpc_name, var.name)
   awsvpc    = var.network_mode == "awsvpc"
+  fargate   = var.launch_type == "FARGATE"
 
   load_balanced     = length(var.hostnames) > 0
   service_discovery = local.awsvpc && var.service_discovery_namespace != ""

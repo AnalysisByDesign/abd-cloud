@@ -3,8 +3,8 @@
 # --------------------------------------------------------------------------------------------
 
 output "service_name" {
-  description = "The ECS service's name"
-  value       = module.service.name
+  description = "The ECS service's name (null when create_service is false)"
+  value       = try(module.service[0].name, null)
 }
 
 output "task_definition_family" {

@@ -23,6 +23,7 @@ module "abd-s3" {
   acceleration_status = var.s3_acceleration_status
   force_destroy       = var.s3_force_destroy
   enable_versioning   = var.s3_enable_versioning
+  sse_algorithm       = var.s3_sse_algorithm
   enable_mfa_delete   = var.s3_enable_mfa_delete
   s3_tags             = var.s3_tags
 }

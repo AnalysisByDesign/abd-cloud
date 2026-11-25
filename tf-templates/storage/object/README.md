@@ -65,6 +65,7 @@ No resources.
 | <a name="input_s3_logging"></a> [s3\_logging](#input\_s3\_logging) | Access logging configuration. Set to null to disable. | <pre>object({<br/>    target_bucket = string<br/>    target_prefix = string<br/>  })</pre> | `null` | no |
 | <a name="input_s3_name"></a> [s3\_name](#input\_s3\_name) | The name of the S3 bucket | `any` | n/a | yes |
 | <a name="input_s3_policy"></a> [s3\_policy](#input\_s3\_policy) | An S3 policy to apply to the bucket | `string` | `""` | no |
+| <a name="input_s3_sse_algorithm"></a> [s3\_sse\_algorithm](#input\_s3\_sse\_algorithm) | Default encryption: aws:kms (a key per bucket) or AES256 (SSE-S3) | `string` | `"aws:kms"` | no |
 | <a name="input_s3_tags"></a> [s3\_tags](#input\_s3\_tags) | Additional tags for the S3 bucket | `map(string)` | `{}` | no |
 | <a name="input_target_region"></a> [target\_region](#input\_target\_region) | The default region to build infrastructure in | `string` | `"eu-west-1"` | no |
 

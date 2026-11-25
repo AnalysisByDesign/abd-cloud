@@ -27,6 +27,9 @@ variable "ecr_push_roles" {
     # WordPress items, abd-wordpress-html/premium/), and the KMS keys that encrypt them.
     s3_read_prefixes     = optional(list(string), [])
     kms_decrypt_key_arns = optional(list(string), [])
+    # S3 prefixes the role may write build outputs to, as "<bucket>/<prefix>" (e.g. SBOMs,
+    # abd-wordpress-sboms/sboms/). SSE-S3 buckets only: no KMS permission is granted.
+    s3_write_prefixes = optional(list(string), [])
   }))
   default = {}
 }
