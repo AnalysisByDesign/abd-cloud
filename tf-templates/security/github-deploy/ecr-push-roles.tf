@@ -5,7 +5,8 @@
 # one repository. Each role can push only to its own namespaces
 # (repository/<prefix>/*), so an images repository cannot overwrite another
 # repository's images. Optionally, read access to named S3 prefixes for build
-# inputs (s3_read_prefixes, kms_decrypt_key_arns).
+# inputs (s3_read_prefixes, kms_decrypt_key_arns), and write access to named
+# prefixes for build outputs such as SBOMs (s3_write_prefixes).
 
 data "aws_iam_policy_document" "ecr_push_trust" {
   for_each = var.ecr_push_roles
@@ -74,6 +75,17 @@ data "aws_iam_policy_document" "ecr_push_permissions" {
       effect    = "Allow"
       actions   = ["s3:GetObject"]
       resources = [for p in each.value.s3_read_prefixes : "arn:aws:s3:::${p}*"]
+    }
+  }
+
+  # Build outputs to S3 (write only), when the repository has any
+  dynamic "statement" {
+    for_each = length(each.value.s3_write_prefixes) > 0 ? [1] : []
+    content {
+      sid       = "WriteBuildOutputs"
+      effect    = "Allow"
+      actions   = ["s3:PutObject"]
+      resources = [for p in each.value.s3_write_prefixes : "arn:aws:s3:::${p}*"]
     }
   }
 

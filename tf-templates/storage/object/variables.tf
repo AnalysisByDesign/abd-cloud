@@ -58,6 +58,12 @@ variable "s3_enable_versioning" {
   default     = false
 }
 
+variable "s3_sse_algorithm" {
+  description = "Default encryption: aws:kms (a key per bucket) or AES256 (SSE-S3)"
+  type        = string
+  default     = "aws:kms"
+}
+
 variable "s3_enable_mfa_delete" {
   description = "Require an MFA device to delete objects"
   default     = false

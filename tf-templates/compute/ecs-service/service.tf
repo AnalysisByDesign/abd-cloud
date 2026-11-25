@@ -1,9 +1,15 @@
 # --------------------------------------------------------------------------------------------
-# ECS service
+# ECS service (none when create_service is false: a task that only runs on a schedule)
 # --------------------------------------------------------------------------------------------
+
+moved {
+  from = module.service
+  to   = module.service[0]
+}
 
 module "service" {
   source = "../../../../abd-cloud-modules/compute/ecs/service"
+  count  = var.create_service ? 1 : 0
 
   name            = var.name
   cluster_id      = data.aws_ecs_cluster.this.arn
@@ -17,10 +23,11 @@ module "service" {
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_circuit_breaker         = true
 
-  # No launch type: the strategy given here, or the cluster's default named explicitly
-  launch_type                = null
-  capacity_provider_strategy = local.capacity_provider_strategy
-  ordered_placement_strategy = local.awsvpc ? [for s in var.ordered_placement_strategy : s if s.type != "binpack"] : var.ordered_placement_strategy
+  # EC2: no launch type, but the strategy given here or the cluster's default named
+  # explicitly. FARGATE: the launch type, with no strategy or placement (Fargate has neither)
+  launch_type                = local.fargate ? "FARGATE" : null
+  capacity_provider_strategy = local.fargate ? [] : local.capacity_provider_strategy
+  ordered_placement_strategy = local.fargate ? [] : local.awsvpc ? [for s in var.ordered_placement_strategy : s if s.type != "binpack"] : var.ordered_placement_strategy
 
   health_check_grace_period_seconds = local.load_balanced ? var.health_check_grace_period_seconds : null
   load_balancers = local.load_balanced ? [{
@@ -208,9 +215,11 @@ resource "aws_scheduler_schedule" "this" {
       propagate_tags      = "TASK_DEFINITION"
       group               = format("scheduled:%s", each.key)
 
-      # The cluster's default capacity provider strategy, as for the service
+      # EC2: the cluster's default capacity provider strategy, as for the service
+      launch_type = local.fargate ? "FARGATE" : null
+
       dynamic "capacity_provider_strategy" {
-        for_each = var.capacity_provider_strategy
+        for_each = local.fargate ? [] : var.capacity_provider_strategy
         content {
           capacity_provider = capacity_provider_strategy.value.capacity_provider
           weight            = capacity_provider_strategy.value.weight
@@ -229,13 +238,14 @@ resource "aws_scheduler_schedule" "this" {
     }
 
     # The named container runs the command instead of its default; any other containers in
-    # the task start as usual
-    input = jsonencode({
+    # the task start as usual. Without a command the task runs as defined.
+    input = each.value.command == null ? null : jsonencode({
       containerOverrides = [{ name = each.value.container, command = each.value.command }]
     })
 
     retry_policy {
-      maximum_retry_attempts = 0
+      maximum_retry_attempts       = each.value.retry_attempts
+      maximum_event_age_in_seconds = each.value.maximum_event_age_seconds
     }
   }
 }
