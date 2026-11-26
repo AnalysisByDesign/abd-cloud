@@ -47,6 +47,7 @@ jobs:
           - abd-wordpress/wordpress-vpc/hosted-sites/analysisbydesign.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/baltihot.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/blacklit.uk
+          - abd-wordpress/wordpress-vpc/hosted-sites/copperkarahi.co.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/daverix.uk
           - abd-wordpress/wordpress-vpc/hosted-sites/daverix.ai
           - abd-wordpress/wordpress-vpc/hosted-sites/oranjj.uk

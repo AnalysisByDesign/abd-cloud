@@ -8,9 +8,9 @@ resource "aws_lb_listener_certificate" "example" {
   certificate_arn = join("", module.ssl_cert.cert_validation_arn)
 }
 
-# A domain that only redirects (e.g. daverix.uk to daverix.ai, WP-05 ruling 10): a 301 from
-# the ALB for the apex, its alternative names and its abd-wp.uk subdomain, keeping the path
-# and query string. No target group or host is involved.
+# A domain that only redirects (e.g. daverix.uk to daverix.ai, WP-05 ruling 10): a 301 (or a
+# 302, with redirect_status_code) from the ALB for the apex, its alternative names and its
+# abd-wp.uk subdomain, keeping the path and query string. No target group or host is involved.
 locals {
   redirect_hostnames = concat(
     [local.public_search_domain],
@@ -32,7 +32,7 @@ resource "aws_lb_listener_rule" "redirect" {
       host        = var.redirect_to
       protocol    = "HTTPS"
       port        = "443"
-      status_code = "HTTP_301"
+      status_code = var.redirect_status_code
     }
   }
 
