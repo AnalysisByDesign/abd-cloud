@@ -100,6 +100,7 @@ See "Adding a Developer DNS Zone" in the `abd-cloud-params` README for the steps
 | <a name="input_public_sub_domains"></a> [public\_sub\_domains](#input\_public\_sub\_domains) | A list of public search domain prefix to create zones for | `list(string)` | `[]` | no |
 | <a name="input_r53_tags"></a> [r53\_tags](#input\_r53\_tags) | Additional tags for the Route53 Entries | `map(string)` | <pre>{<br/>  "Component": "account"<br/>}</pre> | no |
 | <a name="input_redirect_priority"></a> [redirect\_priority](#input\_redirect\_priority) | Listener rule priority for redirect\_to, unique on the listener (WordPress band 100s, WP-04 ruling 12) | `number` | `null` | no |
+| <a name="input_redirect_status_code"></a> [redirect\_status\_code](#input\_redirect\_status\_code) | Status code for redirect\_to: HTTP\_301 for a permanent move, HTTP\_302 while the domain is only parked on another site and will get its own later | `string` | `"HTTP_301"` | no |
 | <a name="input_redirect_to"></a> [redirect\_to](#input\_redirect\_to) | Host name to send this domain to with a 301 from the load balancer (e.g. daverix.ai), keeping the path; empty for none. Needs trg\_lb\_name and redirect\_priority | `string` | `""` | no |
 | <a name="input_ssl_cert_enabled"></a> [ssl\_cert\_enabled](#input\_ssl\_cert\_enabled) | Does this site require an SSL cert. (Always false until NameServer change) | `bool` | `true` | no |
 | <a name="input_subject_alternative_names"></a> [subject\_alternative\_names](#input\_subject\_alternative\_names) | Subject alternative names for the SSL cert if required | `list(string)` | `[]` | no |
@@ -118,5 +119,6 @@ See "Adding a Developer DNS Zone" in the `abd-cloud-params` README for the steps
 | ---- | ----------- |
 | <a name="output_dns_challenge_user_name"></a> [dns\_challenge\_user\_name](#output\_dns\_challenge\_user\_name) | The IAM user for the ACME DNS-01 challenge. Create the access key by hand with aws iam create-access-key |
 | <a name="output_domain_validation_options"></a> [domain\_validation\_options](#output\_domain\_validation\_options) | n/a |
+| <a name="output_name_servers"></a> [name\_servers](#output\_name\_servers) | The name servers to set at the registrar for this zone |
 | <a name="output_zone_id"></a> [zone\_id](#output\_zone\_id) | The ID of the public zone |
 <!-- END_TF_DOCS -->

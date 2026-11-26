@@ -109,6 +109,17 @@ variable "redirect_priority" {
   default     = null
 }
 
+variable "redirect_status_code" {
+  description = "Status code for redirect_to: HTTP_301 for a permanent move, HTTP_302 while the domain is only parked on another site and will get its own later"
+  type        = string
+  default     = "HTTP_301"
+
+  validation {
+    condition     = contains(["HTTP_301", "HTTP_302"], var.redirect_status_code)
+    error_message = "redirect_status_code is HTTP_301 or HTTP_302."
+  }
+}
+
 # =============================================================================
 #                                      Email
 # =============================================================================
