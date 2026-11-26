@@ -85,8 +85,14 @@ locals {
           }
         ]
 
+        # Without mode the mount is root-owned 0755, which a non-root container user cannot
+        # write; the other options keep what ECS applied by default.
         linuxParameters = length(c.tmpfs) == 0 ? null : {
-          tmpfs = [for t in c.tmpfs : { containerPath = t.container_path, size = t.size_mib }]
+          tmpfs = [for t in c.tmpfs : {
+            containerPath = t.container_path
+            size          = t.size_mib
+            mountOptions  = ["mode=1777", "noexec", "nosuid", "nodev"]
+          }]
         }
 
         healthCheck = c.health_check == null ? null : {
