@@ -57,6 +57,12 @@ variable "kms_key_id" {
   default     = ""
 }
 
+variable "enable_backup_policy" {
+  description = "Turn on automatic backups (the AWS Backup default plan for EFS: daily, kept 35 days)"
+  type        = bool
+  default     = false
+}
+
 variable "efs_tags" {
   description = "Additional tags for the EFS volume"
   type        = map(string)

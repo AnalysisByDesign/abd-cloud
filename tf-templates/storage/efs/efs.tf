@@ -24,3 +24,18 @@ module "efs" {
   lifecycle_policy_transition_to_primary_storage_class = var.lifecycle_policy_transition_to_primary_storage_class
 
 }
+
+# --------------------------------------------------------------------------------------------
+# AWS Backup (optional): the account's default EFS plan, aws/efs/automatic-backup-plan
+# (daily, kept 35 days, in the default vault). Putting the policy is idempotent, so one set
+# by hand is adopted on the next apply without an import.
+# --------------------------------------------------------------------------------------------
+resource "aws_efs_backup_policy" "this" {
+  count = var.enable_backup_policy ? 1 : 0
+
+  file_system_id = module.efs.id
+
+  backup_policy {
+    status = "ENABLED"
+  }
+}
