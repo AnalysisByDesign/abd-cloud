@@ -13,6 +13,7 @@ A Secrets Manager secret with its own KMS key and a single access role, for a se
 ## Notes
 
 - The value never passes through Terraform, so it is not in state. Write it once with the access role, then set `allow_write = false` and apply again to drop the write permissions.
+- The Terraform role gets `kms:GenerateDataKey` and `kms:Decrypt` only for Secrets Manager's key access check (encryption context `SecretVersionId = RequestToValidateKeyAccess`), which `CreateSecret` makes when a customer managed key is set. Real secret versions carry a UUID version ID, so the role still cannot decrypt the value.
 - Other administrators in the account cannot decrypt the secret without first changing the key policy. They keep `kms:Put*` so the key cannot be orphaned, and any such change shows in CloudTrail.
 
 <!-- BEGIN_TF_DOCS -->

@@ -107,6 +107,37 @@ data "aws_iam_policy_document" "key" {
       values   = [var.acct_target]
     }
   }
+
+  # When a secret is created with (or moved to) this key, Secrets Manager
+  # checks the caller can use it by calling GenerateDataKey and Decrypt with
+  # encryption context SecretVersionId = RequestToValidateKeyAccess, and
+  # discards the results. The Terraform role gets only those check calls:
+  # real secret versions have a UUID SecretVersionId, so it still cannot
+  # decrypt the value.
+  statement {
+    sid    = "TerraformKeyAccessCheck"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${var.acct_target}:role/${var.acct_target_role}"]
+    }
+
+    actions   = ["kms:GenerateDataKey", "kms:Decrypt"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = [local.secretsmanager_service]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:EncryptionContext:SecretVersionId"
+      values   = ["RequestToValidateKeyAccess"]
+    }
+  }
 }
 
 resource "aws_kms_key" "secret" {
