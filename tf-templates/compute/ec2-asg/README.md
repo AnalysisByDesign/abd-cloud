@@ -69,6 +69,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_cloudwatch_metric_alarm.status_check_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_instance_profile.ec2-asg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.s3_read_prefixes](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.attach_ecs_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.attach_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -77,6 +78,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | [aws_ami.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_iam_policy_document.instance_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.s3_read_prefixes](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.scheduled_refresh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.scheduled_refresh_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_route53_zone.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
@@ -162,6 +164,7 @@ Provisions a complete EC2-based application tier: launch template, Auto Scaling 
 | <a name="input_rds_security_group"></a> [rds\_security\_group](#input\_rds\_security\_group) | The name of the RDS security group (empty for no RDS access rules) | `string` | `""` | no |
 | <a name="input_s3_kms_key_arn"></a> [s3\_kms\_key\_arn](#input\_s3\_kms\_key\_arn) | ARN of the KMS key used to encrypt the S3 bucket | `string` | `""` | no |
 | <a name="input_s3_name"></a> [s3\_name](#input\_s3\_name) | The name of the S3 bucket for storage | `string` | `""` | no |
+| <a name="input_s3_read_prefixes"></a> [s3\_read\_prefixes](#input\_s3\_read\_prefixes) | Read-only S3 prefixes for the instance role, as "<bucket>/<prefix>" without a trailing slash (e.g. abd-wordpress-tulox-media/marketing-images). Grants s3:ListBucket limited to the prefix and s3:GetObject under it, nothing else. SSE-S3 buckets only: no KMS permission is granted | `list(string)` | `[]` | no |
 | <a name="input_ses_identity_arns"></a> [ses\_identity\_arns](#input\_ses\_identity\_arns) | SES identity ARNs (verified email addresses and/or domains) that this instance role may send from via ses:SendEmail / ses:SendRawEmail | `list(string)` | `[]` | no |
 | <a name="input_ssm_extra_key_prefixes"></a> [ssm\_extra\_key\_prefixes](#input\_ssm\_extra\_key\_prefixes) | Additional SSM parameter path prefixes to grant GetParameter access to, beyond the default /{vpc\_name}/* | `list(string)` | `[]` | no |
 | <a name="input_ssm_kms_key_arn"></a> [ssm\_kms\_key\_arn](#input\_ssm\_kms\_key\_arn) | ARN of the KMS key used to encrypt SSM SecureString parameters | `string` | `""` | no |
