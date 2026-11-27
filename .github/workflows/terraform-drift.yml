@@ -32,6 +32,7 @@ jobs:
           - abd-wordpress/account-global/s3/tulox-media-reserved
           - abd-wordpress/account-global/github-deploy
           - abd-wordpress/account-global/s3-sync-access
+          - abd-wordpress/account-global/tulox-kiosk-signing
           - abd-wordpress/account-global/container-registry
           - abd-wordpress/wordpress-vpc
           - abd-wordpress/wordpress-vpc/nat-instance
