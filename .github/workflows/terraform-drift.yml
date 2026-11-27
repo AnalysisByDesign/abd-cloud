@@ -28,7 +28,10 @@ jobs:
           - abd-wordpress/account-global/cloudtrail
           - abd-wordpress/account-global/s3/access-log
           - abd-wordpress/account-global/s3/lambda
+          - abd-wordpress/account-global/s3/tulox-media
+          - abd-wordpress/account-global/s3/tulox-media-reserved
           - abd-wordpress/account-global/github-deploy
+          - abd-wordpress/account-global/s3-sync-access
           - abd-wordpress/account-global/container-registry
           - abd-wordpress/wordpress-vpc
           - abd-wordpress/wordpress-vpc/nat-instance

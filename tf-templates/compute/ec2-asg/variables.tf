@@ -116,6 +116,12 @@ variable "ses_identity_arns" {
   default     = []
 }
 
+variable "s3_read_prefixes" {
+  description = "Read-only S3 prefixes for the instance role, as \"<bucket>/<prefix>\" without a trailing slash (e.g. abd-wordpress-tulox-media/marketing-images). Grants s3:ListBucket limited to the prefix and s3:GetObject under it, nothing else. SSE-S3 buckets only: no KMS permission is granted"
+  type        = list(string)
+  default     = []
+}
+
 variable "ec2_policy_template_folder" {
   description = "Folder containing policy templates to apply to the instance roles"
   type        = string
